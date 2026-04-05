@@ -11,22 +11,12 @@ export interface BuilderAugment {
   rarity: 'Silver' | 'Gold' | 'Prismatic';
 }
 
-export const ALL_AUGMENTS: BuilderAugment[] = GENERATED_AUGMENTS.map(a => {
-  let rarity: 'Silver' | 'Gold' | 'Prismatic' = 'Gold';
-  const idLower = a.id ? a.id.toLowerCase() : '';
-  
-  // Naive but effective rarity parsing based on augment IDs rather than missing icons
-  if (idLower.includes('-iii') || idLower.includes('_iii') || idLower.includes('prismatic')) {
-    rarity = 'Prismatic';
-  } else if (idLower.includes('-i') || idLower.includes('_i') || idLower.match(/_1$/) || idLower.includes('silver')) {
-    rarity = 'Silver';
-  }
-  
+export const ALL_AUGMENTS: BuilderAugment[] = GENERATED_AUGMENTS.map((a: any) => {
   return {
     id: a.id,
     name: a.name,
     desc: a.desc,
-    rarity
+    rarity: (a.tier && a.tier !== 'Unknown') ? a.tier : 'Gold'
   };
 });
 

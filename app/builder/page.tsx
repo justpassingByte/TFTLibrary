@@ -29,7 +29,6 @@ const RARITY_STYLES: Record<string, { border: string; bg: string; text: string }
 };
 
 type SortMode = 'Cost' | 'Name' | 'Origin' | 'Class';
-type RosterMode = 'Champions' | 'Items';
 
 /* eslint-disable react-hooks/globals */
 export default function BuilderPage() {
@@ -45,9 +44,9 @@ export default function BuilderPage() {
   const [augModalOpen, setAugModalOpen] = useState(false);
   const [selectedAugments, setSelectedAugments] = useState<string[]>([]);
   const [augSearch, setAugSearch] = useState('');
+  const [augRarity, setAugRarity] = useState<'All' | 'Silver' | 'Gold' | 'Prismatic'>('All');
 
   // Roster mode (bottom panel)
-  const [rosterMode, setRosterMode] = useState<RosterMode>('Champions');
   const [itemTab, setItemTab] = useState<ItemCategory>('Components');
 
   // History
@@ -92,9 +91,13 @@ export default function BuilderPage() {
   }, [itemTab, searchQuery]);
 
   const filteredAugments = useMemo(() => {
-    if (!augSearch) return ALL_AUGMENTS;
-    return ALL_AUGMENTS.filter(a => a.name.toLowerCase().includes(augSearch.toLowerCase()));
-  }, [augSearch]);
+    let list = ALL_AUGMENTS;
+    if (augRarity !== 'All') {
+      list = list.filter(a => a.rarity === augRarity);
+    }
+    if (!augSearch) return list;
+    return list.filter(a => a.name.toLowerCase().includes(augSearch.toLowerCase()));
+  }, [augSearch, augRarity]);
 
   const pushHistory = useCallback(() => {
     setHistory(prev => [...prev.slice(-19), board.map(r => [...r])]);
@@ -251,13 +254,16 @@ export default function BuilderPage() {
                     return (
                       <div key={trait} className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
                         style={{ backgroundColor: isGold ? 'rgba(255,215,0,0.08)' : isActive ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
-                        <span className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                        <span className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 z-10"
                           style={{ backgroundColor: isGold ? 'rgba(255,215,0,0.15)' : isActive ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', color: isGold ? 'var(--color-pumpkin)' : isActive ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
                           {count}
                         </span>
-                        <div className="flex-1 min-w-0">
+                        <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center opacity-80" style={{ filter: isGold ? 'sepia(1) saturate(5) hue-rotate(-30deg)' : isActive ? 'none' : 'grayscale(1) opacity(0.5)' }}>
+                          <SpriteIcon type="trait" id={trait} alt={trait} className="w-full h-full drop-shadow-md" />
+                        </div>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
                           <span className={`text-xs font-medium truncate block ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>{trait}</span>
-                          <span className="text-[9px] text-[var(--color-text-muted)]">2 › 4 › 6</span>
+                          <span className="text-[8px] text-[var(--color-text-muted)] mt-0.5 opacity-60">2 › 4 › 6</span>
                         </div>
                       </div>
                     );
@@ -368,94 +374,120 @@ export default function BuilderPage() {
           </div>
         </div>
 
-        {/* BOTTOM: Champions + Items Roster */}
-        <div className="mt-3 grimoire-card p-3">
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
-            {/* Mode toggle: Champions / Items */}
-            <div className="flex gap-0.5 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
-              {(['Champions', 'Items'] as const).map(mode => (
-                <button key={mode} onClick={() => setRosterMode(mode)}
-                  className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${rosterMode === mode ? 'bg-[var(--color-pumpkin)] text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
-                  {mode === 'Champions' ? '⚔ Champions' : '🛡 Items'}
-                </button>
-              ))}
-            </div>
+        {/* BOTTOM: Champions & Items Roster */}
+        <div className="mt-3 bg-[#111116] rounded-xl border border-[#2a2a35] overflow-hidden">
+          {/* Header controls */}
+          <div className="flex items-center justify-between p-3 border-b border-[#2a2a35]">
+            <div className="flex items-center gap-6 text-xs font-bold text-white mb-1 mt-1 flex-1">
+              {/* Search */}
+              <div className="relative w-[240px]">
+                <input type="text" placeholder="Search All" value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 rounded-full bg-[#1c1c22] border border-[#2a2a35] text-sm text-[var(--color-text-primary)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--color-pumpkin)] transition-colors" />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 bg-[#2a2a35] px-1.5 py-0.5 rounded font-black tracking-wider">Ctrl + F</span>
+              </div>
 
-            <div className="w-px h-5 bg-[var(--color-border)]" />
-
-            {/* Search */}
-            <div className="relative flex-1 min-w-[180px] max-w-xs">
-              <input type="text" placeholder={rosterMode === 'Champions' ? 'Search champions...' : 'Search items...'} value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--color-grimoire-light)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-pumpkin)] transition-colors" />
-            </div>
-
-            {/* Champion sort modes (only visible in Champions mode) */}
-            {rosterMode === 'Champions' && (
-              <div className="flex gap-0.5 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
+              {/* Champion sort modes */}
+              <div className="flex gap-4">
                 {(['Cost', 'Name', 'Origin', 'Class'] as const).map(mode => (
                   <button key={mode} onClick={() => setSortMode(mode)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${sortMode === mode ? 'bg-[var(--color-pumpkin)] text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
+                    className={`transition-colors ${sortMode === mode ? 'text-[var(--color-pumpkin)] drop-shadow-md bg-[var(--color-pumpkin)]/10 px-3 py-1 rounded-full -ml-3' : 'text-gray-400 hover:text-white'}`}>
                     {mode}
                   </button>
                 ))}
               </div>
-            )}
 
-            {/* Item category tabs (only visible in Items mode) */}
-            {rosterMode === 'Items' && (
-              <div className="flex gap-0.5 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
-                {(['Components', 'Completed', 'Artifacts', 'Emblems'] as const).map(tab => (
-                  <button key={tab} onClick={() => setItemTab(tab)}
-                    className={`px-3 py-1.5 text-[10px] font-medium rounded-md transition-colors ${itemTab === tab ? 'bg-[var(--color-pumpkin)] text-black' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
-                    {tab}
-                  </button>
-                ))}
+              <div className="flex-1" />
+
+              {/* Item category tabs */}
+              <div className="flex gap-4 pr-2">
+                {(['Components', 'Completed', 'Artifacts', 'Emblems'] as const).map(tab => {
+                  const label = tab === 'Components' ? 'Craftables' : tab === 'Completed' ? 'Radiants' : tab;
+                  return (
+                    <button key={tab} onClick={() => setItemTab(tab)}
+                      className={`transition-colors ${itemTab === tab ? 'text-[#ffb703] drop-shadow-md bg-[#ffb703]/10 px-3 py-1 rounded-full -mx-3' : 'text-gray-400 hover:text-white'}`}>
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Champions Grid */}
-          {rosterMode === 'Champions' && (
-            <div className="flex flex-wrap gap-1">
-              {filteredChampions.map(champ => (
-                <div key={champ.id}
-                  draggable
-                  onDragStart={e => onDragStartChampion(e, champ)}
-                  className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
-                  <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
-                    <ChampionAvatar name={champ.name} shape="hexagon" className="w-[46px] h-[50px] shadow-2xl pointer-events-none" />
-                  </HexagonFrame>
-                  <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[52px] truncate text-center mt-1">
-                    {champ.name}
-                  </span>
+          {/* Rosters layout */}
+          <div className="flex bg-[#111116] min-h-[400px]">
+            {/* Champions Side */}
+            <div className="flex-1 max-h-[550px] overflow-y-auto show-scrollbar p-4 pr-2">
+              {(sortMode === 'Cost' || sortMode === 'Name') ? (
+                <div className="flex flex-wrap gap-1">
+                  {filteredChampions.map(champ => (
+                    <div key={champ.id}
+                      draggable
+                      onDragStart={e => onDragStartChampion(e, champ)}
+                      className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
+                      <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
+                        <ChampionAvatar name={champ.name} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
+                      </HexagonFrame>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Items Grid */}
-          {rosterMode === 'Items' && (
-            <div className="flex flex-wrap gap-1.5">
-              {filteredItems.map(item => (
-                <div key={item.id}
-                  draggable
-                  onDragStart={e => onDragStartItem(e, item)}
-                  className="group relative flex flex-col items-center gap-0.5 cursor-grab hover:scale-105 transition-transform"
-                  title={item.name}>
-                  <div className="w-[52px] h-[52px] rounded-lg border border-[var(--color-border)] bg-[var(--color-grimoire-light)] flex items-center justify-center group-hover:border-[var(--color-pumpkin)]/40 group-hover:bg-[var(--color-pumpkin)]/5 transition-all overflow-hidden">
-                    <img src={getItemImageUrl(item.id)} alt={item.name} className="w-[40px] h-[40px] object-contain pointer-events-none drop-shadow-md" />
-                  </div>
-                  <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[56px] truncate text-center">
-                    {item.name}
-                  </span>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  {Object.entries(
+                    filteredChampions.reduce((acc, champ) => {
+                      const groupTrait = sortMode === 'Origin' ? champ.traits[0] : (champ.traits[1] || champ.traits[0]);
+                      const key = groupTrait || 'Unknown';
+                      if (!acc[key]) acc[key] = [];
+                      acc[key].push(champ);
+                      return acc;
+                    }, {} as Record<string, typeof filteredChampions>)
+                  ).sort(([a], [b]) => a.localeCompare(b)).map(([groupTrait, champs]) => (
+                    <div key={groupTrait} className="flex gap-3 items-center min-h-[58px]">
+                      {/* Trait Icon column */}
+                      <div className="w-10 flex shrink-0 items-center justify-center">
+                         <SpriteIcon type="trait" id={groupTrait} className="w-8 h-8 opacity-[0.85] drop-shadow-md" alt={groupTrait} />
+                      </div>
+                      {/* Champions row */}
+                      <div className="flex flex-wrap gap-1 flex-1">
+                        {champs.map(champ => (
+                          <div key={champ.id}
+                            draggable
+                            onDragStart={e => onDragStartChampion(e, champ)}
+                            className="relative flex flex-col items-center justify-center cursor-grab group hover:scale-105 transition-transform">
+                            <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-md">
+                              <ChampionAvatar name={champ.name} shape="hexagon" className="w-[46px] h-[50px] shadow-sm pointer-events-none" />
+                            </HexagonFrame>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {filteredItems.length === 0 && (
-                <p className="text-xs text-[var(--color-text-muted)] italic py-4 w-full text-center">No items found</p>
               )}
             </div>
-          )}
+
+            <div className="w-[1px] bg-[#2a2a35] opacity-50 shrink-0 my-4" />
+
+            {/* Items Side */}
+            <div className="w-[400px] shrink-0 max-h-[550px] overflow-y-auto show-scrollbar p-4 pl-3">
+              <div className="grid grid-cols-7 gap-1.5">
+                {filteredItems.map(item => (
+                  <div key={item.id}
+                    draggable
+                    onDragStart={e => onDragStartItem(e, item)}
+                    className="relative flex flex-col items-center justify-center cursor-grab group hover:scale-105 transition-transform"
+                    title={item.name}>
+                    <div className="w-[38px] h-[38px] rounded-md border border-[var(--color-border)] bg-[#1c1c22] flex items-center justify-center group-hover:border-[#ffb703] group-hover:shadow-[0_0_8px_rgba(255,183,3,0.3)] transition-all overflow-hidden">
+                      <img src={getItemImageUrl(item.id)} alt={item.name} className="w-full h-full object-contain pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {filteredItems.length === 0 && (
+                <p className="text-xs text-gray-500 italic py-4 w-full text-center mt-4">No items found</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -468,10 +500,27 @@ export default function BuilderPage() {
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()} className="relative bg-[#1c1c22] rounded-xl w-full max-w-4xl max-h-[85vh] flex flex-col p-4 border border-[var(--color-border)] shadow-2xl">
               
-              <div className="flex items-center justify-between mb-4">
-                <div className="relative w-80 border border-[#40404a] rounded-full overflow-hidden bg-[#24242b]">
-                  <input type="text" placeholder="Search for an augment..." value={augSearch} onChange={e => setAugSearch(e.target.value)} autoFocus
-                    className="w-full px-4 py-2 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none" />
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative w-72 border border-[#40404a] rounded-full overflow-hidden bg-[#24242b]">
+                    <input type="text" placeholder="Search for an augment..." value={augSearch} onChange={e => setAugSearch(e.target.value)} autoFocus
+                      className="w-full px-4 py-2 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none" />
+                  </div>
+                  <div className="flex items-center gap-1 bg-[#24242b] p-1 rounded-full border border-[#40404a]">
+                    {(['All', 'Silver', 'Gold', 'Prismatic'] as const).map(rarity => (
+                      <button
+                        key={rarity}
+                        onClick={() => setAugRarity(rarity)}
+                        className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
+                          augRarity === rarity 
+                            ? 'bg-[var(--color-pumpkin)] text-black' 
+                            : 'text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        {rarity}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <button onClick={() => setAugModalOpen(false)} className="text-sm font-bold text-white hover:text-gray-300 transition-colors">Close</button>
               </div>

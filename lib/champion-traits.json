@@ -1,0 +1,403 @@
+{
+  "TFT16_Tristana": [
+    "Yordle",
+    "Gunslinger"
+  ],
+  "TFT16_Lulu": [
+    "Yordle",
+    "Arcanist"
+  ],
+  "TFT16_Teemo": [
+    "Yordle",
+    "Disruptor"
+  ],
+  "TFT16_Rumble": [
+    "Yordle",
+    "HexMech"
+  ],
+  "TFT16_Nautilus": [
+    "Bilgewater",
+    "Defender"
+  ],
+  "TFT16_TwistedFate": [
+    "Bilgewater",
+    "Arcanist"
+  ],
+  "TFT16_Gangplank": [
+    "Bilgewater",
+    "Slayer"
+  ],
+  "TFT16_Illaoi": [
+    "Bilgewater",
+    "Juggernaut"
+  ],
+  "TFT16_MissFortune": [
+    "Bilgewater",
+    "Gunslinger"
+  ],
+  "TFT16_Sion": [
+    "Noxus",
+    "Juggernaut"
+  ],
+  "TFT16_Briar": [
+    "Noxus",
+    "Glutton"
+  ],
+  "TFT16_Draven": [
+    "Noxus",
+    "Vanquisher"
+  ],
+  "TFT16_Ambessa": [
+    "Noxus",
+    "Quickstriker"
+  ],
+  "TFT16_Zoe": [
+    "Targon",
+    "Arcanist"
+  ],
+  "TFT16_Leona": [
+    "Targon",
+    "Defender"
+  ],
+  "TFT16_Aphelios": [
+    "Targon",
+    "Longshot"
+  ],
+  "TFT16_Taric": [
+    "Targon",
+    "Defender"
+  ],
+  "TFT16_JarvanIV": [
+    "Demacia",
+    "Bruiser"
+  ],
+  "TFT16_Sona": [
+    "Demacia",
+    "Invoker"
+  ],
+  "TFT16_Garen": [
+    "Demacia",
+    "Juggernaut"
+  ],
+  "TFT16_Lux": [
+    "Demacia",
+    "Arcanist"
+  ],
+  "TFT16_Anivia": [
+    "Freljord",
+    "Invoker"
+  ],
+  "TFT16_Ashe": [
+    "Freljord",
+    "Longshot"
+  ],
+  "TFT16_Braum": [
+    "Freljord",
+    "Defender"
+  ],
+  "TFT16_Lissandra": [
+    "Freljord",
+    "Arcanist"
+  ],
+  "TFT16_Milio": [
+    "Ixtal",
+    "Invoker"
+  ],
+  "TFT16_Neeko": [
+    "Ixtal",
+    "Bruiser"
+  ],
+  "TFT16_Jinx": [
+    "Zaun",
+    "Gunslinger",
+    "Quickstriker"
+  ],
+  "TFT16_Caitlyn": [
+    "Piltover",
+    "Longshot"
+  ],
+  "TFT16_Vi": [
+    "Piltover",
+    "Bruiser"
+  ],
+  "TFT16_Seraphine": [
+    "Piltover",
+    "Invoker"
+  ],
+  "TFT16_Yasuo": [
+    "Ionia",
+    "Slayer"
+  ],
+  "TFT16_Ahri": [
+    "Ionia",
+    "Arcanist"
+  ],
+  "TFT16_Wukong": [
+    "Ionia",
+    "Bruiser"
+  ],
+  "TFT16_Shen": [
+    "Ionia",
+    "Defender"
+  ],
+  "TFT16_Malzahar": [
+    "Void",
+    "Arcanist"
+  ],
+  "TFT16_RekSai": [
+    "Void",
+    "Bruiser"
+  ],
+  "TFT16_ChoGath": [
+    "Void",
+    "Bruiser",
+    "Glutton"
+  ],
+  "TFT16_KogMaw": [
+    "Void",
+    "Gunslinger"
+  ],
+  "TFT16_Annie": [
+    "Noxus",
+    "Dark Child"
+  ],
+  "TFT16_Ornn": [
+    "Freljord",
+    "Blacksmith"
+  ],
+  "TFT16_Kindred": [
+    "Shadow Isles",
+    "Eternal"
+  ],
+  "TFT16_Azir": [
+    "Shurima",
+    "Emperor"
+  ],
+  "TFT16_Zilean": [
+    "Piltover",
+    "Chronokeeper"
+  ],
+  "TFT16_Fiddlesticks": [
+    "Shadow Isles",
+    "Harvester"
+  ],
+  "TFT16_Shyvana": [
+    "Demacia",
+    "Dragonborn"
+  ],
+  "TFT16_Galio": [
+    "Demacia",
+    "Warden"
+  ],
+  "TFT16_TahmKench": [
+    "Bilgewater",
+    "Glutton"
+  ],
+  "TFT16_Sejuani": [
+    "Freljord",
+    "Bruiser"
+  ],
+  "TFT16_Sett": [
+    "Ionia",
+    "The Boss"
+  ],
+  "TFT16_Brock": [
+    "Zaun",
+    "Bruiser"
+  ],
+  "TFT16_THex": [
+    "Piltover",
+    "HexMech"
+  ],
+  "TFT16_BelVeth": [
+    "Void",
+    "Assimilator"
+  ],
+  "TFT16_Singed": [
+    "Zaun",
+    "Poison Pals"
+  ],
+  "TFT16_AurelionSol": [
+    "Targon",
+    "Star Forger"
+  ],
+  "TFT16_Veigar": [
+    "Yordle",
+    "Arcanist"
+  ],
+  "TFT16_BaronNashor": [
+    "Void",
+    "Riftscourge"
+  ],
+  "TFT16_Darius": [
+    "Noxus",
+    "Juggernaut"
+  ],
+  "TFT16_Yone": [
+    "Ionia",
+    "Slayer"
+  ],
+  "TFT16_Warwick": [
+    "Zaun",
+    "Bruiser"
+  ],
+  "TFT16_Fizz": [
+    "Yordle",
+    "Disruptor"
+  ],
+  "TFT16_Poppy": [
+    "Yordle",
+    "Defender"
+  ],
+  "TFT16_Kennen": [
+    "Yordle",
+    "Disruptor"
+  ],
+  "TFT16_Ziggs": [
+    "Zaun",
+    "Arcanist"
+  ],
+  "TFT16_Aatrox": [
+    "Darkin",
+    "World Ender"
+  ],
+  "TFT16_Volibear": [
+    "Freljord",
+    "Juggernaut"
+  ],
+  "TFT16_Jhin": [
+    "Ionia",
+    "Quickstriker"
+  ],
+  "TFT16_Sylas": [
+    "Demacia",
+    "Chainbreaker"
+  ],
+  "TFT16_Ryze": [
+    "Rune Mage"
+  ],
+  "TFT16_Nidalee": [
+    "Ixtal",
+    "Huntress"
+  ],
+  "TFT16_Tryndamere": [
+    "Freljord",
+    "Slayer"
+  ],
+  "TFT16_RiftHerald": [
+    "Void",
+    "Riftscourge"
+  ],
+  "TFT16_Mel": [
+    "Piltover",
+    "Caretaker"
+  ],
+  "TFT16_Graves": [
+    "Bilgewater",
+    "Gunslinger"
+  ],
+  "TFT16_Skarner": [
+    "Shurima",
+    "Juggernaut"
+  ],
+  "TFT16_Diana": [
+    "Targon",
+    "Slayer"
+  ],
+  "TFT16_Kaisa": [
+    "Void",
+    "Longshot"
+  ],
+  "TFT16_Renekton": [
+    "Shurima",
+    "Bruiser"
+  ],
+  "TFT16_Nasus": [
+    "Shurima",
+    "Ascendant"
+  ],
+  "TFT16_Xerath": [
+    "Shurima",
+    "Arcanist"
+  ],
+  "TFT16_Thresh": [
+    "Shadow Isles",
+    "Warden"
+  ],
+  "TFT16_Gwen": [
+    "Shadow Isles",
+    "Slayer"
+  ],
+  "TFT16_Kalista": [
+    "Shadow Isles",
+    "Soulbound"
+  ],
+  "TFT16_Leblanc": [
+    "Noxus",
+    "Arcanist"
+  ],
+  "TFT16_Viego": [
+    "Shadow Isles",
+    "Slayer"
+  ],
+  "TFT16_Ekko": [
+    "Zaun",
+    "Timewinders"
+  ],
+  "TFT16_Bard": [
+    "Targon",
+    "Caretaker"
+  ],
+  "TFT16_Vayne": [
+    "Demacia",
+    "Huntress"
+  ],
+  "TFT16_Yunara": [
+    "Ixtal",
+    "Huntress"
+  ],
+  "TFT16_Swain": [
+    "Noxus",
+    "Arcanist"
+  ],
+  "TFT16_XinZhao": [
+    "Demacia",
+    "Warden"
+  ],
+  "TFT16_Yorick": [
+    "Shadow Isles",
+    "Caretaker"
+  ],
+  "TFT16_Orianna": [
+    "Piltover",
+    "Invoker"
+  ],
+  "TFT16_Qiyana": [
+    "Ixtal",
+    "Quickstriker"
+  ],
+  "TFT16_Loris": [
+    "Zaun",
+    "Defender"
+  ],
+  "TFT16_Blitzcrank": [
+    "Zaun",
+    "Defender"
+  ],
+  "TFT16_DrMundo": [
+    "Zaun",
+    "Juggernaut"
+  ],
+  "TFT16_Zaahen": [
+    "Void",
+    "Bruiser"
+  ],
+  "TFT16_Lucian": [
+    "Demacia",
+    "Sentinels of Light"
+  ],
+  "TFT16_Kobuko": [
+    "Ionia",
+    "Bruiser"
+  ]
+}

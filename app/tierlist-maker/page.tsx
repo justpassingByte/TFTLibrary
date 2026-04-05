@@ -319,19 +319,56 @@ export default function TierlistMakerPage() {
                         </button>
                       ))}
                     </div>
-                    <div className="grid grid-cols-5 gap-1.5 max-h-[55vh] overflow-y-auto show-scrollbar pr-1">
-                      {filteredChampions.map(champ => {
-                        const used = placedIds.has(champ.id);
-                        return (
-                          <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
-                            className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
-                            <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
-                              <ChampionAvatar name={champ.name} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
-                            </HexagonFrame>
-                            <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
-                          </div>
-                        );
-                      })}
+                    <div className="max-h-[55vh] overflow-y-auto show-scrollbar pr-1">
+                      {(sortMode === 'Cost' || sortMode === 'Name') ? (
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {filteredChampions.map(champ => {
+                            const used = placedIds.has(champ.id);
+                            return (
+                              <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
+                                className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
+                                <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
+                                  <ChampionAvatar name={champ.name} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
+                                </HexagonFrame>
+                                <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {Object.entries(
+                            filteredChampions.reduce((acc, champ) => {
+                              const groupTrait = sortMode === 'Origin' ? champ.traits[0] : (champ.traits[1] || champ.traits[0]);
+                              const key = groupTrait || 'Unknown';
+                              if (!acc[key]) acc[key] = [];
+                              acc[key].push(champ);
+                              return acc;
+                            }, {} as Record<string, typeof filteredChampions>)
+                          ).sort(([a], [b]) => a.localeCompare(b)).map(([groupTrait, champs]) => (
+                            <div key={groupTrait}>
+                              <div className="flex items-center gap-1.5 mb-2 bg-[var(--color-grimoire-light)] p-1 rounded-md border border-[var(--color-border)]">
+                                <SpriteIcon type="trait" id={groupTrait} className="w-4 h-4 opacity-80 drop-shadow-md" alt={groupTrait} />
+                                <span className="text-[10px] font-bold text-[var(--color-text-primary)] uppercase tracking-wide">{groupTrait}</span>
+                              </div>
+                              <div className="grid grid-cols-5 gap-1.5">
+                                {champs.map(champ => {
+                                  const used = placedIds.has(champ.id);
+                                  return (
+                                    <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
+                                      className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
+                                      <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
+                                        <ChampionAvatar name={champ.name} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
+                                      </HexagonFrame>
+                                      <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -342,8 +379,11 @@ export default function TierlistMakerPage() {
                       const champs = ALL_CHAMPIONS.filter(c => c.traits.includes(trait));
                       return (
                         <div key={trait} className="px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
-                          <span className="text-xs font-medium text-[var(--color-text-primary)]">{trait}</span>
-                          <div className="flex gap-1 mt-1 flex-wrap">
+                          <div className="flex items-center gap-2 mb-1">
+                            <SpriteIcon type="trait" id={trait} className="w-4 h-4 opacity-70 drop-shadow" alt={trait} />
+                            <span className="text-xs font-medium text-[var(--color-text-primary)]">{trait}</span>
+                          </div>
+                          <div className="flex gap-1 flex-wrap">
                             {champs.map(c => (
                               <div key={c.id} draggable onDragStart={e => onDragStartChampion(e, c)}
                                 className="cursor-grab hover:scale-110 transition-transform shadow-md"

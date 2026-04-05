@@ -5,7 +5,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Tristana",
     "name": "Tristana",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Gunslinger"
+    ],
     "icon": "TFT16_Tristana_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Tristana_splash_centered_0.TFT_Set16.png",
@@ -21,7 +24,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Lulu",
     "name": "Lulu",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Arcanist"
+    ],
     "icon": "TFT16_Lulu_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Lulu_splash_centered_0.TFT_Set16.png",
@@ -37,7 +43,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Teemo",
     "name": "Teemo",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Disruptor"
+    ],
     "icon": "TFT16_Teemo_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Teemo_splash_centered_0.TFT_Set16.png",
@@ -53,7 +62,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Rumble",
     "name": "Rumble",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "HexMech"
+    ],
     "icon": "TFT16_Rumble_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Rumble_splash_centered_0.TFT_Set16.png",
@@ -69,7 +81,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Nautilus",
     "name": "Nautilus",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Defender"
+    ],
     "icon": "TFT16_Nautilus_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Nautilus_splash_centered_0.TFT_Set16.png",
@@ -85,7 +100,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_TwistedFate",
     "name": "Twisted Fate",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Arcanist"
+    ],
     "icon": "TFT16_TwistedFate_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_TwistedFate_splash_centered_0.TFT_Set16.png",
@@ -101,7 +119,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Gangplank",
     "name": "Gangplank",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Slayer"
+    ],
     "icon": "TFT16_Gangplank_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Gangplank_splash_centered_0.TFT_Set16.png",
@@ -117,7 +138,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Illaoi",
     "name": "Illaoi",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Juggernaut"
+    ],
     "icon": "TFT16_Illaoi_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Illaoi_splash_centered_0.TFT_Set16.png",
@@ -133,7 +157,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_MissFortune",
     "name": "Miss Fortune",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Gunslinger"
+    ],
     "icon": "TFT16_MissFortune_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_MissFortune_splash_centered_0.TFT_Set16.png",
@@ -149,7 +176,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Sion",
     "name": "Sion",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Juggernaut"
+    ],
     "icon": "TFT16_Sion_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Sion_splash_centered_0.TFT_Set16.png",
@@ -165,7 +195,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Briar",
     "name": "Briar",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Glutton"
+    ],
     "icon": "TFT16_Briar_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Briar_splash_centered_0.TFT_Set16.png",
@@ -181,7 +214,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Draven",
     "name": "Draven",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Vanquisher"
+    ],
     "icon": "TFT16_Draven_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Draven_splash_centered_0.TFT_Set16.png",
@@ -197,7 +233,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ambessa",
     "name": "Ambessa",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Quickstriker"
+    ],
     "icon": "TFT16_Ambessa_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ambessa_splash_centered_0.TFT_Set16.png",
@@ -213,7 +252,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Zoe",
     "name": "Zoe",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Arcanist"
+    ],
     "icon": "TFT16_Zoe_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Zoe_splash_centered_0.TFT_Set16.png",
@@ -229,7 +271,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Leona",
     "name": "Leona",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Defender"
+    ],
     "icon": "TFT16_Leona_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Leona_splash_centered_0.TFT_Set16.png",
@@ -245,7 +290,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Aphelios",
     "name": "Aphelios",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Longshot"
+    ],
     "icon": "TFT16_Aphelios_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Aphelios_splash_centered_0.TFT_Set16.png",
@@ -261,7 +309,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Taric",
     "name": "Taric",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Defender"
+    ],
     "icon": "TFT16_Taric_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Taric_splash_centered_0.TFT_Set16.png",
@@ -277,7 +328,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_JarvanIV",
     "name": "Jarvan IV",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Bruiser"
+    ],
     "icon": "TFT16_JarvanIV_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_JarvanIV_splash_centered_0.TFT_Set16.png",
@@ -293,7 +347,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Sona",
     "name": "Sona",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Invoker"
+    ],
     "icon": "TFT16_Sona_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Sona_splash_centered_0.TFT_Set16.png",
@@ -309,7 +366,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Garen",
     "name": "Garen",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Juggernaut"
+    ],
     "icon": "TFT16_Garen_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Garen_splash_centered_0.TFT_Set16.png",
@@ -325,7 +385,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Lux",
     "name": "Lux",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Arcanist"
+    ],
     "icon": "TFT16_Lux_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Lux_splash_centered_0.TFT_Set16.png",
@@ -341,7 +404,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Anivia",
     "name": "Anivia",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Invoker"
+    ],
     "icon": "TFT16_Anivia_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Anivia_splash_centered_0.TFT_Set16.png",
@@ -357,7 +423,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ashe",
     "name": "Ashe",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Longshot"
+    ],
     "icon": "TFT16_Ashe_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ashe_splash_centered_0.TFT_Set16.png",
@@ -373,7 +442,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Braum",
     "name": "Braum",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Defender"
+    ],
     "icon": "TFT16_Braum_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Braum_splash_centered_0.TFT_Set16.png",
@@ -389,7 +461,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Lissandra",
     "name": "Lissandra",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Arcanist"
+    ],
     "icon": "TFT16_Lissandra_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Lissandra_splash_centered_0.TFT_Set16.png",
@@ -405,7 +480,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Milio",
     "name": "Milio",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Ixtal",
+      "Invoker"
+    ],
     "icon": "TFT16_Milio_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Milio_splash_centered_0.TFT_Set16.png",
@@ -421,7 +499,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Neeko",
     "name": "Neeko",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Ixtal",
+      "Bruiser"
+    ],
     "icon": "TFT16_Neeko_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Neeko_splash_centered_0.TFT_Set16.png",
@@ -437,7 +518,11 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Jinx",
     "name": "Jinx",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Gunslinger",
+      "Quickstriker"
+    ],
     "icon": "TFT16_Jinx_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Jinx_splash_centered_0.TFT_Set16.png",
@@ -453,7 +538,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Caitlyn",
     "name": "Caitlyn",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "Longshot"
+    ],
     "icon": "TFT16_Caitlyn_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Caitlyn_splash_centered_0.TFT_Set16.png",
@@ -469,7 +557,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Vi",
     "name": "Vi",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "Bruiser"
+    ],
     "icon": "TFT16_Vi_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Vi_splash_centered_0.TFT_Set16.png",
@@ -485,7 +576,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Seraphine",
     "name": "Seraphine",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "Invoker"
+    ],
     "icon": "TFT16_Seraphine_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Seraphine_splash_centered_0.TFT_Set16.png",
@@ -501,7 +595,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Yasuo",
     "name": "Yasuo",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Slayer"
+    ],
     "icon": "TFT16_Yasuo_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Yasuo_splash_centered_0.TFT_Set16.png",
@@ -517,7 +614,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ahri",
     "name": "Ahri",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Arcanist"
+    ],
     "icon": "TFT16_Ahri_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ahri_splash_centered_0.TFT_Set16.png",
@@ -533,7 +633,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Wukong",
     "name": "Wukong",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Bruiser"
+    ],
     "icon": "TFT16_Wukong_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Wukong_splash_centered_0.TFT_Set16.png",
@@ -549,7 +652,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Shen",
     "name": "Shen",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Defender"
+    ],
     "icon": "TFT16_Shen_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Shen_splash_centered_0.TFT_Set16.png",
@@ -565,7 +671,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Malzahar",
     "name": "Malzahar",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Arcanist"
+    ],
     "icon": "TFT16_Malzahar_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Malzahar_splash_centered_0.TFT_Set16.png",
@@ -581,7 +690,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_RekSai",
     "name": "Rek'Sai",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Bruiser"
+    ],
     "icon": "TFT16_RekSai_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_RekSai_splash_centered_0.TFT_Set16.png",
@@ -597,7 +709,11 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_ChoGath",
     "name": "Cho'Gath",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Bruiser",
+      "Glutton"
+    ],
     "icon": "TFT16_ChoGath_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_ChoGath_splash_centered_0.TFT_Set16.png",
@@ -613,7 +729,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_KogMaw",
     "name": "Kog'Maw",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Gunslinger"
+    ],
     "icon": "TFT16_KogMaw_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_KogMaw_splash_centered_0.TFT_Set16.png",
@@ -629,7 +748,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Annie",
     "name": "Annie",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Dark Child"
+    ],
     "icon": "TFT16_Annie_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Annie_splash_centered_0.TFT_Set16.png",
@@ -645,7 +767,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ornn",
     "name": "Ornn",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Blacksmith"
+    ],
     "icon": "TFT16_Ornn_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ornn_splash_centered_0.TFT_Set16.png",
@@ -661,7 +786,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Kindred",
     "name": "Kindred",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Eternal"
+    ],
     "icon": "TFT16_Kindred_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Kindred_splash_centered_0.TFT_Set16.png",
@@ -677,7 +805,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Azir",
     "name": "Azir",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Shurima",
+      "Emperor"
+    ],
     "icon": "TFT16_Azir_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Azir_splash_centered_0.TFT_Set16.png",
@@ -693,7 +824,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Zilean",
     "name": "Zilean",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "Chronokeeper"
+    ],
     "icon": "TFT16_Zilean_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Zilean_splash_centered_0.TFT_Set16.png",
@@ -709,7 +843,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Fiddlesticks",
     "name": "Fiddlesticks",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Harvester"
+    ],
     "icon": "TFT16_Fiddlesticks_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Fiddlesticks_splash_centered_0.TFT_Set16.png",
@@ -725,7 +862,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Shyvana",
     "name": "Shyvana",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Dragonborn"
+    ],
     "icon": "TFT16_Shyvana_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Shyvana_splash_centered_0.TFT_Set16.png",
@@ -741,7 +881,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Galio",
     "name": "Galio",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Warden"
+    ],
     "icon": "TFT16_Galio_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Galio_splash_centered_0.TFT_Set16.png",
@@ -757,7 +900,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_TahmKench",
     "name": "Tahm Kench",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Glutton"
+    ],
     "icon": "TFT16_TahmKench_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_TahmKench_splash_centered_0.TFT_Set16.png",
@@ -773,7 +919,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Sejuani",
     "name": "Sejuani",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Bruiser"
+    ],
     "icon": "TFT16_Sejuani_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Sejuani_splash_centered_0.TFT_Set16.png",
@@ -789,7 +938,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Sett",
     "name": "Sett",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "The Boss"
+    ],
     "icon": "TFT16_Sett_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Sett_splash_centered_0.TFT_Set16.png",
@@ -805,7 +957,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Brock",
     "name": "Brock",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Bruiser"
+    ],
     "icon": "TFT16_Brock_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Brock_splash_centered_0.TFT_Set16.png",
@@ -821,7 +976,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_THex",
     "name": "T-Hex",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "HexMech"
+    ],
     "icon": "TFT16_THex.TFT_Set16.png",
     "image": {
       "full": "TFT16_THex.TFT_Set16.png",
@@ -837,7 +995,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_BelVeth",
     "name": "Bel'Veth",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Assimilator"
+    ],
     "icon": "TFT16_BelVeth_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_BelVeth_splash_centered_0.TFT_Set16.png",
@@ -853,7 +1014,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Singed",
     "name": "Singed",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Poison Pals"
+    ],
     "icon": "TFT16_Singed_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Singed_splash_centered_0.TFT_Set16.png",
@@ -869,7 +1033,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_AurelionSol",
     "name": "Aurelion Sol",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Star Forger"
+    ],
     "icon": "TFT16_AurelionSol_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_AurelionSol_splash_centered_0.TFT_Set16.png",
@@ -885,7 +1052,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Veigar",
     "name": "Veigar",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Arcanist"
+    ],
     "icon": "TFT16_Veigar_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Veigar_splash_centered_0.TFT_Set16.png",
@@ -901,7 +1071,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_BaronNashor",
     "name": "Baron Nashor",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Riftscourge"
+    ],
     "icon": "TFT16_BaronNashor_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_BaronNashor_splash_centered_0.TFT_Set16.png",
@@ -917,7 +1090,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Darius",
     "name": "Darius",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Juggernaut"
+    ],
     "icon": "TFT16_Darius_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Darius_splash_centered_0.TFT_Set16.png",
@@ -933,7 +1109,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Yone",
     "name": "Yone",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Slayer"
+    ],
     "icon": "TFT16_Yone_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Yone_splash_centered_0.TFT_Set16.png",
@@ -949,7 +1128,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Warwick",
     "name": "Warwick",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Bruiser"
+    ],
     "icon": "TFT16_Warwick_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Warwick_splash_centered_0.TFT_Set16.png",
@@ -965,7 +1147,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Fizz",
     "name": "Fizz",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Disruptor"
+    ],
     "icon": "TFT16_Fizz_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Fizz_splash_centered_0.TFT_Set16.png",
@@ -981,7 +1166,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Poppy",
     "name": "Poppy",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Defender"
+    ],
     "icon": "TFT16_Poppy_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Poppy_splash_centered_0.TFT_Set16.png",
@@ -997,7 +1185,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Kennen",
     "name": "Kennen",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Yordle",
+      "Disruptor"
+    ],
     "icon": "TFT16_Kennen_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Kennen_splash_centered_0.TFT_Set16.png",
@@ -1013,7 +1204,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ziggs",
     "name": "Ziggs",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Arcanist"
+    ],
     "icon": "TFT16_Ziggs_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ziggs_splash_centered_0.TFT_Set16.png",
@@ -1029,7 +1223,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Aatrox",
     "name": "Aatrox",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Darkin",
+      "World Ender"
+    ],
     "icon": "TFT16_Aatrox_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Aatrox_splash_centered_0.TFT_Set16.png",
@@ -1045,7 +1242,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Volibear",
     "name": "Volibear",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Juggernaut"
+    ],
     "icon": "TFT16_Volibear_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Volibear_splash_centered_0.TFT_Set16.png",
@@ -1061,7 +1261,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Jhin",
     "name": "Jhin",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Quickstriker"
+    ],
     "icon": "TFT16_Jhin_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Jhin_splash_centered_0.TFT_Set16.png",
@@ -1077,7 +1280,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Sylas",
     "name": "Sylas",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Chainbreaker"
+    ],
     "icon": "TFT16_Sylas_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Sylas_splash_centered_0.TFT_Set16.png",
@@ -1093,7 +1299,9 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ryze",
     "name": "Ryze",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Rune Mage"
+    ],
     "icon": "TFT16_Ryze_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ryze_splash_centered_0.TFT_Set16.png",
@@ -1109,7 +1317,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Nidalee",
     "name": "Nidalee",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Ixtal",
+      "Huntress"
+    ],
     "icon": "TFT16_Nidalee_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Nidalee_splash_centered_0.TFT_Set16.png",
@@ -1125,7 +1336,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Tryndamere",
     "name": "Tryndamere",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Freljord",
+      "Slayer"
+    ],
     "icon": "TFT16_Tryndamere_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Tryndamere_splash_centered_0.TFT_Set16.png",
@@ -1141,7 +1355,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_RiftHerald",
     "name": "Rift Herald",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Riftscourge"
+    ],
     "icon": "TFT16_RiftHerald_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_RiftHerald_splash_centered_0.TFT_Set16.png",
@@ -1157,7 +1374,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Mel",
     "name": "Mel",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "Caretaker"
+    ],
     "icon": "TFT16_Mel_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Mel_splash_centered_0.TFT_Set16.png",
@@ -1173,7 +1393,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Graves",
     "name": "Graves",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Bilgewater",
+      "Gunslinger"
+    ],
     "icon": "TFT16_Graves_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Graves_splash_centered_0.TFT_Set16.png",
@@ -1189,7 +1412,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Skarner",
     "name": "Skarner",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Shurima",
+      "Juggernaut"
+    ],
     "icon": "TFT16_Skarner_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Skarner_splash_centered_0.TFT_Set16.png",
@@ -1205,7 +1431,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Diana",
     "name": "Diana",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Slayer"
+    ],
     "icon": "TFT16_Diana_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Diana_splash_centered_0.TFT_Set16.png",
@@ -1221,7 +1450,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Kaisa",
     "name": "Kai'Sa",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Longshot"
+    ],
     "icon": "TFT16_Kaisa_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Kaisa_splash_centered_0.TFT_Set16.png",
@@ -1237,7 +1469,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Renekton",
     "name": "Renekton",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Shurima",
+      "Bruiser"
+    ],
     "icon": "TFT16_Renekton_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Renekton_splash_centered_0.TFT_Set16.png",
@@ -1253,7 +1488,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Nasus",
     "name": "Nasus",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Shurima",
+      "Ascendant"
+    ],
     "icon": "TFT16_Nasus_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Nasus_splash_centered_0.TFT_Set16.png",
@@ -1269,7 +1507,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Xerath",
     "name": "Xerath",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Shurima",
+      "Arcanist"
+    ],
     "icon": "TFT16_Xerath_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Xerath_splash_centered_0.TFT_Set16.png",
@@ -1285,7 +1526,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Thresh",
     "name": "Thresh",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Warden"
+    ],
     "icon": "TFT16_Thresh_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Thresh_splash_centered_0.TFT_Set16.png",
@@ -1301,7 +1545,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Gwen",
     "name": "Gwen",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Slayer"
+    ],
     "icon": "TFT16_Gwen_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Gwen_splash_centered_0.TFT_Set16.png",
@@ -1317,7 +1564,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Kalista",
     "name": "Kalista",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Soulbound"
+    ],
     "icon": "TFT16_Kalista_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Kalista_splash_centered_0.TFT_Set16.png",
@@ -1333,7 +1583,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Leblanc",
     "name": "LeBlanc",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Arcanist"
+    ],
     "icon": "TFT16_Leblanc_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Leblanc_splash_centered_0.TFT_Set16.png",
@@ -1349,7 +1602,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Viego",
     "name": "Viego",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Slayer"
+    ],
     "icon": "TFT16_Viego_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Viego_splash_centered_0.TFT_Set16.png",
@@ -1365,7 +1621,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Ekko",
     "name": "Ekko",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Timewinders"
+    ],
     "icon": "TFT16_Ekko_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Ekko_splash_centered_0.TFT_Set16.png",
@@ -1381,7 +1640,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Bard",
     "name": "Bard",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Targon",
+      "Caretaker"
+    ],
     "icon": "TFT16_Bard_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Bard_splash_centered_0.TFT_Set16.png",
@@ -1397,7 +1659,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Vayne",
     "name": "Vayne",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Huntress"
+    ],
     "icon": "TFT16_Vayne_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Vayne_splash_centered_0.TFT_Set16.png",
@@ -1413,7 +1678,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Yunara",
     "name": "Yunara",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Ixtal",
+      "Huntress"
+    ],
     "icon": "TFT16_Yunara_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Yunara_splash_centered_0.TFT_Set16.png",
@@ -1429,7 +1697,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Swain",
     "name": "Swain",
     "cost": 4,
-    "traits": [],
+    "traits": [
+      "Noxus",
+      "Arcanist"
+    ],
     "icon": "TFT16_Swain_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Swain_splash_centered_0.TFT_Set16.png",
@@ -1445,7 +1716,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_XinZhao",
     "name": "Xin Zhao",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Warden"
+    ],
     "icon": "TFT16_XinZhao_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_XinZhao_splash_centered_0.TFT_Set16.png",
@@ -1461,7 +1735,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Yorick",
     "name": "Yorick",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Shadow Isles",
+      "Caretaker"
+    ],
     "icon": "TFT16_Yorick_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Yorick_splash_centered_0.TFT_Set16.png",
@@ -1477,7 +1754,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Orianna",
     "name": "Orianna",
     "cost": 2,
-    "traits": [],
+    "traits": [
+      "Piltover",
+      "Invoker"
+    ],
     "icon": "TFT16_Orianna_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Orianna_splash_centered_0.TFT_Set16.png",
@@ -1493,7 +1773,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Qiyana",
     "name": "Qiyana",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Ixtal",
+      "Quickstriker"
+    ],
     "icon": "TFT16_Qiyana_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Qiyana_splash_centered_0.TFT_Set16.png",
@@ -1509,7 +1792,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Loris",
     "name": "Loris",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Defender"
+    ],
     "icon": "TFT16_Loris_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Loris_splash_centered_0.TFT_Set16.png",
@@ -1525,7 +1811,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Blitzcrank",
     "name": "Blitzcrank",
     "cost": 1,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Defender"
+    ],
     "icon": "TFT16_Blitzcrank_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Blitzcrank_splash_centered_0.TFT_Set16.png",
@@ -1541,7 +1830,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_DrMundo",
     "name": "Dr. Mundo",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Zaun",
+      "Juggernaut"
+    ],
     "icon": "TFT16_DrMundo_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_DrMundo_splash_centered_0.TFT_Set16.png",
@@ -1557,7 +1849,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Zaahen",
     "name": "Zaahen",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Void",
+      "Bruiser"
+    ],
     "icon": "TFT16_Zaahen_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Zaahen_splash_centered_0.TFT_Set16.png",
@@ -1573,7 +1868,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Lucian",
     "name": "Lucian & Senna",
     "cost": 5,
-    "traits": [],
+    "traits": [
+      "Demacia",
+      "Sentinels of Light"
+    ],
     "icon": "TFT16_Lucian_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Lucian_splash_centered_0.TFT_Set16.png",
@@ -1589,7 +1887,10 @@ export const GENERATED_CHAMPIONS = [
     "id": "TFT16_Kobuko",
     "name": "Kobuko & Yuumi",
     "cost": 3,
-    "traits": [],
+    "traits": [
+      "Ionia",
+      "Bruiser"
+    ],
     "icon": "TFT16_Kobuko_splash_centered_0.TFT_Set16.png",
     "image": {
       "full": "TFT16_Kobuko_splash_centered_0.TFT_Set16.png",
@@ -1929,1441 +2230,1681 @@ export const GENERATED_AUGMENTS = [
     "id": "TFT_Augment_AimForTheTop",
     "name": "Aim For The Top!",
     "desc": "You are more likely to fight stronger players, and you know who you will fight. When you lose, gain 2 XP. After your first win and every 3 wins after, gain a component.<br><br><rules>Foes vanquished: <placeholder></rules>",
-    "icon": "AimForTheTop_II.TFT_Set15.png"
+    "icon": "AimForTheTop_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SoloLeveling",
     "name": "Solo Leveling",
     "desc": "For the next 5 combats, your team size is 1 but the champion you field has massively increased stats. Gain 1 XP for every kill they get. Afterwards, gain 2 item components.",
-    "icon": "SoloLeveling_II.TFT_Set15.png"
+    "icon": "SoloLeveling_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Isekai_Prodigy",
     "name": "Isekai",
     "desc": "Summon a magical hero from another universe to fight for you. This hero is a  <TFTRadiantItemBonus>Prodigy</TFTRadiantItemBonus> this game.<br><br>",
-    "icon": "Isekai_III.TFT_Set15.png"
+    "icon": "Isekai_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Isekai_Sorcerer",
     "name": "Isekai",
     "desc": "Summon a magical hero from another universe to fight for you. This hero is a  <TFTRadiantItemBonus>Sorcerer</TFTRadiantItemBonus> this game.",
-    "icon": "Isekai_III.TFT_Set15.png"
+    "icon": "Isekai_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Isekai_Strategist",
     "name": "Isekai",
     "desc": "Summon a magical hero from another universe to fight for you. This hero is a <TFTRadiantItemBonus>Strategist</TFTRadiantItemBonus> this game.<br>",
-    "icon": "Isekai_III.TFT_Set15.png"
+    "icon": "Isekai_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BranchingOut",
     "name": "Branching Out",
     "desc": "Gain a random Emblem.",
-    "icon": "Branching-Out-I.png"
+    "icon": "Branching-Out-I.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_WorthTheWaitPrismatic",
     "name": "Worth the Wait II",
     "desc": "Gain 2 copies of a random 2-cost champion. Gain another copy of them at the start of each round for the rest of the game.<br><br>Champion: <placeholder>",
-    "icon": "WorthTheWait_III.TFT_Set12.png"
+    "icon": "WorthTheWait_III.TFT_Set12.png",
+    "tier": "Prismatic"
   },
   {
     "id": "TFT_Augment_WorthTheWaitGold",
     "name": "Worth the Wait",
     "desc": "Gain a random 1-cost champion. Gain another copy of them at the start of each round for the rest of the game.<br><br>Champion: <placeholder>",
-    "icon": "WorthTheWait_II.TFT_Set12.png"
+    "icon": "WorthTheWait_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_CalledShot",
     "name": "Called Shot",
     "desc": "Set your win streak to 4. Gain 4 gold.",
-    "icon": "CalledShot_I.TFT_Set12.png"
+    "icon": "CalledShot_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Flexible",
     "name": "Flexible",
     "desc": "Gain 1 random Emblem. At the start of every Stage, gain a random Emblem. Your team gains 40 Health for each Emblem they are holding.",
-    "icon": "Flexible_II.TFT_Set12.png"
+    "icon": "Flexible_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AllThatShimmersPlus",
     "name": "All That Shimmers+",
     "desc": "Choose a gold-generating Artifact. Gain a Magnetic Remover and 4 gold.",
-    "icon": "All-that-Shimmers-II.png"
+    "icon": "All-that-Shimmers-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_RestartMission",
     "name": "Restart Mission",
     "desc": "Remove all champions on your board and bench. Gain 2 random 2-star 3-costs, 3 2-star 2-costs, and 1 2-star 1-cost champion.",
-    "icon": "RestartMission_I.TFT_Set12.png"
+    "icon": "RestartMission_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ThornPlatedArmor",
     "name": "Thorn-Plated Armor",
     "desc": "Gain a Bramble Vest. Your Bramble Vests deal 20-170% more damage (based on Stage).",
-    "icon": "ThornPlatedArmor_II.TFT_Set12.png"
+    "icon": "ThornPlatedArmor_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Placebo",
     "name": "Placebo",
     "desc": "Your team gains 1% Attack Speed. Gain 8 gold.",
-    "icon": "Placebo_I.TFT_Set12.png"
+    "icon": "Placebo_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_UpwardMobility",
     "name": "Upward Mobility",
     "desc": "Buying XP costs 1 less. Gain 2 Health and 2 free rerolls whenever you level up.",
-    "icon": "UpwardMobility_III.TFT_Set12.png"
+    "icon": "UpwardMobility_III.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PatienceIsAVirtue",
     "name": "Patience is a Virtue",
     "desc": "Each round, gain 2 free rerolls if you did not buy a champion last round.",
-    "icon": "PatienceIsAVirtue_I.TFT_Set12.png"
+    "icon": "PatienceIsAVirtue_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ShimmerscaleEssence",
     "name": "Shimmerscale Essence",
     "desc": "Gain a Mogul's Mail. In 5 rounds, gain a Gamblers Blade.<br><br><rules>These items give gold as well as combat power.</rules>",
-    "icon": "ShimmerscaleEssence_III.TFT_Set12.png"
+    "icon": "ShimmerscaleEssence_III.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HighVoltage",
     "name": "High Voltage",
     "desc": "Gain an Ionic Spark. Your Ionic Sparks have +3 hex radius and do 20% more damage.",
-    "icon": "HighVoltage_II.TFT_Set12.png"
+    "icon": "HighVoltage_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Pilfer",
     "name": "Pilfer",
     "desc": "Each round, gain a 1-star copy of the first champion you killed last combat. The first time you gain 25 gold worth of champions in this way, gain a Thief's Gloves. <placeholder><br><br><placeholder>",
-    "icon": "Pilfer_II.TFT_Set12.png"
+    "icon": "Pilfer_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HardCommit",
     "name": "Hard Commit",
     "desc": "Gain a random Emblem. Now and at the start of each Stage, gain a 1-star champion of that trait with a cost equal to the Stage (max 5) and 4 gold.",
-    "icon": "HardCommit_III.TFT_Set12.png"
+    "icon": "HardCommit_III.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_InvestedPlus",
     "name": "Invested+",
     "desc": "Gain 26 gold. After every combat, gain 1 Shop reroll for every 10 gold above 50 (max 80 gold).",
-    "icon": "Invested-III.png"
+    "icon": "Invested-III.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_InvestedPlusPlus",
     "name": "Invested++",
     "desc": "Gain 40 gold. After every combat, gain 1 Shop reroll for every 10 gold above 50 (max 80 gold).",
-    "icon": "Invested-III.png"
+    "icon": "Invested-III.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ItemCollector1",
     "name": "Item Collector I",
     "desc": "For each unique item they are holding, your team gains 1% Attack Damage and 1% Ability Power.",
-    "icon": "ItemCollector_I.TFT_Set12.png"
+    "icon": "ItemCollector_I.TFT_Set12.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_ItemCollector2",
     "name": "Item Collector II",
     "desc": "Your team gains 20 Health. For each unique item they are holding, your team gains bonus 5 Health, 1% Attack Damage, and 1% Ability Power.",
-    "icon": "ItemCollector_II.TFT_Set12.png"
+    "icon": "ItemCollector_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Replication",
     "name": "Replication",
     "desc": "Choose 1 of 3 components. For the next 2 rounds, gain a copy of that component.",
-    "icon": "Replication-II.png"
+    "icon": "Replication-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PlaceboPlus",
     "name": "Placebo+",
     "desc": "Your team gains 1% Attack Speed. Gain 14 gold.",
-    "icon": "Placebo_I.TFT_Set12.png"
+    "icon": "Placebo_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_DuoQueue",
     "name": "Duo Queue",
     "desc": "Gain 2 random 5-cost champions and 2 copies of a random component.",
-    "icon": "DuoQueue_II.TFT_Set12.png"
+    "icon": "DuoQueue_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_FindYourCenter",
     "name": "Find Your Center",
     "desc": "Your champion that starts combat in the center of the front row gains 15% Damage Amp and 25% max Health.",
-    "icon": "FindYourCenter_I.TFT_Set12.png"
+    "icon": "FindYourCenter_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Dummify",
     "name": "Dummify",
     "desc": "Lose all champions on your board and bench. Gain a Training Dummy with 80% of their combined health. The dummy gains 1500 Health per stage. Gain a non-Tank 2-star 2-cost champion.",
-    "icon": "Dummify_I.TFT_Set13.png"
+    "icon": "Dummify_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HeadStart",
     "name": "Delayed Start",
     "desc": "Sell your board and bench. Gain 4 random 2-star 1-cost champions. Disable your Shop for the next 3 rounds.",
-    "icon": "HeadStart_I.TFT_Set12.png"
+    "icon": "HeadStart_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Survivor",
     "name": "Survivor",
     "desc": "Gain 4 gold. After 3 players are eliminated, gain 100 more gold.",
-    "icon": "Survivor_I.TFT_Set13.png"
+    "icon": "Survivor_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TacticiansKitchen",
     "name": "Tactician's Kitchen",
     "desc": "Gain a random Emblem. After 3 rounds, gain a Tactician's Cape.",
-    "icon": "TacticiansKitchen_III.TFT_Set13.png"
+    "icon": "TacticiansKitchen_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_CraftedCrafting",
     "name": "Crafted Crafting",
     "desc": "Whenever you craft a completed item, gain 2 rerolls.",
-    "icon": "CraftedCrafting_I.TFT_Set13.png"
+    "icon": "CraftedCrafting_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MirroredMonetization",
     "name": "Malicious Monetization",
     "desc": "Gain 7 gold. For the next 2 rounds, enemy champions drop 2 gold when killed.<br><br><placeholder>",
-    "icon": "MirroredMonetization_II.TFT_Set13.png"
+    "icon": "MirroredMonetization_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Coronation",
     "name": "Coronation",
     "desc": "Gain a Tactician's Crown. Tactician's Crown, Shield, and Cape grant the holder an additional 20% Attack Speed, 25% Attack Damage, and 30% Ability Power.",
-    "icon": "Coronation_III.TFT_Set13.png"
+    "icon": "Coronation_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_OneBuffTwoBuff",
     "name": "One Buff, Two Buff",
     "desc": "Gain a Red Buff, a Blue Buff, and a Champion Duplicator.",
-    "icon": "OneBuffTwoBuff_III.TFT_Set13.png"
+    "icon": "OneBuffTwoBuff_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Moonlight",
     "name": "Moonlight",
     "desc": "Combat start: 1 random 1-cost champion is upgraded to 3-star for that round and gains 40% Attack Damage and 40% Ability Power.<br>",
-    "icon": "Moonlight_II.TFT_Set13.png"
+    "icon": "Moonlight_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BronzeForLifeI",
     "name": "Bronze For Life I",
     "desc": "Your team gains 2.5% Damage Amp for each Bronze-tier trait.<br><br>Damage Amp Bonus: <placeholder>%",
-    "icon": "BronzeForLife_II.TFT_Set13.png"
+    "icon": "BronzeForLife_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BronzeForLife2",
     "name": "Bronze For Life II",
     "desc": "Your team gains 2.5% Damage Amp and 4 Armor and Magic Resist for each Bronze-tier trait.<br><br>Damage Amp: <placeholder>%<br>Armor and Magic Resist: <placeholder>",
-    "icon": "BronzeForLife_III.TFT_Set13.png"
+    "icon": "BronzeForLife_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TwoTrick",
     "name": "Two Trick",
     "desc": "Gain a random 2-star 2-cost and 2 random 2-star 1-cost champions.",
-    "icon": "Two-Trick-II.png"
+    "icon": "Two-Trick-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Trifecta1",
     "name": "Trifecta I",
     "desc": "Gain 2 3-cost champions.<br>Combat Start: 3 random 3-cost champions gain 220 Health and 20% Attack Speed.",
-    "icon": "Trifecta-II.png"
+    "icon": "Trifecta-II.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_Trifecta2",
     "name": "Trifecta II",
     "desc": "Gain 3 3-cost champions. Allies gain 5% Attack Speed. <br>Combat Start: 3 random 3-cost champions gain 300 Health and 25% Attack Speed.",
-    "icon": "Trifecta-III.png"
+    "icon": "Trifecta-III.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Dhampyr",
     "name": "Vampiric Vitality",
     "desc": "You heal for 12% of the damage you deal to enemy Tacticians. Your team  gains 12% Omnivamp.",
-    "icon": "Dhampyr_II.TFT_Set13.png"
+    "icon": "Dhampyr_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Pyromaniac",
     "name": "Pyromaniac",
     "desc": "Gain a Red Buff. Your Burns deal 50% increased damage.",
-    "icon": "Pyromaniac_II.TFT_Set13.png"
+    "icon": "Pyromaniac_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Golemify",
     "name": "Golemify",
     "desc": "Lose all champions on your board and bench. Gain a Golem with 60% of their combined Health and 50% of their combined Attack Damage. The Golem gains 1200 Health per stage. Gain a non-Tank 2-star 2-cost champion.",
-    "icon": "Golemify_II.TFT_Set13.png"
+    "icon": "Golemify_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Lineup",
     "name": "Lineup",
     "desc": "Your team gains 2 Armor and Magic Resist for each ally that starts combat in the front two rows.",
-    "icon": "Lineup-I.png"
+    "icon": "Lineup-I.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_QualityOverQuantity",
     "name": "Quality Over Quantity",
     "desc": "Champions holding exactly 1 item upgrade that item to Radiant. Champions holding Radiant items gain 7% Health. Gain 2 Magnetic Removers.<br><br><rules>Thief's Gloves counts as multiple items.</rules>",
-    "icon": "QualityoverQuantity_III.TFT_Set13.png"
+    "icon": "QualityoverQuantity_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BeltOverflow",
     "name": "Belt Overflow",
     "desc": "Gain 4 Giant's Belts. Your Giant's Belts grant +85 bonus Health.",
-    "icon": "BeltOverflow_III.TFT_Set13.png"
+    "icon": "BeltOverflow_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_WandOverflow",
     "name": "Wand Overflow",
     "desc": "Gain 4 Needlessly Large Rods. Your Needlessly Large Rods grant +5% Attack Speed.",
-    "icon": "WandOverflow_III.TFT_Set13.png"
+    "icon": "WandOverflow_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SwordOverflow",
     "name": "Sword Overflow",
     "desc": "Gain 4 B.F. Swords. Your B.F. Swords grant +5% Attack Speed.",
-    "icon": "BladeOverflow_III.TFT_Set13.png"
+    "icon": "BladeOverflow_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TableScraps",
     "name": "Table Scraps",
     "desc": "After the next 2 carousels, gain one champion that was not taken and its item. Gain 1 gold.",
-    "icon": "TableScraps_I.TFT_Set13.png"
+    "icon": "TableScraps_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_CrownguardSpirit",
     "name": "Crown's Will",
     "desc": "Gain a Needlessly Large Rod and a Chain Vest. Your team gains 8 Ability Power and 6 Armor. ",
-    "icon": "Will-of-the-Crown-II.png"
+    "icon": "Will-of-the-Crown-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ShojinSpirit",
     "name": "Spear's Will",
     "desc": "Your team gains 8% Attack Damage and 5 Mana. Gain a B.F. Sword and a Tear of the Goddess.",
-    "icon": "Will-of-the-Spear-II.png"
+    "icon": "Will-of-the-Spear-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MagicRoll",
     "name": "A Magic Roll",
     "desc": "Roll 3 dice. Gain rewards based on their total.<br><br>Reward: <placeholder>",
-    "icon": "A-Magical-Roll-II.png"
+    "icon": "A-Magical-Roll-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GuardbreakerSpirit",
     "name": "Mace's Will",
     "desc": "Gain a Sparring Gloves. Your team gains 8% Attack Speed and 20% Critical Strike Chance.",
-    "icon": "Will-of-the-Flail-II.png"
+    "icon": "Will-of-the-Flail-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TombRaider1",
     "name": "Tomb Raider I",
     "desc": "For the next 3 players eliminated, choose one of their completed items to keep.",
-    "icon": "TombRaider_II.TFT_Set13.png"
+    "icon": "TombRaider_II.TFT_Set13.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_TwoMuchValue",
     "name": "Two Much Value",
     "desc": "Gain 1 reroll for every 2 unique 2-cost champions fielded last player combat. Gain 1 2-cost champions.",
-    "icon": "TwoMuchValue_II.TFT_Set13.png"
+    "icon": "TwoMuchValue_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AnExaltedAdventure",
     "name": "An Exalted Adventure",
     "desc": "Gain three 2-cost champions. If you 3-star two of them, gain an orb filled with loot. Gain a Lesser Champion Duplicator at the start of next 2 stages.<br><br>Champions: <placeholder>, <placeholder>, <placeholder>",
-    "icon": "ExaltedAdventure_III.TFT_Set13.png"
+    "icon": "ExaltedAdventure_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ExpectedUnexpectedness",
     "name": "Expected Unexpectedness",
     "desc": "Now and at the start of the next 2 stages, roll 3 dice. Gain various rewards based on their total.",
-    "icon": "Addicted-to-Rolling-III.png"
+    "icon": "Addicted-to-Rolling-III.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_RiggedShopPlus",
     "name": "Rigged Shop+",
     "desc": "Your next shop and every 4 shops will contain all 3-cost champions. Gain 5 rerolls.",
-    "icon": "RiggedShop_I.TFT_Set13.png"
+    "icon": "RiggedShop_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GoldForDummies",
     "name": "Gold For Dummies",
     "desc": "Gain a Training Dummy. Every 10 seconds, all Training Dummies grant 1 gold.",
-    "icon": "GoldforDummies_II.TFT_Set13.png"
+    "icon": "GoldforDummies_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BlazingSoul",
     "name": "Blazing Soul I",
     "desc": "Combat start: Your highest Attack Speed champion gains 20% Ability Power and 20% Attack Speed. Repeat on another ally every 3 seconds.",
-    "icon": "Blazing-Soul-II.png"
+    "icon": "Blazing-Soul-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BlazingSoul2",
     "name": "Blazing Soul II",
     "desc": "Combat start: Your highest Attack Speed champion gains 35% Ability Power and 35% Attack Speed. Repeat on another ally every 3 seconds.",
-    "icon": "Blazing-Soul-III.png"
+    "icon": "Blazing-Soul-III.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Corrosion",
     "name": "Corrosion",
     "desc": "Enemy champions in the first two rows lose 4 Armor and Magic Resist every 2 seconds.",
-    "icon": "Corrosion_I.TFT_Set13.png"
+    "icon": "Corrosion_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_FiresalePlus",
     "name": "Firesale",
     "desc": "Each round, steal a random 3-cost or lower champion from the shop. Gain 1 gold.",
-    "icon": "Firesale_I.TFT_Set13.png"
+    "icon": "Firesale_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TitanicTitan",
     "name": "Titanic Titan",
     "desc": "Increase your current and max player Health by 25. On carousel rounds you are released earlier, but are much slower.",
-    "icon": "TitanicTitan_I.TFT_Set13.png"
+    "icon": "TitanicTitan_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_InvestmentStrategy1",
     "name": "Investment Strategy I",
     "desc": "Your champions gain 8 permanent max Health per interest you earn.",
-    "icon": "InvestmentStrategy_II.TFT_Set13.png"
+    "icon": "InvestmentStrategy_II.TFT_Set13.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_GlassCannonI",
     "name": "Glass Cannon I",
     "desc": "Allies that start combat in the back row begin combat at 80% Health but gain 17% Damage Amp.",
-    "icon": "GlassCannon_I.TFT_Set13.png"
+    "icon": "GlassCannon_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_InvestmentStrategy2",
     "name": "Investment Strategy II",
     "desc": "Your champions gain 8 permanent max Health per interest you earn. Your max interest is increased to 7. Gain 3 gold.",
-    "icon": "InvestmentStrategy_III.TFT_Set13.png"
+    "icon": "InvestmentStrategy_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GlassCannonII",
     "name": "Glass Cannon II",
     "desc": "Allies that start combat in the back row begin combat at 80% Health but gain 30% Damage Amp.",
-    "icon": "GlassCannon_II.TFT_Set13.png"
+    "icon": "GlassCannon_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Overheal",
     "name": "Overheal",
     "desc": "Every third attack deals 110% damage and heals 60% of the damage. Excess healing is converted to a shield up to 400 Health.",
-    "icon": "Overheal_II.TFT_Set13.png"
+    "icon": "Overheal_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Warpath",
     "name": "Warpath",
     "desc": "Gain a 2-star 2-cost champion. After dealing 80 player damage, gain a chest of high cost champions and items.<br>(Current: <placeholder>)",
-    "icon": "Warpath_II.TFT_Set13.png"
+    "icon": "Warpath_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_EyeForAnEye",
     "name": "Eye For An Eye",
     "desc": "For every 15 ally champions that die, gain a random component (max 3).<br><br>Deaths Remaining: <placeholder>",
-    "icon": "EyeforanEye_I.TFT_Set13.png"
+    "icon": "EyeforanEye_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_EyeForAnEyePlus",
     "name": "Eye For An Eye+",
     "desc": "Gain a random component. For every 18 ally champions that die, gain another component (max 2).<br><br>Deaths Remaining: <placeholder>",
-    "icon": "EyeforanEye_I.TFT_Set13.png"
+    "icon": "EyeforanEye_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ClimbTheLadder1",
     "name": "Climb The Ladder I",
     "desc": "Each time an ally dies, allies that share at least one trait with them gain 3% Ability Power, 3% Attack Damage, 3 Armor, and 3 Magic Resist.",
-    "icon": "ClimbtheLadder_I.TFT_Set13.png"
+    "icon": "ClimbtheLadder_I.TFT_Set13.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_NobleSacrifice",
     "name": "Noble Sacrifice",
     "desc": "When your first ally dies each combat, grant your team 25 + 10% of that ally's Armor and Magic Resistance.",
-    "icon": "ANobleSacrifice_II.TFT_Set13.png"
+    "icon": "ANobleSacrifice_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_CloningFacility",
     "name": "Cloning Facility",
     "desc": "Empower the hex in the center of the third row. Summon a clone of the champion in it with 80% base Health and 10% increased Mana cost.",
-    "icon": "TrickMirror_II.TFT_Set13.png"
+    "icon": "TrickMirror_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ClimbTheLadder2",
     "name": "Climb The Ladder II",
     "desc": "Each time an ally dies, allies that share at least one trait with them gain 5% Ability Power, 5% Attack Damage, 5 Armor, and 5 Magic Resist.",
-    "icon": "ClimbtheLadder_II.TFT_Set13.png"
+    "icon": "ClimbtheLadder_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TombRaider2",
     "name": "Tomb Raider II",
     "desc": "Gain 1 completed item anvil. Every time a player is eliminated, choose one of their completed items to keep.",
-    "icon": "TombRaider_III.TFT_Set13.png"
+    "icon": "TombRaider_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SpiritLink1",
     "name": "Spirit Link",
     "desc": "Champions restore 5% of their max Health every 4 seconds. Increase the healing by 0.5% for every 10 missing player Health.",
-    "icon": "SpiritLink_II.TFT_Set13.png"
+    "icon": "SpiritLink_II.TFT_Set13.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_BranchingOutPlus",
     "name": "Branching Out+",
     "desc": "Gain a random Emblem and a Reforger.<br><br><rules>Reforgers allow you to remake any item.</rules>",
-    "icon": "Branching-Out-I.png"
+    "icon": "Branching-Out-I.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HeroicGrabBagPlus",
     "name": "Heroic Grab Bag+",
     "desc": "Gain 2 Lesser Champion Duplicators and 8 gold.<br><br><rules>This item allows you to copy a 3-cost or less champion.</rules>",
-    "icon": "Heroic-Grab-Bag-II.png"
+    "icon": "Heroic-Grab-Bag-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HeroicGrabBagPlusPlus",
     "name": "Heroic Grab Bag++",
     "desc": "Gain 2 Lesser Champion Duplicators and 14 gold.<br><br><rules>This item allows you to copy a 3-cost or less champion.</rules>",
-    "icon": "Heroic-Grab-Bag-II.png"
+    "icon": "Heroic-Grab-Bag-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_CookingPot",
     "name": "Cooking Pot",
     "desc": "At the start of each turn, all allies holding a Frying Pan or Spatula item grant the nearest champion 60 permanent Health. Gain a Frying Pan.",
-    "icon": "CookingPot_II.TFT_Set13.png"
+    "icon": "CookingPot_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PlotArmor",
     "name": "Plot Armor",
     "desc": "Your team gains 8 Armor and Magic Resist. After falling below 50% Health, increase this to 40 for the rest of combat.",
-    "icon": "PlotArmor_II.TFT_Set15.png"
+    "icon": "PlotArmor_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TimeSkip",
     "name": "Time Skip",
     "desc": "Disable your Shop for the next 3 rounds. Then gain 32 XP.",
-    "icon": "TimeSkip_II.TFT_Set15.png"
+    "icon": "TimeSkip_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SilverDestiny",
     "name": "Silver Destiny",
     "desc": "Gain a random Silver Augment and 2 gold.",
-    "icon": "SilverDestiny_I.TFT_Set15.png"
+    "icon": "SilverDestiny_I.TFT_Set15.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_SilverDestinyPlus",
     "name": "Silver Destiny+",
     "desc": "Gain a random Silver Augment and 4 gold.",
-    "icon": "SilverDestiny_I.TFT_Set15.png"
+    "icon": "SilverDestiny_I.TFT_Set15.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_SilverDestinyPlusPlus",
     "name": "Silver Destiny++",
     "desc": "Gain a random Silver Augment and 7 gold.",
-    "icon": "SilverDestiny_I.TFT_Set15.png"
+    "icon": "SilverDestiny_I.TFT_Set15.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_GoldDestiny",
     "name": "Gold Destiny",
     "desc": "Gain a random Gold Augment and 3 gold.",
-    "icon": "GoldenDestiny_II.TFT_Set15.png"
+    "icon": "GoldenDestiny_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GoldDestinyPlus",
     "name": "Gold Destiny+",
     "desc": "Gain a random Gold Augment and 6 gold.",
-    "icon": "GoldenDestiny_II.TFT_Set15.png"
+    "icon": "GoldenDestiny_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PrismaticDestiny",
     "name": "Prismatic Destiny",
     "desc": "Gain a random Prismatic Augment and 3 gold.",
-    "icon": "PrismaticDestiny_III.TFT_Set15.png"
+    "icon": "PrismaticDestiny_III.TFT_Set15.png",
+    "tier": "Prismatic"
   },
   {
     "id": "TFT_Augment_Protagonist",
     "name": "Protagonist",
     "desc": "Gain a random 1-cost Champion Augment. After 3 turns, gain a copy of the champion at the start of every turn.",
-    "icon": "Protaganist_III.TFT_Set15.png"
+    "icon": "Protaganist_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_StoryOfSeven",
     "name": "A Story of Seven",
     "desc": "Collect Golden Balls by defeating players in combat. Collect all 7 for a reward, then restart the quest with more powerful rewards. <br><br>Gain a 2-star 1-cost champion to start your journey.<br>",
-    "icon": "QuestForTheSeven_II.TFT_Set15.png"
+    "icon": "QuestForTheSeven_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_EfficientShopper",
     "name": "Efficient Shopper",
     "desc": "For the next 4 carousels, gain a second copy of the champion taken. Gain 4 gold now.",
-    "icon": "EfficientShopper_I.TFT_Set15.png"
+    "icon": "EfficientShopper_I.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TeslaCoil",
     "name": "Tesla Coil",
     "desc": "Each of your allies with 3 items equipped emits 2 arcs of lightning every 5 seconds, dealing 240-270 magic damage based on stage.",
-    "icon": "TeslaCoil_II.TFT_Set15.png"
+    "icon": "TeslaCoil_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HardBargain",
     "name": "Hard Bargain",
     "desc": "You cannot choose your Carousel rewards. Gain an additional 6 player Health and 8 Gold each carousel round.<br><tftitemrules>When you do not pick a Carousel Reward, you are given an unpicked champion and the item it carries</tftitemrules>",
-    "icon": "HardBargain_II.TFT_Set15.png"
+    "icon": "HardBargain_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HowlingGale",
     "name": "Howling Gale",
     "desc": "For every 550 Mana your team spends, summon a whirlwind that knocks up enemies.",
-    "icon": "HowlingGale_II.TFT_Set13.png"
+    "icon": "HowlingGale_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_EvilBeyondMeasure",
     "name": "Evil Beyond Measure",
     "desc": "Your champions deal 4.5% of their damage as True Damage for each Star level.",
-    "icon": "EvilBeyondMeasure_II.TFT_Set15.png"
+    "icon": "EvilBeyondMeasure_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HeftyRolls",
     "name": "Hefty Rolls",
     "desc": "Your team gains 9 Health and size for each time you've rolled this game. Gain 5 gold. <br><br><rules>Rolls: <placeholder> Health: <placeholder></rules>",
-    "icon": "HeftyRolls_II.TFT_Set15.png"
+    "icon": "HeftyRolls_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BloodRage",
     "name": "Blood Rage",
     "desc": "Your allies gain 12-25% Damage Amp based on their missing Health. Maximum Damage Amp gained at 30% Health.",
-    "icon": "BloodRage_II.TFT_Set15.png"
+    "icon": "BloodRage_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_NineLives",
     "name": "Nine Lives",
     "desc": "Set your current and max player Health to 9. On combat loss, you only lose 1 health and gain loot. You can't gain health.",
-    "icon": "NineLives_III.TFT_Set15.png"
+    "icon": "NineLives_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ChaosEvolution",
     "name": "Chaotic Evolution",
     "desc": "Starring up a champion grants them one of the following: 100 Health, 6% Durability, 10% Ability Power, 10% Attack Damage, 10% Attack Speed. Bonuses stack.",
-    "icon": "ChaosEvolution_I.TFT_Set15.png"
+    "icon": "ChaosEvolution_I.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TreasureHunt",
     "name": "Treasure Hunt",
     "desc": "Gain a locked chest each Stage between now and Stage 6. Unlock each chest when you spend 16 gold on Shop rerolls. These chests persist until opened.",
-    "icon": "TreasureHunt_II.TFT_Set15.png"
+    "icon": "TreasureHunt_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_FoodfightTactics",
     "name": "Mess Hall",
     "desc": "After 10 seconds of combat, your champions gain 8% Attack Speed and attacks also hurl 2 delicious projectiles that deal 25 (%i:scaleAD%%i:scaleAP%) magic damage.",
-    "icon": "FoodfightTactics_II.TFT_Set15.png"
+    "icon": "FoodfightTactics_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BackupDancers",
     "name": "Backup Dancers",
     "desc": "Combat start:  Every 3 seconds, champions in your 3 rightmost bench slots grant your team 3% Attack Speed per slot.",
-    "icon": "BackupDancers_II.TFT_Set15.png"
+    "icon": "BackupDancers_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HeavyIsTheCrown",
     "name": "Heavy Is the Crown",
     "desc": "Gain a Crown of Demacia, which provides significant bonuses to the wearer. If the holder dies, lose the round.",
-    "icon": "HeavyIsTheCrown_II.TFT_Set15.png"
+    "icon": "HeavyIsTheCrown_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Crossfire2",
     "name": "Piercing Sight",
     "desc": "Enemies take 1% damage as bonus true damage, increased by 1% up to 20% every time they take damage.",
-    "icon": "Crossfire_II.TFT_Set15.png"
+    "icon": "Crossfire_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Incoming",
     "name": "Lit Fuse",
     "desc": "Allies that start in the back two rows split 60 total Mana after 6 seconds of combat.",
-    "icon": "Incoming_I.TFT_Set15.png"
+    "icon": "Incoming_I.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HoldTheLine",
     "name": "Hold the Line",
     "desc": "Allies in your back 2 rows gain 10% Ability Power and 9% Attack Damage for each ally that starts combat in your front row.",
-    "icon": "HoldTheLine_III.TFT_Set15.png"
+    "icon": "HoldTheLine_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_UnlimitedPower",
     "name": "Unlimited Power",
     "desc": "Gain a Nashor's Tooth, a Jeweled Gauntlet, a Needlessly Large Rod and a Magnetic Remover.<br><br><rules>Useful for Magic Carries!</rules>",
-    "icon": "UnlimitedPower_III.TFT_Set15.png"
+    "icon": "UnlimitedPower_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_WaterLotus1",
     "name": "Water Lotus I",
     "desc": "Your team gains 5% Critical Strike chance, and their Abilities can critically strike. If an Ability critically strikes, restore 9% of your Mana over 3 seconds.",
-    "icon": "WaterLotus_II.TFT_Set15.png"
+    "icon": "WaterLotus_II.TFT_Set15.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_WaterLotus2",
     "name": "Water Lotus II",
     "desc": "Your team gains 20% Critical Strike chance, and their Abilities can critically strike. If an Ability critically strikes, restore 15% of your Mana over 3 seconds.",
-    "icon": "WaterLotus_III.TFT_Set15.png"
+    "icon": "WaterLotus_III.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_DeadlierCaps",
     "name": "Deadlier Caps",
     "desc": "Gain a Rabadon's Deathcap. Rabadon's Deathcaps permanently gain 1% Ability Power whenever their holders score a takedown.",
-    "icon": "DeadlierCaps_II.TFT_Set15.png"
+    "icon": "DeadlierCaps_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TragicalBlade",
     "name": "Deadlier Blades",
     "desc": "Gain a Deathblade. Deathblades permanently gain 1% Attack Damage whenever their holders score a takedown.",
-    "icon": "DeadlierBlades_II.TFT_Set15.png"
+    "icon": "DeadlierBlades_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AnotherOne",
     "name": "Another One!",
     "desc": "The next completed item you make grants an additional copy of it. Gain 5 gold now.",
-    "icon": "AnotherOne_II.TFT_Set15.png"
+    "icon": "AnotherOne_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AnotherOnePlus",
     "name": "Another One!+",
     "desc": "The next completed item you make grants another copy of it. Gain 1 component anvil.",
-    "icon": "AnotherOne_II.TFT_Set15.png"
+    "icon": "AnotherOne_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PsychicForge",
     "name": "Psychic Forge",
     "desc": "Round start Completed Items on benched champions turn into one of their recommended items. Gain a random completed item.",
-    "icon": "PsychicForge_II.TFT_Set15.png"
+    "icon": "PsychicForge_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ExclusiveCustomization",
     "name": "Exclusive Customization",
     "desc": "Gain a Lucky Item Chest and a Magnetic Remover and 10 gold.<br><br><rules>Use a Lucky Item Chest on a champion to choose from an armory of recommended items!</rules>",
-    "icon": "ExclusiveCustomization_II.TFT_Set15.png"
+    "icon": "ExclusiveCustomization_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_CryMeARiver",
     "name": "Cry Me A River",
     "desc": "Gain a Tear of the Goddess. Your team gains 1 Mana Regen. After 12 seconds in combat, increase this to 3.",
-    "icon": "CryMeARiver_II.TFT_Set15.png"
+    "icon": "CryMeARiver_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PocketRecombobulator",
     "name": "Pocket Recombobulator",
     "desc": "Get 2 Pocket Recombobulators, a consumable that transforms a 1 or 2-cost champion into one of a higher cost. They keep their Star level. Also receive 2 Reforgers.",
-    "icon": "PocketRecombulator_I.TFT_Set15.png"
+    "icon": "PocketRecombulator_I.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_HomeCooking",
     "name": "Care Package",
     "desc": "Now and at the start of the next 2 Stages, receive a care package with loot and 3 gold.",
-    "icon": "CarePackage_II.TFT_Set15.png"
+    "icon": "CarePackage_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_LastSecondSave",
     "name": "Last Second Save",
     "desc": "The first time each ally falls below 35% Health, they restore 20% maximum Health.",
-    "icon": "LastSecondSave_II.TFT_Set15.png"
+    "icon": "LastSecondSave_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PowerUp",
     "name": "Augmented Power",
     "desc": "Your next augment is one tier higher.",
-    "icon": "PowerUp_I.TFT_Set13.png"
+    "icon": "PowerUp_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_RerollTransfer",
     "name": "Reroll Transfer",
     "desc": "For every 1 unused Augment Reroll, gain 3 free shop rerolls. Gain 1 gold.<br><br><tftitemrules>Does not include the round this augment is selected.</tftitemrules>",
-    "icon": "Reroll-Transfer-I.png"
+    "icon": "Reroll-Transfer-I.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Underdogs",
     "name": "Underdogs",
     "desc": "Whenever your team has fewer allies alive than your opponent, regenerate 4% missing Health each second (Max: 150).",
-    "icon": "Underdogs1.png"
+    "icon": "Underdogs1.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ExplosiveGrowth",
     "name": "Explosive Growth",
     "desc": "Now and at the start of the next 3 rounds, gain 7 XP.",
-    "icon": "ExplosiveGrowth_II.TFT_Set12.png"
+    "icon": "ExplosiveGrowth_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ExplosiveGrowthPlus",
     "name": "Explosive Growth+",
     "desc": "Now and at the start of the next 3 rounds, gain 10 XP.",
-    "icon": "ExplosiveGrowth_II.TFT_Set12.png"
+    "icon": "ExplosiveGrowth_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_QuietQuitting",
     "name": "Quiet Quitting",
     "desc": "For the next 3 player combats, you cannot use your shop. After, gain 24 gold and a Completed Item Anvil.",
-    "icon": "QuietQuitting_II.TFT_Set15.png"
+    "icon": "QuietQuitting_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AuraFarming",
     "name": "Aura Farming",
     "desc": "Gain a 2-star 5-cost champion holding a recommended item. You cannot field it until Stage 4-3.",
-    "icon": "AuraFarming_II.TFT_Set15.png"
+    "icon": "AuraFarming_II.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GoldenQuest",
     "name": "A Golden Quest",
     "desc": "The first time you have 165 or more gold, gain a 2-star 5-cost champion and 2 items tailored to them.",
-    "icon": "AGoldenQuest_II.TFT_Set12.png"
+    "icon": "AGoldenQuest_II.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SliceOfLife",
     "name": "Slice of Life",
     "desc": "Twice per stage, gain a random champion. Its cost increases by Stage. This effect ends after receiving 1 5-cost champion.",
-    "icon": "Slice_of_Life_I.TFT_Set15.png"
+    "icon": "Slice_of_Life_I.TFT_Set15.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ForwardThinking",
     "name": "Forward Thinking",
     "desc": "Lose all your gold. After 5 player combats, gain back the original amount and another 70 gold.<br><br>Incoming Gold: <placeholder>",
-    "icon": "ForwardThinking_II.TFT_Set13.png"
+    "icon": "ForwardThinking_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GiantAndMighty",
     "name": "Giant and Mighty",
     "desc": "Your team becomes large, gaining 200 Health and 10% max Health.",
-    "icon": "GiantandMighty_III.TFT_Set12.png"
+    "icon": "GiantandMighty_III.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_LegionOfThrees",
     "name": "Legion of Threes",
     "desc": "Gain a random Emblem. Your 3-cost champions and all allies equipped with an Emblem gain 200 Health and 12% Attack Speed.<br><br><tftitemrules>Reckoning Championship, 2021</tftitemrules>",
-    "icon": "LegionofThrees_II.TFT_Set16_ChampionAugments.png"
+    "icon": "LegionofThrees_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ForgedInStrength",
     "name": "Forged in Strength",
     "desc": "Gain 1 random Artifact. When you drop below 40 Health, gain 3 more random Artifacts.<br><br><tftitemrules>Remix Rumble Championship, 2023</tftitemrules>",
-    "icon": "ForgedInStrength_III.TFT_Set16_ChampionAugments.png"
+    "icon": "ForgedInStrength_III.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_EarlyLearning",
     "name": "Early Learnings",
     "desc": "Your team gains 8% Attack Damage & Ability Power. This increases by 1% after each player combat. 1-cost champions gain double.<br><placeholder><br><tftitemrules>TFT Vegas Open, 2023</tftitemrules>",
-    "icon": "EarlyLearning_II.TFT_Set16_ChampionAugments.png"
+    "icon": "EarlyLearning_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_LateGameScaling",
     "name": "Late Game Scaling",
     "desc": "Gain 2 XP at the start of player combat rounds. Your 5-cost champions gain 12% Health and 12% Attack Speed.<br><br><tftitemrules>Cyber City Tactician's Crown, 2025</tftitemrules>",
-    "icon": "LateGameScaling_II.TFT_Set16_ChampionAugments.png"
+    "icon": "LateGameScaling_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SweetTreats",
     "name": "Sweet Treats",
     "desc": "Gain an Artifact anvil. Your team gains 20 Health for each item equipped on champions.<br><br>Health Gained: <placeholder><br><br><tftitemrules>Magic N' Mayhem Tactician's Crown, 2024</tftitemrules>",
-    "icon": "SweetTreats_III.TFT_Set16_ChampionAugments.png"
+    "icon": "SweetTreats_III.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SpeedyDoubleKill",
     "name": "Speedy Double Kill",
     "desc": "Gain a Guinsoo's Rageblade. When 2 players are eliminated, gain 40 gold.<br><br><tftitemrules>Fates Championship, 2021</tftitemrules>",
-    "icon": "SpeedyDoubleKill_II.TFT_Set16_ChampionAugments.png"
+    "icon": "SpeedyDoubleKill_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TheGoldenDragon",
     "name": "The Golden Dragon",
     "desc": "Gain a Mogul's Mail. Champions holding Mogul's Mail take up 2 team slots but gain 700 Health and 20% Durability.<br><br><rules>Mogul's Mail gives gold as well as combat power.</rules><br><tftitemrules>Dragonlands Championship, 2022</tftitemrules>",
-    "icon": "TheGoldenDragon_II.TFT_Set16_ChampionAugments.png"
+    "icon": "TheGoldenDragon_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BirthdayReunion",
     "name": "Birthday Reunion",
     "desc": "Gain a random 2-star 2-cost champion. When you reach Level 7, gain a Thief's Gloves. When you reach Level 9, gain a random 2-star 5-cost champion.<br><br><tftitemrules>Inkborn Fables Tactician's Crown, 2024</tftitemrules>",
-    "icon": "BirthdayReunion_II.TFT_Set16_ChampionAugments.png"
+    "icon": "BirthdayReunion_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MaxBuild",
     "name": "Max Build",
     "desc": "Gain 8 free Shop rerolls. On Stage 4-5 and 6-2, gain a Champion Duplicator.<br><br><tftitemrules>Galaxies Championship, 2020</tftitemrules>",
-    "icon": "MaxBuild_II.TFT_Set16_ChampionAugments.png"
+    "icon": "MaxBuild_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BodyguardTraining",
     "name": "Bodyguard Training",
     "desc": "Allies gain 10 Armor and Magic Resist, increased by 3 per player level.<br><br><tftitemrules>Gizmos & Gadgets Championship, 2022</tftitemrules>",
-    "icon": "BodyguardsTraining_II.TFT_Set16_ChampionAugments.png"
+    "icon": "BodyguardsTraining_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_EpicRolldown",
     "name": "Epic Rolldown",
     "desc": "When you reach Level 8, gain 20 Shop rerolls.<br><br><tftitemrules>Runeterra Reforged Championship, 2023</tftitemrules>",
-    "icon": "EpicRolldown_II.TFT_Set16_ChampionAugments.png"
+    "icon": "EpicRolldown_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ArcaneViktory",
     "name": "Arcane Viktor-y",
     "desc": "After 8 seconds of combat, stun the enemy team for 1.5 seconds. Repeat this after 18 seconds of combat.<br><br><tftitemrules>TFT Macao Open, 2024</tftitemrules>",
-    "icon": "ArcaneViktory_II.TFT_Set16_ChampionAugments.png"
+    "icon": "ArcaneViktory_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_InfinityProtection",
     "name": "Infinity Protection",
     "desc": "Gain 4 gold now. On Stage 3-7, gain an Infinity Force. Infinity Force gives allies in the same row a 15% Health shield.<br><br><tftitemrules>Monsters Attack Championship, 2023 </tftitemrules>",
-    "icon": "InfinityProtection_II.TFT_Set16_ChampionAugments.png"
+    "icon": "InfinityProtection_II.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_WeStickTogether",
     "name": "We Stick Together",
     "desc": "Gain a random Emblem and a completed item anvil. Allies that share a trait with that Emblem gain 25% Attack Speed. (Emblem Trait: <placeholder>)<br><br><tftitemrules>Into The Arcane Tactician's Crown, 2025</tftitemrules>",
-    "icon": "WeStickTogether_III.TFT_Set16_ChampionAugments.png"
+    "icon": "WeStickTogether_III.TFT_Set16_ChampionAugments.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TraitTree",
     "name": "The Trait Tree",
     "desc": "Gain 3 random Emblems, a Reforger, and 2 gold.",
-    "icon": "TheTraitTree_III.TFT_Set16.png"
+    "icon": "TheTraitTree_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SpreadingRoots",
     "name": "Spreading Roots",
     "desc": "Gain 2 random Emblems and 1 gold.",
-    "icon": "SpreadingRoots_II.TFT_Set16.png"
+    "icon": "SpreadingRoots_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_IllaoiCarry",
     "name": "Leap of Faith",
     "desc": "Gain an Illaoi. Your strongest Illaoi becomes a Fighter. Her Ability is replaced with an airborne slam that's recast when she kills her target.",
-    "icon": "LeapofFaith_I.TFT_Set16.png"
+    "icon": "LeapofFaith_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_FireAxiom",
     "name": "Fire Axiom",
     "desc": "Gain a Fire Hex. Champions within gain 15% Attack Damage and Ability Power. Their damage 1% Burns and 33% Wounds for 6 seconds.",
-    "icon": "FireAxiom_I.TFT_Set16.png"
+    "icon": "FireAxiom_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_EarthAxiom",
     "name": "Earth Axiom",
     "desc": "Gain an Earth Hex. Champions within gain 40 Armor and Magic Resist. At 50% Health, they Stun enemies within 2 hexes for 2 seconds.",
-    "icon": "EarthAxiom_I.TFT_Set16.png"
+    "icon": "EarthAxiom_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_AirAxiom",
     "name": "Air Axiom",
     "desc": "Gain an Air Hex. Champions within gain 25% Attack Speed and their damage 30% Sunders enemies for 5 seconds.",
-    "icon": "AirAxiom_I.TFT_Set16.png"
+    "icon": "AirAxiom_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_WaterAxiom",
     "name": "Water Axiom",
     "desc": "Gain a Water Hex. Champions within gain 3 Mana Regen. Their damage 30% Shreds enemies for 5 seconds.",
-    "icon": "WaterAxiom_I.TFT_Set16.png"
+    "icon": "WaterAxiom_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_TheAxiomata",
     "name": "The Axiomata",
     "desc": "Gain 3 random elemental hex augments. Future augment rounds instead grant you items and gold based on the augment's tier.",
-    "icon": "TheAxiomata_III.TFT_Set16.png"
+    "icon": "TheAxiomata_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_RumbleCarry",
     "name": "Artillery Barrage",
     "desc": "Gain a Rumble. Your strongest Rumble gains +7 Range and constantly fires missiles at enemies, increased with Attack Speed.",
-    "icon": "ArtilleryBarrage_I.TFT_Set16.png"
+    "icon": "ArtilleryBarrage_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_TheDarkinForge",
     "name": "Unsealed From Steel",
     "desc": "Choose 1 of 4 Darkin Weapons. Darkin Weapons are Artifacts that grant the Darkin trait.",
-    "icon": "UnsealedFromSteel_II.TFT_Set16.png"
+    "icon": "UnsealedFromSteel_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_TeamupAugment_JarvanShyvana",
     "name": "Dragonguards",
     "desc": "Gain a Shyvana and a 2-star Jarvan IV. When Jarvan casts, Shyvana gains Shield. When Shyvana casts, Jarvan jumps in and deals damage based on his Armor and Magic Resist. After every player combat, gain a Jarvan IV.<br><br>",
-    "icon": "UncompromisingWill_III.TFT_Set16.png"
+    "icon": "UncompromisingWill_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_NoxianInvasion",
     "name": "Darkwill's Invasion",
     "desc": "Your team gains 10% Damage Amp, increased to 15% if the Noxus trait is active.",
-    "icon": "NoxianInvasion_II.TFT_Set16.png"
+    "icon": "NoxianInvasion_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_DefenseOfIonia",
     "name": "Defense of the Placidium",
     "desc": "Your team gains 8% Durability, increased to 12% if the Ionia trait is active.",
-    "icon": "DefenseofIonia_II.TFT_Set16.png"
+    "icon": "DefenseofIonia_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_UltraRapidFire",
     "name": "U.R.F",
     "desc": "Gain a Spatula. Champions holding Spatula or Frying Pan items gain 15% Attack Speed and 2 Mana Regen.",
-    "icon": "UltraRapidFire_II.TFT_Set16.png"
+    "icon": "UltraRapidFire_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_WoodAxiom",
     "name": "Wood Axiom",
     "desc": "Gain a Wood Hex. Champions within gain 15% max Health. After combat, they permanently gain 55 Health.",
-    "icon": "WoodAxiom_I.TFT_Set16.png"
+    "icon": "WoodAxiom_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_TeamupAugment_LucianVayne",
     "name": "Sentinels of Light",
     "desc": "Gain a Lucian & Senna and a 2-star Vayne. Vayne fires additional bolts at enemies afflicted with Black Mist and on takedown, grants Attack Speed to Lucian & Senna.<br><br>",
-    "icon": "SentinelsOfLight_II.TFT_Set16.png"
+    "icon": "SentinelsOfLight_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_TeamupAugment_SingedTeemo",
     "name": "Poison Pals",
     "desc": "Gain a 2-star Teemo. Singed's damage refreshes Teemo's poisons, and every 100 magic damage Teemo deals grants your strongest Singed 2% Ability Power. Gain a Teemo after each player combat.",
-    "icon": "PoisonPals_II.TFT_Set16.png"
+    "icon": "PoisonPals_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_TeamupAugment_AmbessaKindred",
     "name": "Chosen Wolves",
     "desc": "Gain an Ambessa and a Kindred. When Kindred casts, Ambessa always gains their protection against death and gains Attack Damage while protected. When Ambessa casts, Wolf strikes all enemies hit, dealing reduced damage.",
-    "icon": "ChosenWolves_III.TFT_Set16.png"
+    "icon": "ChosenWolves_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_BandleBountyPlus",
     "name": "Bandle Bounty II",
     "desc": "For every Yordle you've unlocked or unlock, gain 2 gold. Reach level 10 and field 10 unique Yordles to reveal the Bandle Path's secret. Gain a Tristana and Teemo.",
-    "icon": "BandleBountyPlus_II.TFT_Set16.png"
+    "icon": "BandleBountyPlus_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_DemaciaForever",
     "name": "Demacia Forever",
     "desc": "Demacians gain 3 permanent Health every time they rally. They also gain 1.5% permanent Attack Damage and Ability Power every 3 rallies. Gain a Jarvan IV, a Sona, and a Xin Zhao.",
-    "icon": "DemaciaForever_II.TFT_Set16.png"
+    "icon": "DemaciaForever_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Yordle_WildGrowth",
     "name": "Wild Growth",
     "desc": "3-star Yordles become massive, moving slower but gaining 15% Health and 35% Attack Damage and Ability Power. Gain a Rumble and Lulu.",
-    "icon": "WildGrowth_II.TFT_Set16.png"
+    "icon": "WildGrowth_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Void_EvolveAndOvercome",
     "name": "Evolve and Overcome",
     "desc": "For every 6 champions that Mutated Void allies takedown, gain 2 XP. Gain a Cho'Gath and a 2-star Kog'Maw. <placeholder><br><br><rules>Void provides unique Mutations.</rules><br>",
-    "icon": "EvolveAndOvercome_II.TFT_Set16.png"
+    "icon": "EvolveAndOvercome_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Weightlifting",
     "name": "Lifting Competition",
     "desc": "At the start of each round, if the combined Health of all your unique Bruisers is high enough, gain a reward and increase the threshold (up to four times). Gain a Shen and a Sion.<br><br><placeholder><placeholder> / <placeholder> ",
-    "icon": "LiftingContest_II.TFT_Set16.png"
+    "icon": "LiftingContest_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_ShadowIsles_RuinedKing",
     "name": "The Ruined King",
     "desc": "Gain a 2-star Viego. Your strongest Viego shares 30% of his Passive with other Shadow Isles allies. After collecting 100 souls, his Ability upgrades.",
-    "icon": "RuinedKing_II.TFT_Set16.png"
+    "icon": "RuinedKing_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Shurima_SecretsOfTheSands",
     "name": "Secrets of the Sands",
     "desc": "Gain 10 gold. Gain an Azir on Stage 3-5. Each time you unlock a Shuriman, gain an ideal item for them.",
-    "icon": "SecretsOfSand_III.TFT_Set16.png"
+    "icon": "SecretsOfSand_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Zaun_SilcosRevenge",
     "name": "Silco's Revenge",
     "desc": "Zaunites explode into Shimmer on death, dealing 30% of their max Health to 2 nearby enemies as magic damage. Gain a Blitzcrank, an Ekko, and a Vi.",
-    "icon": "SilcosRevenge_II.TFT_Set16.png"
+    "icon": "SilcosRevenge_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Piltover_HexgateTravel",
     "name": "Hexgate Travel",
     "desc": "When the Piltover invention triggers for the first time each combat, gain a random number of Piltover champions that cost between 1 and 3 gold. Gain a Caitlyn and a Vi.",
-    "icon": "HexgateTravel_II.TFT_Set16.png"
+    "icon": "HexgateTravel_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Noxus_BringerOfRuin",
     "name": "Bringer of Ruin",
     "desc": "Every takedown Atakhan scores permanently grants him 1% Ability Power and 30 max Health. Gain a Briar and a Sion. <br>(Current Takedowns: <placeholder>)",
-    "icon": "BringerOfRuin_II.TFT_Set16.png"
+    "icon": "BringerOfRuin_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Ixtal_Expeditionist",
     "name": "Ixtal Expeditionist",
     "desc": "Gain a Qiyana, a Neeko, and a Milio. Increase your current and max player Health by 10.",
-    "icon": "Rejuvenating-Flames-II.png"
+    "icon": "Rejuvenating-Flames-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_Targon_CosmicCalling",
     "name": "Cosmic Calling",
     "desc": "Gain a Spear of Shojin and a Leona. On Stage 3-7, gain a Taric.",
-    "icon": "Staff-of-Flowing-Waters-II.png"
+    "icon": "Staff-of-Flowing-Waters-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_TheWorldRunes",
     "name": "The World Runes",
     "desc": "Gain 2 Emblems from random Region traits. Gain 2 XP every player combat, increased to 6 XP if 4 or more Region traits are active.",
-    "icon": "TheWorldRunes_III.TFT_Set16.png"
+    "icon": "TheWorldRunes_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_WalkTheTruePathPlus",
     "name": "Walk The True Path II",
     "desc": "Gain 2 Lesser Champion Duplicators, a Yasuo, and a B.F. Sword. Reach level 10 and field 10 unique Ionians to unlock a Prismatic Upgrade.",
-    "icon": "WalkTheTruePathPlus_III.TFT_Set16.png"
+    "icon": "WalkTheTruePathPlus_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_WalkTheTruePath",
     "name": "Walk The True Path I",
     "desc": "Gain a Lesser Champion Duplicator and a Yasuo. Reach level 10 and field 10 unique Ionians to unlock a Prismatic Upgrade.",
-    "icon": "WalkTheTruePath_II.TFT_Set16.png"
+    "icon": "WalkTheTruePath_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT16_Augment_BandleBounty",
     "name": "Bandle Bounty I",
     "desc": "Reach level 10 and field 10 unique Yordles to reveal the Bandle Path's secret. Gain a Lulu and a Rumble.",
-    "icon": "BandleBounty_II.TFT_Set16.png"
+    "icon": "BandleBounty_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AdvancedLoan",
     "name": "Advanced Loan",
     "desc": "Gain 20 Gold. Your next augment is one tier lower.",
-    "icon": "AdvancedLoan_II.TFT_Set16.png"
+    "icon": "AdvancedLoan_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AdvancedLoanPlus",
     "name": "Advanced Loan+",
     "desc": "Gain 33 Gold. Your next augment is one tier lower.",
-    "icon": "AdvancedLoan_II.TFT_Set16.png"
+    "icon": "AdvancedLoan_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TheDarkinBlade",
     "name": "Blood Offering",
     "desc": "Gain a Bloodthirster. Combat start: Allies holding Bloodthirsters lose 20% Health but gain a 30% Health shield and 10% Attack Damage. ",
-    "icon": "TrailofBlood_II.TFT_Set16.png"
+    "icon": "TrailofBlood_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Indecision1",
     "name": "Indecision I",
     "desc": "In 3 rounds, choose a new augment of the same tier. Gain 4 gold now.",
-    "icon": "IndecisionI_II.TFT_Set16.png"
+    "icon": "IndecisionI_II.TFT_Set16.png",
+    "tier": "Silver"
   },
   {
     "id": "TFT_Augment_Indecision2",
     "name": "Indecision II",
     "desc": "In 3 rounds, choose a new augment of the same tier. Gain 6 gold now.",
-    "icon": "IndecisionI_II.TFT_Set16.png"
+    "icon": "IndecisionI_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ConstructACompanion",
     "name": "Construct a Companion",
     "desc": "The next 1-cost champion you buy is 3 star. Gain 2 gold.",
-    "icon": "ConstructaCompanion_III.TFT_Set16.png"
+    "icon": "ConstructaCompanion_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BoxingLessons",
     "name": "Boxing Lessons",
     "desc": "Your team gains 30 Health for each ally that starts combat in the front row.",
-    "icon": "BoxingLessons_I.TFT_Set16.png"
+    "icon": "BoxingLessons_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_FeedTheFlames",
     "name": "Feed the Flames",
     "desc": "Gain a Sunfire Cape. Your team gains 12% Omnivamp when attacking Burning enemies.",
-    "icon": "FeedTheFlames_II.TFT_Set16.png"
+    "icon": "FeedTheFlames_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MarksMan",
     "name": "Focused Fire",
     "desc": "Your team gains 10% Attack Damage. Every 5 seconds, they gain 5% more.",
-    "icon": "MarksMan_I.TFT_Set16.png"
+    "icon": "MarksMan_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Waverider",
     "name": "On a Roll",
     "desc": "Whenever you star up a champion that you fielded last combat, gain 2 free Shop rerolls. Gain 2 gold.",
-    "icon": "OnARoll_I.TFT_Set16.png"
+    "icon": "OnARoll_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComponentQuestBelt",
     "name": "Extra Buckles",
     "desc": "Gain a Giant's Belt. After your team takes 75000 damage, gain 2 more.<br><br><tftitemrules>Damage taken: <placeholder></tftitemrules>",
-    "icon": "ExtraBuckles_I.TFT_Set16.png"
+    "icon": "ExtraBuckles_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_FuriousBlows",
     "name": "Kahunahuna",
     "desc": "Every 5th attack deals bonus true damage equal to 200% Basic Attack Damage. ",
-    "icon": "FuriousBlows_II.TFT_Set16.png"
+    "icon": "FuriousBlows_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComponentQuestBow",
     "name": "Backup Bows",
     "desc": "Gain a Recurve Bow. After your team attacks 1000 times, gain 2 more.<br><br><tftitemrules>Attacks: <placeholder></tftitemrules>",
-    "icon": "RecurveWrecker_I.TFT_Set16.png"
+    "icon": "RecurveWrecker_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComponentQuestSword",
     "name": "Carve a Path",
     "desc": "Gain a B.F. Sword. After your team deals 65000 physical damage, gain 2 more.<br><br><tftitemrules>Damage dealt: <placeholder></tftitemrules>",
-    "icon": "CarveAPath_I.TFT_Set16.png"
+    "icon": "CarveAPath_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ItemGargoyleStoneplate",
     "name": "Solo Plate",
     "desc": "Gain a Gargoyle Stoneplate. Combat start: Allies holding Gargoyle Stoneplate gain 20% max Health if they're the only one in their row.",
-    "icon": "SoloPlate_II.TFT_Set16.png"
+    "icon": "SoloPlate_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComponentQuestRod",
     "name": "Continuous Conjuration",
     "desc": "Gain a Needlessly Large Rod. After your team deals 38000 magic damage, gain 2 more.<br><br><tftitemrules>Damage dealt: <placeholder></tftitemrules>",
-    "icon": "HyperbolicRodExtender_I.TFT_Set16.png"
+    "icon": "HyperbolicRodExtender_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComponentQuestTear",
     "name": "Flowing Tears",
     "desc": "Gain a Tear of the Goddess. After your team spends 6500 Mana, gain 2 more.<br><br><tftitemrules>Mana spent: <placeholder></tftitemrules>",
-    "icon": "GriefoftheGreatGoddess_I.TFT_Set16.png"
+    "icon": "GriefoftheGreatGoddess_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ItemSpiritVisage",
     "name": "Spirit of Redemption",
     "desc": "Gain a Spirit Visage. Every 5 seconds, Spirit Visage heals allies within 1 hex for 7.5% of their missing Health.",
-    "icon": "SpiritofRedemption_II.TFT_Set16.png"
+    "icon": "SpiritofRedemption_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComponentQuestGlove",
     "name": "Critical Success",
     "desc": "Gain a Sparring Glove. After your team's attacks critically strike 320 times, gain 2 more.<br><br><tftitemrules>Critical strikes: <placeholder></tftitemrules>",
-    "icon": "CriticalSuccess_I.TFT_Set16.png"
+    "icon": "CriticalSuccess_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SavingsAccount",
     "name": "Savings Account",
     "desc": "After you earn 50 gold in interest, gain 30 gold. Your max interest is increased to 7. Gain 4 gold now.<br><br><tftitemrules>Gold earned: <placeholder></tftitemrules>",
-    "icon": "SavingsAccount_II.TFT_Set16.png"
+    "icon": "SavingsAccount_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MagicRollMinus",
     "name": "Slightly Magic Roll",
     "desc": "Roll a die. Gain rewards based on the number rolled.<br><br>Reward: <placeholder>",
-    "icon": "SlightlyMagicRoll_I.TFT_Set16.png"
+    "icon": "SlightlyMagicRoll_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_NoScoutNoPivot",
     "name": "NO SCOUT NO PIVOT",
     "desc": "Champions that fight in player combat cannot be benched or sold. Your team gains 1% Health, and 1.5% Attack Damage and Ability Power after player combat. <br><br><placeholder>",
-    "icon": "NoScoutNoPivot_II.TFT_Set13.png"
+    "icon": "NoScoutNoPivot_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_WarmogsBuckle",
     "name": "Heart of Steel",
     "desc": "Gain a Steadfast Heart. Every 10 seconds of combat its holder survives, Steadfast Heart gains additional 12 permanent max Health.",
-    "icon": "HealthyGains_II.TFT_Set16.png"
+    "icon": "HealthyGains_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TheVidalion",
     "name": "Woven Magic",
     "desc": "Gain a random item component. Every 2200 Mana your team spends grants an additional component (max <placeholder>/3).<br><br><rules>Mana spent: <placeholder>/2200</rules>",
-    "icon": "WovenMagic_III.TFT_Set16.png"
+    "icon": "WovenMagic_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ThreeThrees",
     "name": "3 Threes",
     "desc": "Gain 3 random 2-star 3-cost champions and 3 gold.",
-    "icon": "ThreeThrees_II.TFT_Set16.png"
+    "icon": "ThreeThrees_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Unforgotten",
     "name": "Warlord's Honor",
     "desc": "Every round, your team gain 6% Attack Damage and Ability Power. Champions start with 1 stack of this effect, and can stack up to 4 times.",
-    "icon": "Unforgotten_II.TFT_Set16.png"
+    "icon": "Unforgotten_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_WinOut",
     "name": "Win Out",
     "desc": "When you reach level 9, immediately level to 10 and gain 2 free Shop rerolls. Gain 6 XP now.",
-    "icon": "WinOut_III.TFT_Set16.png"
+    "icon": "WinOut_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MuseumHeist",
     "name": "Component Heist",
     "desc": "After 5 player combats, gain 1 of every item component. Gain a random component now.<br><br><placeholder> <placeholder>",
-    "icon": "MuseumHeist_III.TFT_Set16.png"
+    "icon": "MuseumHeist_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_JustSlayer",
     "name": "Indiscriminate Killer",
     "desc": "Gain a Giant Slayer. Giant Slayers gain their Damage Amp against all enemies instead of just Tanks.",
-    "icon": "IndiscriminateSlayer_II.TFT_Set16.png"
+    "icon": "IndiscriminateSlayer_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_JustHit",
     "name": "Just Hit",
     "desc": "Gain a Champion Duplicator, 18 Shop rerolls, and 10 gold.",
-    "icon": "JustHit_III.TFT_Set16.png"
+    "icon": "JustHit_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Retribution",
     "name": "Retribution",
     "desc": "Gain 2 Hands of Justice. Allies equipped with Hand of Justice can critically strike with their Abilities.",
-    "icon": "Retribution_III.TFT_Set16.png"
+    "icon": "Retribution_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_AwakenedSoul",
     "name": "Soul Awakening",
     "desc": "Combat start: Your team gains 2% Attack Damage and Ability Power per second for 10 seconds. At max stacks, deal 12% bonus true damage.",
-    "icon": "AwakenedSoul_III.TFT_Set16.png"
+    "icon": "AwakenedSoul_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SmallGrabBag",
     "name": "Small Grab Bag",
     "desc": "Gain 2 random item components.",
-    "icon": "SmallGrabBag_I.TFT_Set16.png"
+    "icon": "SmallGrabBag_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ForgeRod",
     "name": "Staffsmith",
     "desc": "Gain 2 random completed items that build from Needlessly Large Rod.",
-    "icon": "Rodsmith_II.TFT_Set16.png"
+    "icon": "Rodsmith_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ForgeSword",
     "name": "Swordsmith",
     "desc": "Gain 2 random completed items that build from B.F. Sword.",
-    "icon": "Swordsmith_II.TFT_Set16.png"
+    "icon": "Swordsmith_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TwinGuardians",
     "name": "Twin Guardians",
     "desc": "If you have exactly 2 allies in your first row, grant them 100 bonus Health, 45 Armor, and 45 Magic Resist.",
-    "icon": "TwinGuardians_I.TFT_Set16.png"
+    "icon": "TwinGuardians_I.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_UrfsGambit",
     "name": "Urf's Gambit",
     "desc": "If you win your next player combat, gain a Spatula. If you lose, gain a Frying Pan. Gain a component anvil and 6 gold now.",
-    "icon": "UrfsGambit_II.TFT_Set16.png"
+    "icon": "UrfsGambit_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ChallengerDash",
     "name": "Precision and Grace",
     "desc": "At the start of combat, allies gain 25% Attack Speed for 3 seconds. On takedown, allies dash to their next target and gain this bonus again.",
-    "icon": "PrecisionGrace_II.TFT_Set16.png"
+    "icon": "PrecisionGrace_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MinMaxer",
     "name": "Min-Max",
     "desc": "Gain a Golden Item Remover and 4 random components.<br><br><rules>Golden Item Remover is a Magnetic Remover with infinite uses.</rules>",
-    "icon": "MinMax_III.TFT_Set16.png"
+    "icon": "MinMax_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MoneyMonsoon",
     "name": "Money Monsoon",
     "desc": "Gain 7 gold now and every round for the rest of the game.",
-    "icon": "MoneyMonsoon_III.TFT_Set16.png"
+    "icon": "MoneyMonsoon_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_LuxurySubscription",
     "name": "Luxury Subscription",
     "desc": "Gain a package containing a 5-cost champion, a 2-star 1-cost champion, and 5 gold.<br><br>At the start of the next 2 stages, gain the package again.",
-    "icon": "LuxurySubscription_III.TFT_Set16.png"
+    "icon": "LuxurySubscription_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_ComebackStory",
     "name": "Comeback Story",
     "desc": "Your team gains 5 Health and 0.4% Attack Speed per missing player Health.<br><br><placeholder>",
-    "icon": "ComebackStory_III.TFT_Set16.png"
+    "icon": "ComebackStory_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GrowthMindset",
     "name": "Growth Mindset",
     "desc": "Gain 50 XP.",
-    "icon": "GrowthMindset_III.TFT_Set16.png"
+    "icon": "GrowthMindset_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PrismaticDestinyPlus",
     "name": "Prismatic Destiny+",
     "desc": "Gain a random Prismatic Augment and 7 gold.",
-    "icon": "PrismaticDestiny_III.TFT_Set15.png"
+    "icon": "PrismaticDestiny_III.TFT_Set15.png",
+    "tier": "Prismatic"
   },
   {
     "id": "TFT_Augment_GainGold",
     "name": "Gain @Gold@ Gold",
     "desc": "Gain 21 gold.",
-    "icon": "Windfall2.png"
+    "icon": "Windfall2.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SeraphimsStaff",
     "name": "Seraphim's Staff",
     "desc": "Gain an Archangel's Staff. Archangel's Staff grants 2 additional Mana Regen if its holder has 90% or more Ability Power.",
-    "icon": "SeraphimsStaff_II.TFT_Set16.png"
+    "icon": "SeraphimsStaff_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TraitTreePlus",
     "name": "The Trait Tree+",
     "desc": "Gain 3 random Emblems, a Reforger, and 4 gold.",
-    "icon": "TheTraitTree_III.TFT_Set16.png"
+    "icon": "TheTraitTree_III.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SpreadingRootsPlus",
     "name": "Spreading Roots+",
     "desc": "Gain 2 random Emblems, a Reforger, and 2 gold.",
-    "icon": "SpreadingRoots_II.TFT_Set16.png"
+    "icon": "SpreadingRoots_II.TFT_Set16.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_GildedSteel",
     "name": "Gilded Steel",
     "desc": "Gain 2 non-Tank 5-cost champions. If you field at least one 5-cost champion, your 1 to 4-cost champions gain 8% Durability.<br><br><tftitemrules>K.O. Coliseum Tactician's Crown, 2025</tftitemrules>",
-    "icon": "GildedSteel_II.TFT_16_4.png"
+    "icon": "GildedSteel_II.TFT_16_4.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Trifecta1_Set7",
     "name": "Trifecta I",
     "desc": "Gain 2 tier-3 champions. <br>Combat Start: 3 random tier-3 champions gain 220 Health and 20% Attack Speed.",
-    "icon": "Trifecta-II.png"
+    "icon": "Trifecta-II.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Trifecta2_Set7",
     "name": "Trifecta II",
     "desc": "Gain 3 tier-3 champions. Allies gain 5% Attack Speed. <br>Combat Start: 3 random tier-3 champions gain 300 Health and 25% Attack Speed.",
-    "icon": "Trifecta-III.png"
+    "icon": "Trifecta-III.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_TowerDefense",
     "name": "Tower Defense",
     "desc": "Gain a Training Dummy equipped with a random emblem that fires ranged attacks at enemies. It upgrades as the game goes on.",
-    "icon": "TowerDefense_II.TFT_Set13.png"
+    "icon": "TowerDefense_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_Kingslayer",
     "name": "Kingslayer",
     "desc": "Now and after every player combat, gain 1 gold. If you win against a player who had more health than you, gain 6 gold instead. ",
-    "icon": "Kingslayer_I.TFT_Set13.png"
+    "icon": "Kingslayer_I.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_MaxCap",
     "name": "Max Cap",
     "desc": "Your max level is 7. Gain 1 Tactician's Shield which increases your team size by +1, and 50 gold.",
-    "icon": "MaxCap_III.TFT_Set13.png"
+    "icon": "MaxCap_III.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PairOfFours_Set7",
     "name": "Pair of Fours",
     "desc": "If your team has exactly 2 tier-4 champions, they each gain 374 Health and 24.4% Attack Speed. Gain a random tier-4 champion.",
-    "icon": "PairofFours_II.TFT_Set13.png"
+    "icon": "PairofFours_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_SatedSpellweaver",
     "name": "Sated Spellweaver",
     "desc": "After casting an Ability, champions gain 15% Omnivamp for 3 seconds. Excess healing is converted to a shield up to 500 Health.",
-    "icon": "SatedSpellweaver_II.TFT_Set13.png"
+    "icon": "SatedSpellweaver_II.TFT_Set13.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_BeggarsCanBeChoosers",
     "name": "Beggars Can Be Choosers",
     "desc": "You get +3 Augment rerolls for all other augment choices. Gain 7 gold.",
-    "icon": "BeggarsCanBeChoosers_I.TFT_Set12.png"
+    "icon": "BeggarsCanBeChoosers_I.TFT_Set12.png",
+    "tier": "Gold"
   },
   {
     "id": "TFT_Augment_PromisedProtection",
     "name": "Promised Protection",
     "desc": "Gain a Protector's Vow. Protector's Vow grants its holder 20% additional Mana from all sources. ",
-    "icon": "PromisedProtection_II.TFT_Set16.png"
+    "icon": "PromisedProtection_II.TFT_Set16.png",
+    "tier": "Gold"
   }
 ];
 
