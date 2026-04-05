@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+/* ===============================================
+   TFT GRIMOIRE — Design System
+   Dark Black + Gold/Yellow (TFT Academy style)
+   =============================================== */
+
+@theme inline {
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-display: 'Cinzel', 'Palatino', serif;
+
+  --color-void: #0a0a0a;
+  --color-void-light: #111111;
+  --color-grimoire: #1a1a1a;
+  --color-grimoire-light: #222222;
+  --color-grimoire-lighter: #2a2a2a;
+
+  --color-pumpkin: #FFD700;
+  --color-pumpkin-dim: #ccaa00;
+  --color-necrotic: #39FF14;
+  --color-necrotic-dim: #2dcc10;
+  --color-spectral: #00f0ff;
+  --color-spectral-dim: #00c0cc;
+  --color-blood: #ff2244;
+  --color-blood-dim: #cc1a36;
+  --color-amethyst: #FFD700;
+  --color-amethyst-dim: #ccaa00;
+  --color-gold: #fbbf24;
+  --color-gold-dim: #d4a020;
+
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted: #606060;
+
+  --color-border: #222222;
+  --color-border-hover: #333333;
+}
+
+/* Hide scrollbar */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background: var(--color-void);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+}
+
+/* ===============================================
+   GLASSMORPHISM
+   =============================================== */
+.glass {
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 215, 0, 0.06);
+}
+
+.glass-strong {
+  background: rgba(14, 14, 14, 0.92);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 215, 0, 0.08);
+}
+
+/* ===============================================
+   TIER GLOW EFFECTS
+   =============================================== */
+.tier-s {
+  border-color: var(--color-blood);
+  box-shadow: 0 0 20px rgba(255, 34, 68, 0.25), inset 0 0 20px rgba(255, 34, 68, 0.05);
+}
+.tier-a {
+  border-color: #FF7A00;
+  box-shadow: 0 0 20px rgba(255, 122, 0, 0.25), inset 0 0 20px rgba(255, 122, 0, 0.05);
+}
+.tier-b {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.05);
+}
+.tier-c {
+  border-color: var(--color-necrotic);
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.2), inset 0 0 20px rgba(57, 255, 20, 0.05);
+}
+.tier-x {
+  border-color: var(--color-spectral);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), inset 0 0 20px rgba(0, 240, 255, 0.05);
+}
+
+/* ===============================================
+   TREND BADGES
+   =============================================== */
+.trend-rising {
+  color: var(--color-necrotic);
+  border-color: var(--color-necrotic);
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.2);
+}
+.trend-falling {
+  color: var(--color-blood);
+  border-color: var(--color-blood);
+  box-shadow: 0 0 12px rgba(255, 34, 68, 0.2);
+}
+.trend-stable {
+  color: var(--color-text-muted);
+  border-color: var(--color-text-muted);
+}
+
+/* ===============================================
+   ANIMATIONS
+   =============================================== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes rune-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-grimoire) 25%,
+    var(--color-grimoire-light) 50%,
+    var(--color-grimoire) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.hover-float {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.hover-float:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(255, 215, 0, 0.1);
+}
+
+/* ===============================================
+   GRADIENT UTILITIES
+   =============================================== */
+.gradient-text {
+  background: linear-gradient(135deg, #FFD700, #FF7A00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-spectral {
+  background: linear-gradient(135deg, #FFD700, #fbbf24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-border {
+  position: relative;
+}
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #FFD700, #FF7A00);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===============================================
+   CARD STYLES
+   =============================================== */
+.grimoire-card {
+  background: var(--color-grimoire);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.grimoire-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 4px 24px rgba(255, 215, 0, 0.06);
+}
+
+/* ===============================================
+   SPARKLINE OVERRIDE (Recharts)
+   =============================================== */
+.sparkline-container .recharts-cartesian-grid,
+.sparkline-container .recharts-cartesian-axis {
+  display: none;
+}
+
+/* ===============================================
+   SCROLLBAR (if enabled)
+   =============================================== */
+.show-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-grimoire-lighter) transparent;
+}
+.show-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+.show-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.show-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-grimoire-lighter);
+  border-radius: 3px;
+}
