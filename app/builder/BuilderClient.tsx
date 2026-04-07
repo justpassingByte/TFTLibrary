@@ -10,7 +10,7 @@ import {
 } from './builder-data';
 import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar';
 import { getItemImageUrl, getAugmentImageUrl } from '@/lib/riot-cdn';
-import { SpriteIcon } from '@/components/ui/sprite-icon';
+import { GameIcon } from '@/components/ui/game-icon';
 
 
 // ============================================================
@@ -450,7 +450,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                           {count}
                         </span>
                         <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center opacity-80" style={{ filter: isGold ? 'sepia(1) saturate(5) hue-rotate(-30deg)' : isActive ? 'none' : 'grayscale(1) opacity(0.5)' }}>
-                          <SpriteIcon type="trait" id={trait} alt={trait} className="w-full h-full drop-shadow-md" />
+                          <GameIcon type="trait" id={trait} icon={traitsDb.find((t: any) => t.name === trait)?.icon} alt={trait} className="w-full h-full drop-shadow-md" />
                         </div>
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
                           <span className={`text-xs font-medium truncate block ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>{trait}</span>
@@ -510,7 +510,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                                 
                                 {/* Background Avatar */}
                                 <div className="absolute inset-0 pointer-events-none">
-                                  <ChampionAvatar name={cell.champion.name} shape="hexagon" className="w-full h-full opacity-[0.85] group-hover/champ:opacity-100 transition-opacity" />
+                                  <ChampionAvatar id={cell.champion.id} name={cell.champion.name} icon={cell.champion.icon || undefined} shape="hexagon" className="w-full h-full opacity-[0.85] group-hover/champ:opacity-100 transition-opacity" />
                                 </div>
 
                                 {/* Text Gradient Overlay */}
@@ -584,12 +584,18 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                         backgroundColor: aug ? RARITY_STYLES[dbAugments.find(a => a.name === aug)?.tier || 'Silver'].bg : 'transparent',
                       }}
                       onClick={() => aug ? toggleAugment(aug) : setAugModalOpen(true)}>
-                      {aug ? (
-                        <>
-                          <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{aug}</span>
-                          <span className="text-[var(--color-text-muted)] text-[10px] hover:text-[var(--color-blood)]">✕</span>
-                        </>
-                      ) : (
+                      {aug ? (() => {
+                        const augDef = dbAugments.find((a: any) => a.name === aug);
+                        return (
+                          <>
+                            <div className="w-5 h-5 rounded-full overflow-hidden bg-black/40 flex items-center justify-center border border-[var(--color-border)]">
+                              <GameIcon type="augment" id={aug} icon={augDef?.icon} className="w-full h-full" alt={aug} scale={0.9} />
+                            </div>
+                            <span className="text-xs text-[var(--color-text-secondary)] flex-1 truncate">{aug}</span>
+                            <span className="text-[var(--color-text-muted)] text-[10px] hover:text-[var(--color-blood)]">✕</span>
+                          </>
+                        );
+                      })() : (
                         <span className="text-xs text-[var(--color-text-muted)] flex-1 text-center">+</span>
                       )}
                     </div>
@@ -652,7 +658,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                       onDragStart={e => onDragStartChampion(e, champ)}
                       className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
                       <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
-                        <ChampionAvatar name={champ.name} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
+                        <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
                       </HexagonFrame>
                       <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">
                         {champ.name}
@@ -674,7 +680,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                     <div key={groupTrait} className="flex gap-3 items-center min-h-[58px]">
                       {/* Trait Icon column */}
                       <div className="w-10 flex shrink-0 items-center justify-center">
-                         <SpriteIcon type="trait" id={groupTrait} className="w-8 h-8 opacity-[0.85] drop-shadow-md" alt={groupTrait} />
+                         <GameIcon type="trait" id={groupTrait} icon={traitsDb.find((t: any) => t.name === groupTrait)?.icon} className="w-8 h-8 opacity-[0.85] drop-shadow-md" alt={groupTrait} />
                       </div>
                       {/* Champions row */}
                       <div className="flex flex-wrap gap-1 flex-1">
@@ -684,7 +690,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                             onDragStart={e => onDragStartChampion(e, champ)}
                             className="relative flex flex-col items-center justify-center cursor-grab group hover:scale-105 transition-transform">
                             <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-md">
-                              <ChampionAvatar name={champ.name} shape="hexagon" className="w-[46px] h-[50px] shadow-sm pointer-events-none" />
+                              <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[46px] h-[50px] shadow-sm pointer-events-none" />
                             </HexagonFrame>
                             <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">
                               {champ.name}
@@ -766,7 +772,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                     const style = RARITY_STYLES[aug.tier];
                     return (
                       <div key={name} className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform" onClick={() => toggleAugment(name)}>
-                        <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-14 h-14" alt={aug.name} scale={56/48} />
+                        <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-14 h-14" alt={aug.name} scale={56/48} />
                         <span className="text-[10px] text-white font-black uppercase tracking-wider mt-2 text-center">{aug.name}</span>
                       </div>
                     );
@@ -785,7 +791,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                         className={`flex flex-col items-center cursor-pointer transition-all ${isSelected ? 'opacity-30' : 'hover:scale-110'}`}
                         title={aug.desc}>
                         <div className="w-14 h-14 relative flex items-center justify-center mb-2">
-                          <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full" alt={aug.name} scale={56/48} />
+                          <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full" alt={aug.name} scale={56/48} />
                         </div>
                         <span className="text-[9px] font-black text-center leading-tight uppercase tracking-wide text-white">
                           {aug.name}

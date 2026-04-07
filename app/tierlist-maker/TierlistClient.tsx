@@ -9,7 +9,7 @@ import {
 } from '../builder/builder-data';
 import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar';
 import { getItemImageUrl } from '@/lib/riot-cdn';
-import { SpriteIcon } from '@/components/ui/sprite-icon';
+import { GameIcon } from '@/components/ui/game-icon';
 
 type SortMode = 'Cost' | 'Name' | 'Origin' | 'Class';
 type ToolboxTab = 'Champions' | 'Traits' | 'Augments' | 'Items';
@@ -310,7 +310,7 @@ export function TierlistClient({
                       >
                         {node.type === 'champion' && (
                           <HexagonFrame color={COST_COLORS[node.data.cost]} bg={COST_BG[node.data.cost]} size={52} padding={2} className="shadow-lg transition-transform hover:scale-110">
-                            <ChampionAvatar name={node.data.name} shape="hexagon" className="w-[44px] h-[48px] pointer-events-none" />
+                            <ChampionAvatar id={node.data.id} name={node.data.name} icon={node.data.icon || undefined} shape="hexagon" className="w-[44px] h-[48px] pointer-events-none" />
                             <span className="absolute top-1 left-2 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold z-10"
                               style={{ backgroundColor: COST_COLORS[node.data.cost], color: '#000' }}>
                               {node.data.cost}
@@ -319,12 +319,12 @@ export function TierlistClient({
                         )}
                         {node.type === 'item' && (
                           <div className="w-12 h-12 rounded-lg border border-[var(--color-border)] bg-[var(--color-grimoire-light)] flex items-center justify-center transition-transform hover:scale-110 shadow-lg">
-                            <SpriteIcon type="item" id={node.id} icon={node.data.icon || node.id} className="w-[85%] h-[85%] pointer-events-none drop-shadow-md" alt={node.data.name} />
+                            <GameIcon type="item" id={node.id} icon={node.data.icon || node.id} className="w-[85%] h-[85%] pointer-events-none drop-shadow-md" alt={node.data.name} />
                           </div>
                         )}
                         {node.type === 'augment' && (
                           <div className="w-12 h-12 flex items-center justify-center transition-transform hover:scale-110 shadow-lg drop-shadow-md relative">
-                            <SpriteIcon type="augment" id={node.id} icon={node.data.icon} className="w-full h-full object-contain pointer-events-none" alt={node.data.name} />
+                            <GameIcon type="augment" id={node.id} icon={node.data.icon} className="w-full h-full object-contain pointer-events-none" alt={node.data.name} />
                           </div>
                         )}
                         {!isViewMode && (
@@ -393,7 +393,7 @@ export function TierlistClient({
                               <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
                                 className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
                                 <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
-                                  <ChampionAvatar name={champ.name} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
+                                  <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
                                 </HexagonFrame>
                                 <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
                               </div>
@@ -413,7 +413,7 @@ export function TierlistClient({
                           ).sort(([a], [b]) => a.localeCompare(b)).map(([groupTrait, champs]: [string, any]) => (
                             <div key={groupTrait}>
                               <div className="flex items-center gap-1.5 mb-2 bg-[var(--color-grimoire-light)] p-1 rounded-md border border-[var(--color-border)]">
-                                <SpriteIcon type="trait" id={groupTrait} className="w-4 h-4 opacity-80 drop-shadow-md" alt={groupTrait} />
+                                <GameIcon type="trait" id={groupTrait} icon={traitsDb.find((t: any) => t.name === groupTrait)?.icon} className="w-4 h-4 opacity-80 drop-shadow-md" alt={groupTrait} />
                                 <span className="text-[10px] font-bold text-[var(--color-text-primary)] uppercase tracking-wide">{groupTrait}</span>
                               </div>
                               <div className="grid grid-cols-6 sm:grid-cols-7 gap-1.5">
@@ -423,7 +423,7 @@ export function TierlistClient({
                                     <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
                                       className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
                                       <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
-                                        <ChampionAvatar name={champ.name} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
+                                        <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
                                       </HexagonFrame>
                                       <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
                                     </div>
@@ -445,7 +445,7 @@ export function TierlistClient({
                       return (
                         <div key={trait} className="px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
                           <div className="flex items-center gap-2 mb-1">
-                            <SpriteIcon type="trait" id={trait} className="w-4 h-4 opacity-70 drop-shadow" alt={trait} />
+                            <GameIcon type="trait" id={trait} icon={traitsDb.find((t: any) => t.name === trait)?.icon} className="w-4 h-4 opacity-70 drop-shadow" alt={trait} />
                             <span className="text-xs font-medium text-[var(--color-text-primary)]">{trait}</span>
                           </div>
                           <div className="flex gap-1 flex-wrap">
@@ -454,7 +454,7 @@ export function TierlistClient({
                                 className="cursor-grab hover:scale-110 transition-transform shadow-md"
                                 title={c.name}>
                                 <HexagonFrame color={COST_COLORS[c.cost]} bg={COST_BG[c.cost]} size={32} padding={1.5}>
-                                  <ChampionAvatar name={c.name} shape="hexagon" className="w-[28px] h-[28px] pointer-events-none" />
+                                  <ChampionAvatar id={c.id} name={c.name} icon={c.icon || undefined} shape="hexagon" className="w-[28px] h-[28px] pointer-events-none" />
                                 </HexagonFrame>
                               </div>
                             ))}
@@ -491,7 +491,7 @@ export function TierlistClient({
                           onDragStart={e => { currentDrag = { type: 'augment', augmentName: aug.name }; e.dataTransfer.setData('text/plain', aug.name); }}>
                           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: RARITY_COLORS[aug.tier] }} />
                           <div className="w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                            <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full object-contain pointer-events-none drop-shadow-md" alt={aug.name} scale={1} />
+                            <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full object-contain pointer-events-none drop-shadow-md" alt={aug.name} scale={1} />
                           </div>
                           <span className="text-[10px] text-[var(--color-text-primary)] font-medium flex-1 truncate">{aug.name}</span>
                           <span className="text-[8px] px-1.5 py-0.5 rounded-md uppercase font-bold" style={{ color: RARITY_COLORS[aug.tier], backgroundColor: RARITY_COLORS[aug.tier] + '15', border: `1px solid ${RARITY_COLORS[aug.tier]}30` }}>
@@ -521,7 +521,7 @@ export function TierlistClient({
                           draggable
                           onDragStart={e => { currentDrag = { type: 'item', itemId: item.id }; e.dataTransfer.setData('text/plain', item.id); }}>
                           {getItemImageUrl(item.icon || item.id) ? (
-                            <SpriteIcon type="item" id={item.id} icon={item.icon || item.id} className="w-[85%] h-[85%] pointer-events-none drop-shadow-md" alt={item.name} />
+                            <GameIcon type="item" id={item.id} icon={item.icon || item.id} className="w-[85%] h-[85%] pointer-events-none drop-shadow-md" alt={item.name} />
                           ) : (
                             <span className="text-[9px] font-bold text-[var(--color-text-muted)] text-center leading-tight px-0.5 group-hover:text-[var(--color-text-secondary)] transition-colors">
                               {item.name.length > 8 ? item.name.slice(0, 7) + '..' : item.name}

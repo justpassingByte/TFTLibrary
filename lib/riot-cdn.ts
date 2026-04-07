@@ -1,25 +1,27 @@
 export const DDRAGON_VERSION = '16.7.1';
 const CDN = `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img`;
 
-// Champion: /img/tft-champion/{image.full}
+function resolveImagePath(filename: string, ddragonFolder: string) {
+  if (!filename) return '';
+  
+  // Full URLs (CDragon pre-computed or Supabase) — pass through directly
+  if (filename.startsWith('http')) return filename;
+
+  return `${CDN}/${ddragonFolder}/${filename}`;
+}
+
 export function getChampionImageUrl(iconFilename: string): string {
-  if (!iconFilename) return '';
-  return `${CDN}/tft-champion/${iconFilename}`;
+  return resolveImagePath(iconFilename, 'tft-champion');
 }
 
-// Item: /img/tft-item/{image.full}
 export function getItemImageUrl(iconFilename: string): string {
-  if (!iconFilename) return '';
-  return `${CDN}/tft-item/${iconFilename}`;
+  return resolveImagePath(iconFilename, 'tft-item');
 }
 
-// Augment: /img/tft-augment/{image.full}
 export function getAugmentImageUrl(iconFilename: string): string {
-  if (!iconFilename) return '';
-  return `${CDN}/tft-augment/${iconFilename}`;
+  return resolveImagePath(iconFilename, 'tft-augment');
 }
 
 export function getTraitImageUrl(iconFilename: string): string {
-  if (!iconFilename) return '';
-  return `${CDN}/tft-trait/${iconFilename}`;
+  return resolveImagePath(iconFilename, 'tft-trait');
 }

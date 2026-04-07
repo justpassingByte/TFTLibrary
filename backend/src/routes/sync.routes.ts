@@ -60,6 +60,58 @@ router.post('/sync/trigger', async (req, res) => {
   }
 });
 
+// ── CDragon Sync ─────────────────────────────────────────────────────
+
+router.post('/cdragon/trigger', async (req, res) => {
+  try {
+    const { set_prefix, cdragon_source } = req.body;
+    const source = cdragon_source || 'latest';
+
+    const job = await prisma.syncJob.create({
+      data: {
+        job_type: 'cdragon',
+        status: 'running',
+        set_prefix: set_prefix || 'TFT16',
+        ddragon_version: `cdragon-${source}`,
+      },
+    });
+
+    const scriptPath = path.resolve(__dirname, '../../scripts/sync-cdragon.mjs');
+    const child = spawn('node', [scriptPath], {
+      env: {
+        ...process.env,
+        TFT_SET_PREFIX: set_prefix || 'TFT16',
+        CDRAGON_SOURCE: source,
+        SYNC_JOB_ID: job.id,
+      },
+      cwd: path.resolve(__dirname, '../..'),
+    });
+
+    activeProcesses.set(job.id, child);
+
+    let logOutput = '';
+    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
+    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+
+    child.on('close', async (code) => {
+      activeProcesses.delete(job.id);
+      await prisma.syncJob.update({
+        where: { id: job.id },
+        data: {
+          status: code === 0 ? 'completed' : 'error',
+          log_output: logOutput,
+          finished_at: new Date(),
+        },
+      });
+    });
+
+    res.json({ job_id: job.id });
+  } catch (error) {
+    console.error('POST /api/admin/cdragon/trigger error:', error);
+    res.status(500).json({ error: 'Failed to start CDragon sync' });
+  }
+});
+
 router.get('/sync/stream', (req, res) => {
   const jobId = req.query.job_id as string;
   if (!jobId) return res.status(400).json({ error: 'job_id required' });
@@ -253,6 +305,114 @@ router.post('/pipeline/aggregate', async (req, res) => {
     console.error('POST /api/admin/pipeline/aggregate error:', error);
     res.status(500).json({ error: 'Aggregation failed' });
   }
+});
+// ── Patch Notes Crawler ──────────────────────────────────────────────
+
+router.post('/patch-notes/crawl', async (req, res) => {
+  try {
+    const { url } = req.body; // optional override URL
+
+    const job = await prisma.syncJob.create({
+      data: {
+        job_type: 'patch_crawl',
+        status: 'running',
+        set_prefix: 'patch-notes',
+      },
+    });
+
+    const scriptPath = path.resolve(__dirname, '../../scripts/crawl-patch-notes.mjs');
+    const child = spawn('node', [scriptPath], {
+      env: {
+        ...process.env,
+        SYNC_JOB_ID: job.id,
+        ...(url ? { PATCH_NOTES_URL: url } : {}),
+      },
+      cwd: path.resolve(__dirname, '../..'),
+    });
+
+    activeProcesses.set(job.id, child);
+
+    let logOutput = '';
+    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
+    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+
+    child.on('close', async (code) => {
+      activeProcesses.delete(job.id);
+      try {
+        await prisma.syncJob.update({
+          where: { id: job.id },
+          data: {
+            status: code === 0 ? 'completed' : 'error',
+            log_output: logOutput,
+            finished_at: new Date(),
+          },
+        });
+      } catch (err) {
+        console.warn(`[patch-crawl] Could not update job ${job.id}`);
+      }
+    });
+
+    res.json({ job_id: job.id });
+  } catch (error) {
+    console.error('POST /api/admin/patch-notes/crawl error:', error);
+    res.status(500).json({ error: 'Failed to start patch crawl' });
+  }
+});
+
+router.get('/patch-notes/stream', (req, res) => {
+  const jobId = req.query.job_id as string;
+  if (!jobId) return res.status(400).json({ error: 'job_id required' });
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.flushHeaders();
+
+  const child = activeProcesses.get(jobId);
+  if (!child) {
+    prisma.syncJob.findUnique({ where: { id: jobId } }).then(job => {
+      if (job && job.log_output) {
+        res.write(`data: ${job.log_output.replace(/\n/g, '\ndata: ')}\n\n`);
+      } else {
+        res.write(`data: [No active process for this job]\n\n`);
+      }
+      res.write(`event: done\ndata: ${job?.status === 'completed' ? 'completed' : 'error'}\n\n`);
+      res.end();
+    });
+    return;
+  }
+
+  const onStdout = (data: Buffer) => {
+    res.write(`data: ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
+    if (typeof (res as any).flush === 'function') (res as any).flush();
+  };
+  const onStderr = (data: Buffer) => {
+    res.write(`data: [err] ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
+    if (typeof (res as any).flush === 'function') (res as any).flush();
+  };
+
+  child.stdout?.on('data', onStdout);
+  child.stderr?.on('data', onStderr);
+
+  const heartbeat = setInterval(() => {
+    res.write(':\n\n');
+    if (typeof (res as any).flush === 'function') (res as any).flush();
+  }, 15000);
+
+  child.on('close', (code) => {
+    clearInterval(heartbeat);
+    res.write(`event: done\ndata: ${code === 0 ? 'completed' : 'error'}\n\n`);
+    res.end();
+  });
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    child.stdout?.off('data', onStdout);
+    child.stderr?.off('data', onStderr);
+  });
 });
 
 export default router;

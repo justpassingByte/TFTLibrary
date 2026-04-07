@@ -12,10 +12,10 @@ export default async function AdminCompsPage() {
   try {
     const [compsRes, champsRes, augmentsRes, itemsRes, traitsRes] = await Promise.all([
       fetch(`${API_URL}/api/admin/comps`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/champions`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/augments`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/items`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/traits`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/champions?set_prefix=all`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/augments?set_prefix=all`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/items?set_prefix=all`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/traits?set_prefix=all`, { cache: 'no-store' }),
     ])
 
     if (compsRes.ok) {
@@ -35,7 +35,7 @@ export default async function AdminCompsPage() {
     }
 
     if (champsRes.ok) champions = await champsRes.json()
-    if (augmentsRes.ok) dbAugments = (await augmentsRes.json()).map((a: any) => ({ id: a.id, tier: a.tier, name: a.name, icon: a.icon }))
+    if (augmentsRes.ok) dbAugments = (await augmentsRes.json()).map((a: any) => ({ id: a.id, tier: a.tier, name: a.name, icon: a.icon, set_prefix: a.set_prefix }))
     if (itemsRes.ok) items = await itemsRes.json()
     if (traitsRes.ok) traitsDb = await traitsRes.json()
   } catch (e) {}

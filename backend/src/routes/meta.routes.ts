@@ -7,11 +7,26 @@ const router = Router();
 // Static Game Data (unchanged)
 // ══════════════════════════════════════════════════════════════
 
+import fs from 'fs';
+import path from 'path';
+const SETTINGS_FILE = path.join(__dirname, '../../data/settings.json');
+
+function getActiveSet() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')).active_set || 'TFT16';
+    }
+  } catch (e) {}
+  return 'TFT16';
+}
+
 // GET /api/meta/champions — with trait join
 router.get('/champions', async (req, res) => {
   try {
     const { set_prefix } = req.query;
-    const where = set_prefix ? { set_prefix: String(set_prefix) } : {};
+    const isUndef = !set_prefix || set_prefix === 'undefined' || set_prefix === 'null';
+    const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
+    const where = targetPrefix === 'all' ? {} : { set_prefix: targetPrefix };
     const data = await prisma.champion.findMany({
       where,
       include: { champion_traits: true },
@@ -36,7 +51,9 @@ router.get('/champions', async (req, res) => {
 router.get('/traits', async (req, res) => {
   try {
     const { set_prefix } = req.query;
-    const where = set_prefix ? { set_prefix: String(set_prefix) } : {};
+    const isUndef = !set_prefix || set_prefix === 'undefined' || set_prefix === 'null';
+    const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
+    const where = targetPrefix === 'all' ? {} : { set_prefix: targetPrefix };
     const data = await prisma.trait.findMany({ where, orderBy: { name: 'asc' } });
     res.json(data);
   } catch (error) {
@@ -49,7 +66,9 @@ router.get('/traits', async (req, res) => {
 router.get('/augments', async (req, res) => {
   try {
     const { set_prefix } = req.query;
-    const where = set_prefix ? { set_prefix: String(set_prefix) } : {};
+    const isUndef = !set_prefix || set_prefix === 'undefined' || set_prefix === 'null';
+    const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
+    const where = targetPrefix === 'all' ? {} : { set_prefix: { contains: targetPrefix } };
     const augments = await prisma.augment.findMany({ where, orderBy: { name: 'asc' } });
     res.json(augments);
   } catch (error) {
@@ -61,7 +80,20 @@ router.get('/augments', async (req, res) => {
 // GET /api/meta/items
 router.get('/items', async (req, res) => {
   try {
-    const data = await prisma.item.findMany({ orderBy: { name: 'asc' } });
+    const { set_prefix } = req.query;
+    const isUndef = !set_prefix || set_prefix === 'undefined' || set_prefix === 'null';
+    const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
+    const where = targetPrefix === 'all' 
+       ? {} 
+       : { 
+           OR: [
+             { set_prefix: { contains: targetPrefix } }, 
+             { id: { startsWith: 'TFT_Item_' } },
+             { id: { contains: 'Radiant' } },
+             { id: { contains: 'Artifact' } }
+           ] 
+         };
+    const data = await prisma.item.findMany({ where, orderBy: { name: 'asc' } });
     res.json(data);
   } catch (error) {
     console.error('GET /api/meta/items error:', error);
@@ -127,13 +159,42 @@ router.get('/curated-comps', async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
+// Sets Discovery
+// ══════════════════════════════════════════════════════════════
+
+// GET /api/meta/sets — all available set prefixes
+router.get('/sets', async (req, res) => {
+  try {
+    const data = await prisma.champion.findMany({
+      select: { set_prefix: true },
+      distinct: ['set_prefix'],
+      orderBy: { set_prefix: 'asc' },
+    });
+    const sets = data.map(d => d.set_prefix).filter(Boolean);
+    res.json(sets);
+  } catch (error) {
+    console.error('GET /api/meta/sets error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
 // Analytics Stats Endpoints (granular, per-entity)
 // ══════════════════════════════════════════════════════════════
 
-// GET /api/meta/stats/patches — available patches
+// GET /api/meta/stats/patches — available patches, optionally filtered by set_prefix
 router.get('/stats/patches', async (req, res) => {
   try {
+    const { set_prefix } = req.query;
+    let where: any = {};
+
+    // If set_prefix is provided, only return patches that have champion IDs starting with that prefix
+    if (set_prefix && set_prefix !== 'all') {
+      where.champion_id = { startsWith: String(set_prefix) };
+    }
+
     const data = await prisma.championStat.findMany({
+      where,
       select: { patch: true },
       distinct: ['patch'],
     });
@@ -147,8 +208,11 @@ router.get('/stats/patches', async (req, res) => {
 // GET /api/meta/stats/champions — per-champion performance
 router.get('/stats/champions', async (req, res) => {
   try {
-    const { patch } = req.query;
-    const where = patch ? { patch: String(patch) } : {};
+    const { patch, set_prefix } = req.query;
+    const where: any = patch ? { patch: String(patch) } : {};
+    if (set_prefix && set_prefix !== 'all') {
+      where.champion_id = { startsWith: String(set_prefix) };
+    }
     const data = await prisma.championStat.findMany({
       where,
       orderBy: { games: 'desc' },
@@ -179,10 +243,11 @@ router.get('/stats/items', async (req, res) => {
 // GET /api/meta/stats/item-champions — which items work best on which champ
 router.get('/stats/item-champions', async (req, res) => {
   try {
-    const { patch, champion_id, item_name, limit } = req.query;
+    const { patch, champion_id, item_name, limit, set_prefix } = req.query;
     const where: any = {};
     if (patch) where.patch = String(patch);
     if (champion_id) where.champion_id = String(champion_id);
+    else if (set_prefix && set_prefix !== 'all') where.champion_id = { startsWith: String(set_prefix) };
     if (item_name) where.item_name = String(item_name);
 
     const data = await prisma.itemChampionStat.findMany({
@@ -200,8 +265,11 @@ router.get('/stats/item-champions', async (req, res) => {
 // GET /api/meta/stats/augments — per-augment performance
 router.get('/stats/augments', async (req, res) => {
   try {
-    const { patch } = req.query;
-    const where = patch ? { patch: String(patch) } : {};
+    const { patch, set_prefix } = req.query;
+    const where: any = patch ? { patch: String(patch) } : {};
+    if (set_prefix && set_prefix !== 'all') {
+      where.augment_name = { startsWith: String(set_prefix) };
+    }
     const data = await prisma.augmentStat.findMany({
       where,
       orderBy: { sample_count: 'desc' },
@@ -216,8 +284,11 @@ router.get('/stats/augments', async (req, res) => {
 // GET /api/meta/stats/traits — per-trait-tier performance
 router.get('/stats/traits', async (req, res) => {
   try {
-    const { patch } = req.query;
-    const where = patch ? { patch: String(patch) } : {};
+    const { patch, set_prefix } = req.query;
+    const where: any = patch ? { patch: String(patch) } : {};
+    if (set_prefix && set_prefix !== 'all') {
+      where.trait_name = { startsWith: String(set_prefix) };
+    }
     const data = await prisma.traitStat.findMany({
       where,
       orderBy: { sample_count: 'desc' },
@@ -280,6 +351,102 @@ router.get('/stats/overview', async (req, res) => {
     });
   } catch (error) {
     console.error('GET /api/meta/stats/overview error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// Patch Notes — Public (consumed by /patch-notes page)
+// ══════════════════════════════════════════════════════════════
+
+router.get('/patch-notes', async (req, res) => {
+  try {
+    const { patch, set_prefix } = req.query;
+
+    let targetPatch = patch as string;
+    if (!targetPatch || targetPatch === 'latest') {
+      const latest = await prisma.patchChange.findFirst({
+        orderBy: { created_at: 'desc' },
+        select: { patch: true },
+      });
+      targetPatch = latest?.patch || '';
+    }
+
+    if (!targetPatch) return res.json({ version: '', changes: [], predictions: [] });
+
+    // Allow set_prefix filtering for accurate icons
+    const isUndef = !set_prefix || set_prefix === 'undefined' || set_prefix === 'null';
+    const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
+    const metaWhere = { set_prefix: targetPrefix };
+
+    const [changes, predictions, champIcons, traitIcons, augmentIcons, itemIcons] = await Promise.all([
+      prisma.patchChange.findMany({
+        where: { patch: targetPatch },
+        orderBy: [{ change_type: 'asc' }, { score: 'desc' }],
+      }),
+      prisma.patchMetaPrediction.findMany({
+        where: { patch: targetPatch },
+        orderBy: { sort_order: 'asc' },
+      }),
+      prisma.champion.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
+      prisma.trait.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
+      prisma.augment.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
+      // @ts-ignore
+      prisma.item?.findMany ? prisma.item.findMany({ select: { id: true, name: true, icon: true } }) : Promise.resolve([])
+    ]);
+
+    const iconMap = new Map<string, string>();
+    const idMap = new Map<string, string>();
+    const champNames = new Set<string>();
+    const traitNames = new Set<string>();
+    const augmentNames = new Set<string>();
+
+    champIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); champNames.add(n); } });
+    traitIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); traitNames.add(n); } });
+    augmentIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); augmentNames.add(n); } });
+    itemIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); } });
+
+    const getIconUrl = (iconPath: string) => {
+      if (!iconPath) return '';
+      // DB now stores full HTTPS URLs — pass through directly
+      if (iconPath.startsWith('http')) return iconPath;
+      // Fallback for any legacy relative paths
+      return `https://raw.communitydragon.org/latest/game/${iconPath}`;
+    };
+
+    res.json({
+      version: targetPatch,
+      changes: changes.map(c => {
+        const entNorm = c.entity.toLowerCase().trim();
+        let actualType = c.entity_type;
+        // Fix misidentified entities
+        if (champNames.has(entNorm)) actualType = 'unit';
+        else if (traitNames.has(entNorm)) actualType = 'trait';
+        else if (augmentNames.has(entNorm)) actualType = 'augment';
+
+        return {
+          entity: c.entity,
+          entity_id: idMap.get(entNorm) || '',
+          type: actualType,
+          changeType: c.change_type,
+          stat: c.before_val && c.after_val ? `${c.stat}: ${c.before_val} → ${c.after_val}` : (c.stat || c.raw_text),
+          score: c.score,
+          tier: c.tier,
+          iconUrl: getIconUrl(iconMap.get(entNorm) || '')
+        };
+      }),
+      predictions: predictions.map(p => ({
+        name: p.name,
+        tier: p.tier,
+        score: p.score,
+        reason: p.reason,
+        keyUnits: p.key_units,
+        buffedEntities: p.buffed_entities,
+        nerfedEntities: p.nerfed_entities,
+      })),
+    });
+  } catch (error) {
+    console.error('GET /api/meta/patch-notes error:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

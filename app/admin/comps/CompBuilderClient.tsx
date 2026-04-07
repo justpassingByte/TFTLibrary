@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createComp, updateComp, deleteComp, togglePublish, duplicateComp } from './actions'
 import type { CuratedCompData, CuratedComp, CompChampion, AltBuild, StagePlan, BoardPosition } from './actions'
 import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar'
-import { SpriteIcon } from '@/components/ui/sprite-icon'
+import { GameIcon } from '@/components/ui/game-icon'
 import { getItemImageUrl } from '@/lib/riot-cdn'
+import { useAdminSet } from '@/components/admin/AdminSetContext'
 import {
   COST_COLORS, COST_BG, BOARD_ROWS, BOARD_COLS,
   type BuilderChampion, type BoardCell, type ItemDef, type ItemCategory,
@@ -52,7 +53,27 @@ const EMPTY_COMP: CuratedCompData = {
 // ═══════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════
-export function CompBuilderClient({ comps, champions = [], dbAugments = [], items = [], traitsDb = [] }: Props) {
+export function CompBuilderClient({ comps, champions: allChampions = [], dbAugments: allAugments = [], items = [], traitsDb: allTraits = [] }: Props) {
+  const { currentSet } = useAdminSet()
+  
+  // Filter data by current set
+  const champions = useMemo(() => allChampions.filter(c => !currentSet || (c as any).set_prefix === currentSet), [allChampions, currentSet])
+  const dbAugments = useMemo(() => allAugments.filter(a => !currentSet || a.set_prefix?.includes(currentSet)), [allAugments, currentSet])
+  const traitsDb = useMemo(() => allTraits.filter((t: any) => !currentSet || t.set_prefix === currentSet), [allTraits, currentSet])
+  
+  // Items don't have set_prefix in DB, but set-specific items (emblems, etc.) 
+  // have the set prefix baked into their ID (e.g. TFT16_Item_VoidEmblemItem).
+  // Generic items (TFT_Item_*) are shared across all sets.
+  const filteredItemsBySet = useMemo(() => {
+    if (!currentSet) return items
+    return items.filter((item: any) => 
+      item.set_prefix?.includes(currentSet) || 
+      item.id.startsWith('TFT_Item_') || 
+      item.id.includes('Radiant') || 
+      item.id.includes('Artifact')
+    )
+  }, [items, currentSet])
+  
   const [editing, setEditing] = useState<CuratedCompData & { id?: string } | null>(null)
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
@@ -124,10 +145,10 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
   }, [traitsDb])
 
   const filteredItems = useMemo(() => {
-    let list = items.map((i: any) => ({ ...i, category: categorizeItem(i.id) })).filter((i: any) => i.category === itemTab)
+    let list = filteredItemsBySet.map((i: any) => ({ ...i, category: categorizeItem(i.id) })).filter((i: any) => i.category === itemTab)
     if (searchQuery) { const q = searchQuery.toLowerCase(); list = list.filter((i: any) => i.name.toLowerCase().includes(q)) }
     return list
-  }, [itemTab, searchQuery, items])
+  }, [itemTab, searchQuery, filteredItemsBySet])
 
   const filteredAugments = useMemo(() => {
     let list = [...dbAugments]
@@ -331,7 +352,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                     <div key={comp.id} className="flex items-center gap-3 px-4 py-2.5 bg-[#13111e] border border-white/[0.08] rounded-xl cursor-pointer transition-all hover:border-white/[0.2] hover:bg-[rgba(167,139,250,0.04)]"
                       onClick={() => openEdit(comp)}>
                       {carry && <HexagonFrame color={TIER_COLORS[comp.tier]} bg={COST_BG[carry.cost]} size={44} padding={1.5}>
-                        <ChampionAvatar name={carry.name} shape="hexagon" className="w-[38px] h-[38px]" />
+                        <ChampionAvatar name={carry.name} icon={carry.icon} shape="hexagon" className="w-[38px] h-[38px]" />
                       </HexagonFrame>}
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-[#e2ddf5] text-sm">{comp.name}</div>
@@ -456,7 +477,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                         {count}
                       </span>
                       <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center opacity-80" style={{ filter: isGold ? 'sepia(1) saturate(5) hue-rotate(-30deg)' : isActive ? 'none' : 'grayscale(1) opacity(0.5)' }}>
-                        <SpriteIcon type="trait" id={trait} alt={trait} className="w-full h-full drop-shadow-md" />
+                        <GameIcon type="trait" id={trait} icon={traitsDb?.find((t: any) => t.name === trait)?.icon} alt={trait} className="w-full h-full drop-shadow-md" />
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
                         <span className={`text-xs font-medium truncate block ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>{trait}</span>
@@ -495,7 +516,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                           {cell ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-end pb-[6px] cursor-grab group/champ"
                               draggable onDragStart={e => onDragStartBoardChamp(e, row, col)}>
-                              <div className="absolute inset-0 pointer-events-none"><ChampionAvatar name={cell.champion.name} shape="hexagon" className="w-full h-full opacity-[0.85] group-hover/champ:opacity-100 transition-opacity" /></div>
+                              <div className="absolute inset-0 pointer-events-none"><ChampionAvatar name={cell.champion.name} icon={cell.champion.icon} shape="hexagon" className="w-full h-full opacity-[0.85] group-hover/champ:opacity-100 transition-opacity" /></div>
                               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none" />
                               <div className="relative z-10 flex flex-col items-center">
                                 {showNames && <span className="text-[9px] text-white font-bold mb-[8px] leading-none drop-shadow-[0_1px_3px_rgba(0,0,0,1)] tracking-wide pointer-events-none">{cell.champion.name}</span>}
@@ -589,7 +610,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                 <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
                   className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
                   <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
-                    <ChampionAvatar name={champ.name} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
+                    <ChampionAvatar name={champ.name} icon={champ.icon} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
                   </HexagonFrame>
                   <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">{champ.name}</span>
                 </div>
@@ -629,7 +650,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                 return (
                   <div key={id} className="cmp-drop-unit" onClick={() => setEditing({ ...editing, early_units: (editing.early_units || []).filter(x => x !== id) })}>
                     <HexagonFrame color={COST_COLORS[ch.cost]} bg={COST_BG[ch.cost]} size={42} padding={1.5}>
-                      <ChampionAvatar name={ch.name} shape="hexagon" className="w-[36px] h-[36px]" />
+                      <ChampionAvatar name={ch.name} icon={ch.icon} shape="hexagon" className="w-[36px] h-[36px]" />
                     </HexagonFrame>
                     <span className="cmp-drop-name">{ch.name}</span>
                   </div>
@@ -673,7 +694,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                 return (
                   <div key={id} className="cmp-drop-unit" onClick={() => setEditing({ ...editing, flex_units: (editing.flex_units || []).filter(x => x !== id) })}>
                     <HexagonFrame color={COST_COLORS[ch.cost]} bg={COST_BG[ch.cost]} size={42} padding={1.5}>
-                      <ChampionAvatar name={ch.name} shape="hexagon" className="w-[36px] h-[36px]" />
+                      <ChampionAvatar name={ch.name} icon={ch.icon} shape="hexagon" className="w-[36px] h-[36px]" />
                     </HexagonFrame>
                     <span className="cmp-drop-name">{ch.name}</span>
                   </div>
@@ -737,7 +758,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                 return (
                   <div className="cmp-drop-unit" onClick={() => setEditing({ ...editing, carry_id: '' })}>
                     <HexagonFrame color={TIER_COLORS[editing.tier]} bg={COST_BG[ch.cost]} size={52} padding={2}>
-                      <ChampionAvatar name={ch.name} shape="hexagon" className="w-[46px] h-[46px]" />
+                      <ChampionAvatar name={ch.name} icon={ch.icon} shape="hexagon" className="w-[46px] h-[46px]" />
                     </HexagonFrame>
                     <span className="cmp-drop-name font-bold">{ch.name}</span>
                   </div>
@@ -780,7 +801,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                       }}
                     >
                       <HexagonFrame color={COST_COLORS[ch.cost]} bg={COST_BG[ch.cost]} size={42} padding={1.5}>
-                        <ChampionAvatar name={ch.name} shape="hexagon" className="w-[36px] h-[36px]" />
+                        <ChampionAvatar name={ch.name} icon={ch.icon} shape="hexagon" className="w-[36px] h-[36px]" />
                       </HexagonFrame>
                       <span className="cmp-drop-name">{ch.name}</span>
                     </div>
@@ -892,7 +913,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                     if (!aug) return null
                     return (
                       <div key={name} className="flex flex-col items-center cursor-pointer hover:scale-105 transition-transform" onClick={() => toggleAugment(name)}>
-                        <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-14 h-14" alt={aug.name} scale={56 / 48} />
+                        <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-14 h-14" alt={aug.name} scale={56 / 48} />
                         <span className="text-[10px] text-white font-black uppercase tracking-wider mt-2 text-center">{aug.name}</span>
                       </div>
                     )
@@ -908,7 +929,7 @@ export function CompBuilderClient({ comps, champions = [], dbAugments = [], item
                       <div key={aug.id} onClick={() => toggleAugment(aug.name)}
                         className={`flex flex-col items-center cursor-pointer transition-all ${isSelected ? 'opacity-30' : 'hover:scale-110'}`} title={aug.desc}>
                         <div className="w-14 h-14 relative flex items-center justify-center mb-2">
-                          <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full" alt={aug.name} scale={56 / 48} />
+                          <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full" alt={aug.name} scale={56 / 48} />
                         </div>
                         <span className="text-[9px] font-black text-center leading-tight uppercase tracking-wide text-white">{aug.name}</span>
                       </div>

@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar';
-import { SpriteIcon } from '@/components/ui/sprite-icon';
+import { GameIcon } from '@/components/ui/game-icon';
 import { getItemImageUrl } from '@/lib/riot-cdn';
 
 
@@ -58,7 +58,7 @@ function CompCard({ comp, isSelected, onClick, champMap }: { comp: CuratedComp; 
       <div className="comp-card-hex">
         {carry ? (
           <HexagonFrame color={cfg.color} bg={COST_BG[cost]} size={68} padding={2.5}>
-            <ChampionAvatar name={carry.name} shape="hexagon" className="w-[60px] h-[60px]" />
+            <ChampionAvatar id={carry.id} name={carry.name} icon={carry.icon || undefined} shape="hexagon" className="w-[60px] h-[60px]" />
           </HexagonFrame>
         ) : (
           <div className="comp-card-placeholder" style={{ borderColor: cfg.color }}>?</div>
@@ -70,7 +70,7 @@ function CompCard({ comp, isSelected, onClick, champMap }: { comp: CuratedComp; 
   );
 }
 
-function TraitBadge({ t }: { t: { name: string, count: number } }) {
+function TraitBadge({ t, traitsDb = [] }: { t: { name: string, count: number }, traitsDb?: any[] }) {
   const isPrismatic = t.count >= 6;
   const isGold = t.count >= 4 && t.count < 6;
   const isSilver = t.count >= 2 && t.count < 4;
@@ -116,9 +116,10 @@ function TraitBadge({ t }: { t: { name: string, count: number } }) {
         className="w-[18px] h-[18px]" 
         style={{ filter: 'brightness(0) invert(1) drop-shadow(0px 1px 1px rgba(0,0,0,0.5))' }}
       >
-        <SpriteIcon 
+        <GameIcon 
           type="trait" 
           id={t.name} 
+          icon={traitsDb.find(tr => tr.name === t.name)?.icon}
           alt={t.name} 
           className="w-full h-full" 
         />
@@ -140,7 +141,7 @@ function TraitBadge({ t }: { t: { name: string, count: number } }) {
 }
 
 // ── Expanded Detail ──────────────────────────────────
-function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: CuratedComp; traitsMap: Record<string, string[]>; onClose: () => void; champMap: Record<string, ChampionData>; itemMap: Record<string, ItemData> }) {
+function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [], traitsDb = [] }: { comp: CuratedComp; traitsMap: Record<string, string[]>; onClose: () => void; champMap: Record<string, ChampionData>; itemMap: Record<string, ItemData>; augments?: any[]; traitsDb?: any[]; }) {
   const [activeVariantIdx, setActiveVariantIdx] = useState(0);
   const allVariants = [comp, ...(comp.variants || [])];
   const active = allVariants[activeVariantIdx] || comp;
@@ -163,7 +164,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
         {carry && (
           <div className="cd-carry-big">
             <HexagonFrame color={cfg.color} bg={COST_BG[carry.cost]} size={120} padding={3}>
-              <ChampionAvatar name={carry.name} shape="hexagon" className="w-[110px] h-[110px]" />
+              <ChampionAvatar id={carry.id} name={carry.name} icon={carry.icon || undefined} shape="hexagon" className="w-[110px] h-[110px]" />
             </HexagonFrame>
           </div>
         )}
@@ -189,7 +190,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
             <div className="text-[0.65rem] font-extrabold tracking-wider text-[#a8a1cb] mb-3 mt-1 uppercase">Full Synergy List</div>
             <div className="flex flex-wrap gap-x-2 gap-y-3">
               {dbTraits.map((t) => (
-                <TraitBadge key={t.name} t={t} />
+                <TraitBadge key={t.name} t={t} traitsDb={traitsDb} />
               ))}
             </div>
           </div>
@@ -202,7 +203,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
             <div className="cd-augment-grid">
               {active.augments.map((aug: string, i: number) => (
                 <div key={i} className="cd-augment-item">
-                  <SpriteIcon type="augment" id={aug} className="w-full h-full" alt={aug} scale={1} />
+                  <GameIcon type="augment" id={aug} icon={augments?.find(a => a.name === aug)?.icon} className="w-full h-full" alt={aug} scale={1} />
                 </div>
               ))}
             </div>
@@ -237,7 +238,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
             return (
               <div key={i} className="cd-champ-unit">
                 <HexagonFrame color={cc.is_carry ? cfg.color : COST_COLORS[c.cost]} bg={COST_BG[c.cost]} size={58} padding={2}>
-                  <ChampionAvatar name={c.name} shape="hexagon" className="w-[50px] h-[50px]" />
+                  <ChampionAvatar id={c.id} name={c.name} icon={c.icon || undefined} shape="hexagon" className="w-[50px] h-[50px]" />
                 </HexagonFrame>
               </div>
             );
@@ -254,7 +255,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
                   const c = champMap[id];
                   return c ? (
                     <HexagonFrame key={id} color={COST_COLORS[c.cost]} bg={COST_BG[c.cost]} size={48} padding={1.5}>
-                      <ChampionAvatar name={c.name} shape="hexagon" className="w-[42px] h-[42px]" />
+                      <ChampionAvatar id={c.id} name={c.name} icon={c.icon || undefined} shape="hexagon" className="w-[42px] h-[42px]" />
                     </HexagonFrame>
                   ) : null;
                 })}
@@ -284,7 +285,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
                   const c = champMap[id];
                   return c ? (
                     <HexagonFrame key={id} color={COST_COLORS[c.cost]} bg={COST_BG[c.cost]} size={48} padding={1.5}>
-                      <ChampionAvatar name={c.name} shape="hexagon" className="w-[42px] h-[42px]" />
+                      <ChampionAvatar id={c.id} name={c.name} icon={c.icon || undefined} shape="hexagon" className="w-[42px] h-[42px]" />
                     </HexagonFrame>
                   ) : null;
                 })}
@@ -312,7 +313,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
                             <>
                               <HexagonFrame color={COST_COLORS[champ.cost] || '#fff'} bg="#141419" size={72} padding={3}>
                                 <div style={{ width: '100%', height: '100%', display: 'flex' }}>
-                                  <ChampionAvatar name={champ.name} shape="hexagon" className="w-full h-full" />
+                                  <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-full h-full" />
                                 </div>
                               </HexagonFrame>
                               {cc?.star && cc.star > 1 && (
@@ -353,7 +354,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
                     <div key={idx} className="cd-alt-build">
                       {altCarry && (
                         <HexagonFrame color={COST_COLORS[altCarry.cost]} bg={COST_BG[altCarry.cost]} size={44} padding={1.5}>
-                          <ChampionAvatar name={altCarry.name} shape="hexagon" className="w-[38px] h-[38px]" />
+                          <ChampionAvatar id={altCarry.id} name={altCarry.name} icon={altCarry.icon || undefined} shape="hexagon" className="w-[38px] h-[38px]" />
                         </HexagonFrame>
                       )}
                       <div className="cd-alt-items">
@@ -405,11 +406,13 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap }: { comp: Cu
 }
 
 // ── Main Page ────────────────────────────────────────
-export function CompsTierlistClient({ comps, traitsMap, champions, items }: {
+export function CompsTierlistClient({ comps, traitsMap, champions, items, augments = [], traitsDb = [] }: {
   comps: CuratedComp[];
   traitsMap: Record<string, string[]>;
   champions: ChampionData[];
   items: ItemData[];
+  augments?: any[];
+  traitsDb?: any[];
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -491,7 +494,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items }: {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
                       <CompDetails comp={tierComps.find(c => c.id === expandedId)!} traitsMap={traitsMap}
-                        champMap={champMap} itemMap={itemMap} onClose={() => setExpandedId(null)} />
+                        champMap={champMap} itemMap={itemMap} augments={augments} traitsDb={traitsDb} onClose={() => setExpandedId(null)} />
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -14,6 +14,7 @@ export interface Champion {
 export interface Trait {
   id: string
   name: string
+  icon?: string | null
   set_prefix: string
 }
 
@@ -50,6 +51,20 @@ export async function updateChampionTraits(champion_id: string, trait_names: str
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ traits: trait_names })
+  });
+
+  if (!res.ok) throw new Error(await res.text());
+
+  revalidatePath('/admin/champions')
+  revalidatePath('/builder')
+  revalidatePath('/tierlist-maker')
+}
+
+export async function updateChampionIcon(champion_id: string, icon_url: string) {
+  const res = await fetch(`${getApiUrl()}/api/admin/champions/${champion_id}/icon`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ icon: icon_url })
   });
 
   if (!res.ok) throw new Error(await res.text());

@@ -6,9 +6,15 @@ export default async function AugmentsTierlistPage() {
   let augments: AugmentMeta[] = [];
 
   try {
+    let setPrefix = 'TFT16';
+    try {
+      const settingsRes = await fetch(`${API_URL}/api/admin/settings`, { cache: 'no-store' });
+      if (settingsRes.ok) setPrefix = (await settingsRes.json()).active_set || 'TFT16';
+    } catch(e) {}
+
     const [augmentsRes, statsRes] = await Promise.all([
-      fetch(`${API_URL}/api/meta/augments`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/stats/augments`, { cache: 'no-store' }).catch(() => null),
+      fetch(`${API_URL}/api/meta/augments?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/stats/augments?set_prefix=${setPrefix}`, { cache: 'no-store' }).catch(() => null),
     ]);
 
     const augmentsArr = augmentsRes.ok ? await augmentsRes.json() : [];

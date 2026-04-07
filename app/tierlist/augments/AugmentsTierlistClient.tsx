@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SpriteIcon } from '@/components/ui/sprite-icon';
+import { GameIcon } from '@/components/ui/game-icon';
 
 const TABS = [
   { label: 'Comps', href: '/tierlist/comps', active: false },
@@ -155,7 +155,7 @@ export function AugmentsTierlistClient({ augments }: { augments: AugmentMeta[] }
                             borderColor: hoveredAug === aug.id ? cfg.color : `${rarCfg.color}40`,
                             boxShadow: hoveredAug === aug.id ? `0 0 14px ${cfg.glow}` : 'none'
                           }}>
-                            <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full object-contain pointer-events-none" alt={aug.name} scale={1} />
+                            <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-full h-full object-contain pointer-events-none" alt={aug.name} scale={1} />
                           </div>
                           <span className="atl-aug-name">{aug.name}</span>
 
@@ -165,7 +165,7 @@ export function AugmentsTierlistClient({ augments }: { augments: AugmentMeta[] }
                               <motion.div className="atl-tooltip" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.12 }}>
                                 <div className="atl-tt-header">
-                                  <SpriteIcon type="augment" id={aug.id} icon={aug.icon} className="w-10 h-10" alt={aug.name} scale={1} />
+                                  <GameIcon type="augment" id={aug.id} icon={aug.icon} className="w-10 h-10" alt={aug.name} scale={1} />
                                   <div>
                                     <div className="atl-tt-name">{aug.name}</div>
                                     <div className="atl-tt-rarity" style={{ color: rarCfg.color }}>{aug.rarity}</div>

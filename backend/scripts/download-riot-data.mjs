@@ -120,7 +120,13 @@ async function updateData() {
   const manualTiers = readJsonFile(tierMappingPath);
 
   const augments = Object.values(augmentsData)
-    .filter(a => a.id && (a.id.startsWith(`${TFT_SET_PREFIX}_`) || a.id.startsWith('TFT_')))
+    .filter(a => {
+      if (!a.id) return false;
+      const match = a.id.match(/^TFT(\d+)_/i);
+      const setNumber = TFT_SET_PREFIX.replace('TFT', '');
+      if (match && match[1] !== setNumber) return false;
+      return a.id.startsWith(`${TFT_SET_PREFIX}_`) || a.id.startsWith('TFT_');
+    })
     .map(a => {
       let tier = manualTiers[a.id] || 'Unknown';
       if (tier === 'Unknown') {
@@ -131,7 +137,13 @@ async function updateData() {
         else tier = 'Gold';
         manualTiers[a.id] = tier;
       }
-      return { id: a.id, name: (a.name || '').trim(), desc: a.description || a.desc || '', icon: a.image?.full || '', tier };
+      return { 
+        id: a.id, 
+        name: (a.name || '').trim(), 
+        desc: a.description || a.desc || '', 
+        icon: a.image?.full ? `${DDRAGON_BASE_URL}/img/tft-item/${a.image.full}` : '', 
+        tier 
+      };
     });
 
   fs.writeFileSync(tierMappingPath, JSON.stringify(manualTiers, null, 2));
@@ -193,41 +205,61 @@ async function updateData() {
     if (traitErr) console.error('[sync] traits upsert error:', traitErr.message);
     else console.log(`[sync] Upserted ${traitRows.length} traits.`);
 
+    // Helper to merge set_prefix for shared items/augments
+    const mergeSetPrefixes = async (table, itemsArray, existingDataMap = new Map()) => {
+      if (!itemsArray.length) return;
+      
+      const ids = itemsArray.map(r => r.id);
+      const { data: existing } = await supabase.from(table).select('id, set_prefix').in('id', ids);
+      
+      const existingMap = new Map();
+      if (existing) existing.forEach(r => existingMap.set(r.id, r.set_prefix));
+      
+      const mapped = itemsArray.map(row => {
+        const oldPrefix = existingMap.get(row.id);
+        let newPrefix = TFT_SET_PREFIX;
+        if (oldPrefix) {
+          if (!oldPrefix.includes(TFT_SET_PREFIX)) {
+            newPrefix = `${oldPrefix},${TFT_SET_PREFIX}`;
+          } else {
+            newPrefix = oldPrefix;
+          }
+        }
+        
+        // Preserve tier/tags if available in existingDataMap (Augments only)
+        const oldRow = existingDataMap.get(row.id);
+        if (oldRow) {
+          return { ...row, set_prefix: newPrefix, tier: oldRow.tier, tags: oldRow.tags };
+        }
+        return { ...row, set_prefix: newPrefix };
+      });
+
+      const { error } = await supabase.from(table).upsert(mapped, { onConflict: 'id' });
+      if (error) console.error(`[sync] ${table} upsert error:`, error.message);
+      else console.log(`[sync] Upserted ${mapped.length} ${table}.`);
+    };
+
     // Augments — preserve admin-set tier/tags
     const { data: existingAugs } = await supabase.from('augments').select('id, tier, tags');
     const existingMap = new Map((existingAugs || []).map(a => [a.id, a]));
-
-    const augmentRows = augments.map(aug => {
-      const existing = existingMap.get(aug.id);
-      return {
-        id: aug.id,
-        name: aug.name,
-        description: aug.desc,
-        icon: aug.icon,
-        tier: existing ? existing.tier : aug.tier,
-        tags: existing ? existing.tags : [],
-        set_prefix: TFT_SET_PREFIX,
-      };
-    });
-
-    const { error: augErr } = await supabase
-      .from('augments')
-      .upsert(augmentRows, { onConflict: 'id' });
     
-    if (augErr) console.error('[sync] augments upsert error:', augErr.message);
-    console.log(`[sync] Upserted ${augments.length} augments (tier/tags preserved for existing rows).`);
+    const baseAugmentRows = augments.map(aug => ({
+      id: aug.id,
+      name: aug.name,
+      description: aug.desc,
+      icon: aug.icon,
+      tier: aug.tier,
+      tags: []
+    }));
+    await mergeSetPrefixes('augments', baseAugmentRows, existingMap);
 
     // Items
-    const itemRows = items.map(i => ({
+    const baseItemRows = items.map(i => ({
       id: i.id,
       name: i.name,
-      icon: i.icon,
+      icon: i.icon
     }));
-    const { error: itemErr } = await supabase
-      .from('items')
-      .upsert(itemRows, { onConflict: 'id' });
-    if (itemErr) console.error('[sync] items upsert error:', itemErr.message);
-    else console.log(`[sync] Upserted ${itemRows.length} items.`);
+    await mergeSetPrefixes('items', baseItemRows);
 
     // Update sync job record
     if (SYNC_JOB_ID) {

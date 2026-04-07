@@ -66,8 +66,32 @@ async function riotFetch(url, region) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+// ── Patch Schedule (date-based detection) ─────────────────────────────────────
+// Riot's game_version field in Match API often lags behind actual patch deploy.
+// We use official patch release dates to correctly assign the patch.
+// Dates are in UTC — patches typically deploy in the early morning.
+const PATCH_SCHEDULE = [
+  { patch: '16.8', date: new Date('2026-03-31T12:00:00Z') },
+  { patch: '16.7', date: new Date('2026-03-17T12:00:00Z') },
+  { patch: '16.6', date: new Date('2026-03-03T12:00:00Z') },
+  { patch: '16.5', date: new Date('2026-02-18T12:00:00Z') },
+  { patch: '16.4', date: new Date('2026-02-04T12:00:00Z') },
+  { patch: '16.3', date: new Date('2026-01-21T12:00:00Z') },
+  { patch: '16.2', date: new Date('2026-01-07T12:00:00Z') },
+  { patch: '16.1', date: new Date('2025-12-02T12:00:00Z') },
+];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function extractPatch(game_version) {
+function extractPatch(game_version, game_datetime_ms) {
+  // Priority 1: Use date-based detection (most accurate)
+  if (game_datetime_ms) {
+    const gameDate = new Date(game_datetime_ms);
+    for (const entry of PATCH_SCHEDULE) {
+      if (gameDate >= entry.date) return entry.patch;
+    }
+  }
+
+  // Fallback: parse from game_version string
   const m = game_version?.match(/Version (\d+\.\d+)/);
   return m ? m[1] : 'unknown';
 }
@@ -244,7 +268,12 @@ async function ingestMatches(matchIds) {
         skipped++; continue; 
       }
 
-      const patch = extractPatch(info.game_version);
+      const apiPatch = info.game_version?.match(/Version (\d+\.\d+)/)?.[1] || '?';
+      const patch = extractPatch(info.game_version, info.game_datetime);
+      if (patch !== apiPatch && !seenPatches.has(`override-${patch}`)) {
+        seenPatches.add(`override-${patch}`);
+        console.log(`[pipeline] 📅 Date-based patch override: API says ${apiPatch}, but match date says ${patch}`);
+      }
       if (!seenPatches.has(patch)) {
         seenPatches.add(patch);
         console.log(`[pipeline] 🎯 Detected match from patch: ${patch}`);

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useAdminSet } from './AdminSetContext'
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', exact: true },
@@ -13,12 +14,14 @@ const NAV_ITEMS = [
   { href: '/admin/augments', label: 'Augments' },
   { href: '/admin/champions', label: 'Champions' },
   { href: '/admin/insights', label: 'Insights' },
+  { href: '/admin/patch-notes', label: 'Patch Notes' },
   { href: '/admin/sync', label: 'Sync Data' },
 ]
 
 export function AdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
+  const { currentSet, availableSets, setCurrentSet, liveSet } = useAdminSet()
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href
@@ -66,6 +69,23 @@ export function AdminSidebar() {
       </nav>
 
       <div className="ds-bottom">
+        {/* Set Switcher */}
+        {availableSets.length > 0 && (
+          <div className="ds-set-switcher">
+            <label className="ds-set-label">Viewing Set</label>
+            <select
+              className="ds-set-select"
+              value={currentSet}
+              onChange={e => setCurrentSet(e.target.value)}
+            >
+              {availableSets.map(s => (
+                <option key={s} value={s}>
+                  {s.replace('TFT', 'Set ')}{s === liveSet ? ' (Live)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <button onClick={handleLogout} className="ds-logout-btn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -167,7 +187,37 @@ export function AdminSidebar() {
         .ds-bottom {
           margin-top: auto;
           padding: 0 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
         }
+
+        .ds-set-switcher {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .ds-set-label {
+          font-size: 10px;
+          font-weight: 700;
+          color: #9A9A9A;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .ds-set-select {
+          background: #FFF;
+          border: 1px solid #E8E4DE;
+          border-radius: 8px;
+          padding: 8px 12px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #222;
+          cursor: pointer;
+          outline: none;
+          transition: border-color 0.2s;
+          width: 100%;
+        }
+        .ds-set-select:focus { border-color: #EB5E28; }
 
         .ds-logout-btn {
           display: flex;

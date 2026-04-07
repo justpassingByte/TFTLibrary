@@ -28,5 +28,10 @@
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
+  },
+  "nodemonConfig": {
+    "watch": ["src", "data"],
+    "ext": "ts,js,json",
+    "exec": "ts-node src/index.ts"
   }
 }

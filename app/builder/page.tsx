@@ -9,11 +9,20 @@ export default async function BuilderPage() {
   let traitsDb: any[] = [];
 
   try {
+    let setPrefix = 'TFT16';
+    try {
+      const settingsRes = await fetch(`${API_URL}/api/admin/settings`, { cache: 'no-store' });
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json();
+        setPrefix = settings.active_set || 'TFT16';
+      }
+    } catch(e) {}
+
     const [champsRes, augmentsRes, itemsRes, traitsRes] = await Promise.all([
-      fetch(`${API_URL}/api/meta/champions`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/augments`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/items`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/traits`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/champions?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/augments?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/items?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/traits?set_prefix=${setPrefix}`, { cache: 'no-store' }),
     ]);
 
     if (champsRes.ok) champions = await champsRes.json();

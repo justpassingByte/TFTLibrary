@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { getItemImageUrl } from '@/lib/riot-cdn'
 import { bulkUpsertItemTiers } from './actions'
 import { categorizeItem } from '@/app/builder/builder-data'
+import { GameIcon } from '@/components/ui/game-icon'
+import { useAdminSet } from '@/components/admin/AdminSetContext'
 
 const TIERS = ['S', 'A', 'B', 'C', 'D'] as const
 const TIER_COLORS: Record<string, string> = { S: '#EB5E28', A: '#F3BB45', B: '#7AC29A', C: '#68B3C8', D: '#9A9A9A' }
@@ -15,6 +16,8 @@ interface Props {
 }
 
 export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props) {
+  const { currentSet } = useAdminSet()
+  
   const [tiers, setTiers] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {}
     itemTiers.forEach(it => { map[it.item_id] = it.tier })
@@ -30,20 +33,20 @@ export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props)
   const statsMap: Record<string, { avg: number }> = {}
   itemStats.forEach(s => { statsMap[s.item_name] = { avg: s.avg_placement } })
 
-  const displayItems = items.filter(i => {
-    const cat = (i.category || categorizeItem(i.id)) as string
-    if (cat === 'Augments' || cat === 'Consumables') return false
-    const hidden = (i as any).isHidden || (i as any).is_hidden || false
-    if (hidden) return false
+  const displayItems = items
+    .map(i => ({ ...i, category: i.category || categorizeItem(i.id) }))
+    .filter(i => {
+      const hidden = i.isHidden || i.is_hidden || false
+      if (hidden) return false
 
-    if (categoryFilter === 'Craftable' && cat !== 'Completed') return false 
-    if (categoryFilter === 'Artifact' && cat !== 'Artifacts') return false
-    if (categoryFilter === 'Radiant' && cat !== 'Radiants') return false
-    if (categoryFilter === 'Support' && cat !== 'Support') return false
+      if (categoryFilter === 'Craftable' && i.category !== 'Completed') return false 
+      if (categoryFilter === 'Artifact' && i.category !== 'Artifacts') return false
+      if (categoryFilter === 'Radiant' && i.category !== 'Radiants') return false
+      if (categoryFilter === 'Support' && i.category !== 'Support') return false
 
-    if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false
-    return ['Completed', 'Artifacts', 'Radiants', 'Support'].includes(cat)
-  })
+      if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false
+      return ['Completed', 'Artifacts', 'Radiants', 'Support'].includes(i.category as string)
+    })
 
   function handleDragStart(e: React.DragEvent, itemId: string) {
     setDraggedItem(itemId)
@@ -101,6 +104,8 @@ export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props)
         
         <div className="ia-controls">
           <div className="ia-filters">
+            <div className="ia-cat-btn" style={{ fontWeight: 'bold', color: '#68B3C8', cursor: 'default' }}>{currentSet.replace('TFT', 'Set ')}</div>
+            <div style={{ width: '1px', background: '#DDD', margin: '0 5px' }} />
              {['Craftable', 'Artifact', 'Radiant', 'Support'].map(cat => (
                 <button key={cat} className={`ia-cat-btn ${categoryFilter === cat ? 'active' : ''}`} onClick={() => setCategoryFilter(cat)}>
                   {cat}
@@ -141,7 +146,7 @@ export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props)
                     onContextMenu={(e) => handleUntier(e, item.id)}
                     title={item.name + ' (Right click to remove)'}
                   >
-                    <img src={getItemImageUrl(item.icon || item.id)} className="ia-item-icon" alt={item.name} loading="lazy" />
+                    <GameIcon type="item" id={item.id} icon={item.icon || item.id} className="w-[85%] h-[85%] pointer-events-none drop-shadow-md" alt={item.name} />
                     {statsMap[item.id] && <div className="ia-item-stat-overlay">{statsMap[item.id].avg.toFixed(2)}</div>}
                   </div>
                   ))}
@@ -170,7 +175,7 @@ export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props)
                  onDragStart={(e) => handleDragStart(e, item.id)}
                  title={item.name}
                >
-                 <img src={getItemImageUrl(item.icon || item.id)} className="ia-item-icon" alt={item.name} loading="lazy" />
+                 <GameIcon type="item" id={item.id} icon={item.icon || item.id} className="w-[85%] h-[85%] pointer-events-none drop-shadow-md" alt={item.name} />
                  {statsMap[item.id] && (
                    <div className="ia-item-stat-overlay">{statsMap[item.id].avg.toFixed(2)}</div>
                  )}

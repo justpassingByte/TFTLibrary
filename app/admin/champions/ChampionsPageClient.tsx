@@ -3,8 +3,10 @@
 import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateChampionTraits, type Champion, type Trait } from './actions'
-import { SpriteIcon } from '@/components/ui/sprite-icon'
-import { getCDragonUrl } from '@/components/ui/champion-avatar'
+import { GameIcon } from '@/components/ui/game-icon'
+import { useAdminSet } from '@/components/admin/AdminSetContext'
+import { ChampionAvatar } from '@/components/ui/champion-avatar'
+import { AvatarEditor } from './AvatarEditor'
 
 const COST_COLORS: Record<number, string> = {
   1: '#9ca3af',
@@ -15,10 +17,12 @@ const COST_COLORS: Record<number, string> = {
 }
 
 export function ChampionsPageClient({ champions, traits }: { champions: Champion[]; traits: Trait[] }) {
+  const { currentSet, availableSets, setCurrentSet } = useAdminSet()
   const [searchChanmpion, setSearchChampion] = useState('')
   const [costFilter, setCostFilter] = useState<number | null>(null)
   const [isSaving, startTransition] = useTransition()
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [editingChamp, setEditingChamp] = useState<Champion | null>(null)
   const router = useRouter()
   
   // State tracking mutable traits
@@ -86,6 +90,7 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
 
   // Filter champions
   const filteredChampions = champions.filter(c => {
+    if (currentSet && c.set_prefix !== currentSet) return false
     if (costFilter !== null && c.cost !== costFilter) return false
     return !searchChanmpion || c.name.toLowerCase().includes(searchChanmpion.toLowerCase())
   })
@@ -93,8 +98,10 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
   // Group champions by cost
   const costs = [...new Set(filteredChampions.map(c => c.cost))].sort((a, b) => a - b)
 
-  // Sort traits alphabetically
-  const activeTraitList = traits.slice().sort((a,b) => a.name.localeCompare(b.name))
+  // Sort traits alphabetically and filter by set
+  const activeTraitList = traits
+    .filter(t => t.set_prefix === currentSet)
+    .sort((a,b) => a.name.localeCompare(b.name))
 
   return (
     <div className="champ-dnd-page">
@@ -103,7 +110,11 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
           <h2 className="champ-heading">Champion Synergies</h2>
           <p className="champ-sub">Drag champions from the left panel onto trait buckets to assign roles.</p>
         </div>
-        <div className="champ-actions">
+        <div className="champ-actions" style={{ gap: '15px', display: 'flex', alignItems: 'center' }}>
+          <div className="flex bg-[#2a2a35] px-3 py-1.5 rounded-lg border border-[#3f3f4a] text-white">
+            <span style={{ fontSize: '12px', fontWeight: 'bold', marginRight: '8px', color: '#9a9a9a' }}>SET</span>
+            <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#68B3C8' }}>{currentSet.replace('TFT', 'Set ')}</span>
+          </div>
           {hasChanges && <span className="unsaved-badge">{modifiedChamps.length} champions modified</span>}
           <button 
              className="save-all-btn" 
@@ -182,22 +193,20 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
                          onDragEnd={(e) => {
                            e.currentTarget.style.opacity = '1'
                          }}
+                         onClick={(e) => {
+                            if (!e.defaultPrevented) setEditingChamp(champ)
+                         }}
                          title={champ.name}
                       >
                         {champ.icon && (
                           <div style={{ position: 'relative' }}>
-                            <img 
-                              src={getCDragonUrl(champ.id)} 
-                              alt={champ.name}
-                              className="champ-avatar"
-                              onError={(e) => {
-                                 const target = e.currentTarget as HTMLImageElement;
-                                 if (!target.dataset.fallback) {
-                                   target.dataset.fallback = 'true';
-                                   target.src = `https://ddragon.leagueoflegends.com/cdn/16.7.1/img/tft-champion/${champ.icon}`;
-                                 }
-                              }}
-                            />
+                        <ChampionAvatar 
+                          id={champ.id} 
+                          name={champ.name} 
+                          icon={champ.icon || undefined}
+                          className="w-11 h-11"
+                          shape="hexagon"
+                        />
                             {assignedList.length > 0 && (
                                <div style={{ position: 'absolute', top: -5, right: -5, background: '#EB5E28', color: '#FFF', fontSize: '9px', fontWeight: 'bold', padding: '2px 5px', borderRadius: '10px' }}>
                                  {assignedList.length}
@@ -259,7 +268,7 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
                      >
                         <div className="bucket-header">
                            <div className="bucket-icon">
-                              <SpriteIcon type="trait" id={trait.name} alt={trait.name} className="w-full h-full" />
+                              <GameIcon type="trait" id={trait.name} icon={trait.icon} alt={trait.name} className="w-full h-full" />
                            </div>
                            <h4 className="bucket-title">{trait.name}</h4>
                            <span className="bucket-count">{champsInTrait.length}</span>
@@ -283,17 +292,12 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
                                     }}
                                     title={c.name}
                                  >
-                                    <img 
-                                       src={getCDragonUrl(c.id)} 
-                                       alt={c.name}
-                                       className="roster-avatar"
-                                       onError={(e) => {
-                                          const target = e.currentTarget as HTMLImageElement;
-                                          if (!target.dataset.fallback) {
-                                            target.dataset.fallback = 'true';
-                                            target.src = `https://ddragon.leagueoflegends.com/cdn/16.7.1/img/tft-champion/${c.icon}`;
-                                          }
-                                       }}
+                                    <ChampionAvatar 
+                                       id={c.id} 
+                                       name={c.name} 
+                                       icon={c.icon || undefined}
+                                       className="w-10 h-10"
+                                       shape="circle"
                                     />
                                     <button 
                                        className="roster-remove"
@@ -312,6 +316,22 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
         </div>
 
       </div>
+
+      {editingChamp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
+            <h3 className="font-bold text-center mb-6 font-[Courier_New] text-lg">Edit Avatar</h3>
+            <AvatarEditor 
+              champion={editingChamp}
+              onSaveDone={() => {
+                 setEditingChamp(null);
+                 router.refresh();
+              }}
+              onCancel={() => setEditingChamp(null)}
+            />
+          </div>
+        </div>
+      )}
 
       <style>{`
         .champ-dnd-page {
@@ -551,6 +571,29 @@ export function ChampionsPageClient({ champions, traits }: { champions: Champion
           opacity: 0; transition: 0.2s; padding: 0;
         }
         .roster-champ:hover .roster-remove { opacity: 1; }
+
+        .set-select {
+          background: #FDFBFA;
+          border: 1px solid #EAEAEA;
+          border-radius: 6px;
+          padding: 6px 12px;
+          font-size: 13px;
+          font-weight: bold;
+          color: #222;
+          cursor: pointer;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        .set-select:focus { border-color: #EB5E28; }
+        
+        .set-filter-wrap {
+          display: flex;
+          align-items: center;
+          background: #FFF;
+          padding: 4px 10px;
+          border-radius: 10px;
+          border: 1px solid #F0F0F0;
+        }
 
       `}</style>
     </div>

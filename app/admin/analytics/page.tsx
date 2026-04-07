@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useAdminSet } from '@/components/admin/AdminSetContext'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts'
 import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar'
 import { COST_COLORS, COST_BG, categorizeItem } from '@/app/builder/builder-data'
 import { getItemImageUrl } from '@/lib/riot-cdn'
-import { SpriteIcon } from '@/components/ui/sprite-icon'
+import { GameIcon } from '@/components/ui/game-icon'
 
 type TabKey = 'Overview' | 'Champions' | 'Items' | 'Synergy';
 type SortKey = 'games' | 'pick_rate' | 'win_rate' | 'avg_placement' | 'top4_rate' | 'avg_star'
@@ -28,6 +29,7 @@ function AnalyticsContent() {
 
   const [tab, setTab] = useState<TabKey>(initialTab)
   const [loading, setLoading] = useState(true)
+  const { currentSet, availableSets, setCurrentSet } = useAdminSet()
 
   // Data state — each endpoint loads independently
   const [overview, setOverview] = useState<any>(null)
@@ -62,34 +64,40 @@ function AnalyticsContent() {
   const [selectedPatch, setSelectedPatch] = useState<string>('')
   const [patchSelectorLoading, setPatchSelectorLoading] = useState(false)
 
-  // 1. Fetch Master Metadata & Available Patches Once
+  // 1. Fetch Master Metadata & Available Patches based on Current Set
   useEffect(() => {
+    if (!currentSet) return;
+    
+    setLoading(true)
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     Promise.all([
-      fetch(`${apiUrl}/api/meta/stats/patches`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/champions`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/patches?set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/champions?set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
       fetch(`${apiUrl}/api/meta/items`).then(r => r.json()).catch(() => []),
     ]).then(([patches, cMeta, iMeta]) => {
       setPatchList(patches)
-      if (patches && patches.length > 0) setSelectedPatch(patches[0])
+      // Only reset selectedPatch if the current one isn't in the new list
+      if (!patches.includes(selectedPatch) && patches.length > 0) {
+         setSelectedPatch(patches[0])
+      }
       setChampsMeta(cMeta)
       setItemsMeta(iMeta)
     }).finally(() => setLoading(false))
-  }, [])
+  }, [currentSet])
 
   // 2. Fetch Aggregated Stats when Selected Patch changes
   useEffect(() => {
-    if (!selectedPatch) return
+    if (!selectedPatch || !currentSet) return
     setPatchSelectorLoading(true)
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     
     Promise.all([
-      fetch(`${apiUrl}/api/meta/stats/overview`).then(r => r.json()).catch(() => null),
-      fetch(`${apiUrl}/api/meta/stats/champions?patch=${selectedPatch}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/items?patch=${selectedPatch}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/augments?patch=${selectedPatch}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/traits?patch=${selectedPatch}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/item-champions?limit=200&patch=${selectedPatch}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/overview?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => null),
+      fetch(`${apiUrl}/api/meta/stats/champions?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/items?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/augments?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/traits?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/item-champions?limit=200&patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
     ]).then(([ov, champs, items, augs, traits, ic]) => {
       setOverview(ov)
       setChampStats(champs)
@@ -98,7 +106,7 @@ function AnalyticsContent() {
       setTraitStats(traits)
       setItemChampStats(ic)
     }).finally(() => setPatchSelectorLoading(false))
-  }, [selectedPatch])
+  }, [selectedPatch, currentSet])
 
   const toggleChampSort = (key: SortKey) => {
     if (champSort === key) setChampSortDir(d => d === 'desc' ? 'asc' : 'desc')
@@ -251,6 +259,13 @@ function AnalyticsContent() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: PALETTE.subtext, fontSize: '14px', fontWeight: 500 }}>Set</span>
+            <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', background: '#2A2A33', padding: '4px 10px', borderRadius: '4px' }}>
+              {currentSet.replace('TFT', 'Set ')}
+            </span>
+          </div>
+          
           {patchList.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ color: PALETTE.subtext, fontSize: '14px', fontWeight: 500 }}>Patch</span>
@@ -469,7 +484,7 @@ function AnalyticsContent() {
                         <td style={{ color: PALETTE.subtext }}>{i + 1}</td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <SpriteIcon type="item" id={it.item_name} icon={itemDef?.icon} className="w-[28px] h-[28px] min-w-[28px] object-cover rounded border border-[#EBEBEB] bg-black" alt={itemDef?.name || 'Item'} />
+                            <GameIcon type="item" id={it.item_name} icon={itemDef?.icon} className="w-[28px] h-[28px] min-w-[28px] object-cover rounded border border-[#EBEBEB] bg-black" alt={itemDef?.name || 'Item'} />
                             {itemDef?.name || it.item_name.replace('TFT_Item_', '')}
                           </div>
                         </td>
@@ -534,7 +549,7 @@ function AnalyticsContent() {
                           onClick={() => setSynergySelectedItem(si.id)}
                         >
                           <td style={{ width: '40px' }}>
-                            <SpriteIcon type="item" id={si.id} icon={(si as any).icon} className="w-[28px] h-[28px] min-w-[28px] object-cover rounded border border-[#EBEBEB] bg-black" alt={si.name} />
+                            <GameIcon type="item" id={si.id} icon={(si as any).icon} className="w-[28px] h-[28px] min-w-[28px] object-cover rounded border border-[#EBEBEB] bg-black" alt={si.name} />
                           </td>
                           <td style={{ fontWeight: isSelected ? 600 : 400 }}>{si.name}</td>
                         </tr>
@@ -618,7 +633,7 @@ function AnalyticsContent() {
                             <td style={{ color: PALETTE.subtext }}>{i + 1}</td>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <SpriteIcon type="item" id={row.item_name} icon={itemDef?.icon} className="w-[24px] h-[24px] min-w-[24px] object-cover rounded border border-[#EBEBEB] bg-black" alt={itemDef?.name || 'Item'} />
+                                <GameIcon type="item" id={row.item_name} icon={itemDef?.icon} className="w-[24px] h-[24px] min-w-[24px] object-cover rounded border border-[#EBEBEB] bg-black" alt={itemDef?.name || 'Item'} />
                                 {itemDef?.name || row.item_name.replace('TFT_Item_', '')}
                               </div>
                             </td>

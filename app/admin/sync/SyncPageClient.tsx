@@ -6,6 +6,7 @@ import { SyncConsole } from '@/components/admin/SyncConsole'
 
 interface SyncJob {
   id: string
+  job_type: string
   set_prefix: string
   ddragon_version: string
   status: string
@@ -45,6 +46,21 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
   // Aggregation state
   const [aggRunning, setAggRunning] = useState(false)
 
+  // CDragon state
+  const [cdragonRunning, setCdragonRunning] = useState(false)
+  const [cdragonJobId, setCdragonJobId] = useState<string | null>(null)
+  const [cdragonStatus, setCdragonStatus] = useState<'completed' | 'error' | null>(null)
+  const [cdragonSource, setCdragonSource] = useState<'latest' | 'pbe'>('latest')
+
+  // Patch Crawler State
+  const [crawlRunning, setCrawlRunning] = useState(false)
+  const [crawlJobId, setCrawlJobId] = useState<string | null>(null)
+  const [crawlStatus, setCrawlStatus] = useState<'completed' | 'error' | null>(null)
+  const [crawlUrl, setCrawlUrl] = useState('')
+
+  // Next Set Prep
+  const [nextSetPrefix, setNextSetPrefix] = useState('TFT17')
+
   // Log Viewer
   const [viewingLog, setViewingLog] = useState<{ id: string, content: string | null } | null>(null)
   const [loadingLog, setLoadingLog] = useState(false)
@@ -61,10 +77,11 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
           setDdVersion(`${latestPatch}.1`);
           
           // Extract the major version for set prefix
-          const major = latestPatch.split('.')[0];
+          const major = parseInt(latestPatch.split('.')[0]);
           if (major) {
-            setPipelineSetNumber(major);
+            setPipelineSetNumber(major.toString());
             setSetPrefix(`TFT${major}`);
+            setNextSetPrefix(`TFT${major + 1}`);
           }
         }
       })
@@ -111,6 +128,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
       const existing = prev.find(j => j.id === currentJobId)
       const newJob: SyncJob = {
         id: currentJobId!,
+        job_type: 'ddragon',
         set_prefix: setPrefix,
         ddragon_version: ddVersion,
         status,
@@ -158,6 +176,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
       const existing = prev.find(j => j.id === pipelineJobId)
       const newJob: SyncJob = {
         id: pipelineJobId!,
+        job_type: 'pipeline',
         set_prefix: `TFT${pipelineSetNumber}`,
         ddragon_version: 'live',
         status,
@@ -190,6 +209,89 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
     }
   }
 
+  async function handleCDragonSync(overridePrefix?: string, overrideSource?: 'latest' | 'pbe') {
+    const targetPrefix = overridePrefix || setPrefix
+    const targetSource = overrideSource || cdragonSource
+    
+    setCdragonRunning(true)
+    setCdragonStatus(null)
+    setCdragonJobId(null)
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/cdragon/trigger`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ set_prefix: targetPrefix, cdragon_source: targetSource }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to start CDragon sync')
+      setCdragonJobId(data.job_id)
+    } catch (err: unknown) {
+      alert(`Could not start CDragon sync: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setCdragonRunning(false)
+    }
+  }
+
+  const handleCDragonDone = useCallback((status: 'completed' | 'error') => {
+    setCdragonRunning(false)
+    setCdragonStatus(status)
+    setJobs(prev => {
+      const existing = prev.find(j => j.id === cdragonJobId)
+      const newJob: SyncJob = {
+        id: cdragonJobId!,
+        job_type: 'cdragon',
+        set_prefix: setPrefix,
+        ddragon_version: `cdragon-${cdragonSource}`,
+        status,
+        champion_count: null, trait_count: null, augment_count: null, item_count: null,
+        started_at: existing ? existing.started_at : new Date().toISOString(),
+        finished_at: new Date().toISOString(),
+      }
+      return existing ? prev.map(j => j.id === cdragonJobId ? newJob : j) : [newJob, ...prev].slice(0, 10)
+    })
+  }, [cdragonJobId, setPrefix, cdragonSource])
+
+  async function handleCrawl() {
+    setCrawlRunning(true)
+    setCrawlJobId(null)
+    setCrawlStatus(null)
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/patch-notes/crawl`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(crawlUrl ? { url: crawlUrl } : {}),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to start crawl')
+      setCrawlJobId(data.job_id)
+    } catch (err: unknown) {
+      alert(`Could not start crawl: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setCrawlRunning(false)
+    }
+  }
+
+  const handleCrawlDone = useCallback((status: 'completed' | 'error') => {
+    setCrawlRunning(false)
+    setCrawlStatus(status)
+    setJobs(prev => {
+      const existing = prev.find(j => j.id === crawlJobId)
+      const newJob: SyncJob = {
+        id: crawlJobId!,
+        job_type: 'patch_crawl',
+        set_prefix: 'patch-notes',
+        ddragon_version: 'live',
+        status,
+        champion_count: null, trait_count: null, augment_count: null, item_count: null,
+        started_at: existing ? existing.started_at : new Date().toISOString(),
+        finished_at: new Date().toISOString(),
+      }
+      return existing ? prev.map(j => j.id === crawlJobId ? newJob : j) : [newJob, ...prev].slice(0, 10)
+    })
+  }, [crawlJobId])
+
   async function fetchAndShowLog(jobId: string) {
     setViewingLog({ id: jobId, content: null })
     setLoadingLog(true)
@@ -209,21 +311,23 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
     <div className="sync-page">
       <div className="sync-header">
         <h2 className="sync-heading">Data Sync</h2>
-        <p className="sync-sub">Refresh static TFT data from the Riot DDragon CDN</p>
+        <p className="sync-sub">Sync static TFT entities (champs, traits, items) from the best source.</p>
       </div>
 
       <div className="sync-actions">
-        {/* DDragon Sync Card */}
+        {/* Live Set Sync Card (CDragon + DDragon Fallback) */}
         <ActionCard
-          id="sync-ddragon-card"
-          title="Sync DDragon Static Data"
-          description={`Fetch champions, traits, augments, and items for set prefix ${setPrefix || 'TFT17'} from DDragon v${ddVersion || '?'} and upsert into Supabase.`}
-          badge={running ? 'Running' : lastStatus === 'completed' ? 'Last: Success' : lastStatus === 'error' ? 'Last: Failed' : undefined}
-          badgeColor={running ? '#fbbf24' : lastStatus === 'completed' ? '#4ade80' : '#f87171'}
-          actionLabel={`Sync ${setPrefix || 'TFT17'} Data`}
-          actionLoading={running}
-          actionDisabled={!!versionError || !setPrefix || !ddVersion}
-          onAction={handleSync}
+          id="live-set-sync-card"
+          title={`Live Set Sync (${setPrefix})`}
+          description="Sync data for the current live set. CommunityDragon is usually faster, while DDragon is the official Riot source."
+          badge={cdragonRunning && cdragonSource === 'latest' ? 'Running CDragon' : running ? 'Running DDragon' : 'STABLE'}
+          badgeColor={cdragonRunning || running ? '#fbbf24' : '#10b981'}
+          actionLabel="Fast Sync (CDragon)"
+          actionLoading={cdragonRunning && cdragonSource === 'latest'}
+          onAction={() => { setCdragonSource('latest'); handleCDragonSync(setPrefix, 'latest'); }}
+          secondaryActionLabel="Official (DDragon)"
+          secondaryActionLoading={running}
+          onSecondaryAction={handleSync}
         >
           <div className="card-inline-config">
             <div className="config-field">
@@ -233,21 +337,50 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
                 className="config-input"
                 value={setPrefix}
                 onChange={e => setSetPrefix(e.target.value.toUpperCase().trim())}
-                placeholder="TFT17"
-                disabled={running}
+                placeholder="TFT16"
+                disabled={running || cdragonRunning}
               />
             </div>
             <div className="config-field">
-              <label htmlFor="ddragon-version-input" className="config-label">DDragon</label>
+              <label htmlFor="dd-version-input" className="config-label">DDragon Ver.</label>
               <input
-                id="ddragon-version-input"
-                className={`config-input ${versionError ? 'error' : ''}`}
+                id="dd-version-input"
+                className="config-input"
                 value={ddVersion}
-                onChange={e => { setDdVersion(e.target.value); validateVersion(e.target.value) }}
-                placeholder="17.1.1"
-                disabled={running}
+                onChange={e => setDdVersion(e.target.value)}
+                placeholder="16.7.1"
+                disabled={running || cdragonRunning}
               />
-              {versionError && <span className="config-error">{versionError}</span>}
+            </div>
+          </div>
+        </ActionCard>
+
+        {/* PBE Next Set Sync Card */}
+        <ActionCard
+          id="pbe-next-set-card"
+          title="Next Set PBE Sync (Early Access)"
+          description={`Proactively sync data for the UPCOMING set (${nextSetPrefix}) from CDragon PBE server.`}
+          badge={cdragonRunning && cdragonSource === 'pbe' ? 'Running' : 'PRE-RELEASE'}
+          badgeColor={cdragonRunning && cdragonSource === 'pbe' ? '#fbbf24' : '#f59e0b'}
+          actionLabel={`Sync ${nextSetPrefix} (PBE)`}
+          actionLoading={cdragonRunning && cdragonSource === 'pbe'}
+          onAction={() => { 
+            setCdragonSource('pbe');
+            setSetPrefix(nextSetPrefix);
+            handleCDragonSync(nextSetPrefix, 'pbe'); 
+          }}
+        >
+          <div className="card-inline-config">
+            <div className="config-field">
+              <label htmlFor="next-set-input" className="config-label">Target Next Set</label>
+              <input
+                id="next-set-input"
+                className="config-input"
+                value={nextSetPrefix}
+                onChange={e => setNextSetPrefix(e.target.value.toUpperCase().trim())}
+                placeholder="TFT17"
+                disabled={cdragonRunning}
+              />
             </div>
           </div>
         </ActionCard>
@@ -319,6 +452,33 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
             </div>
           </div>
         </ActionCard>
+
+        {/* Patch Notes Crawler Card */}
+        <ActionCard
+          id="patch-crawl-card"
+          title="Patch Notes AI Crawler"
+          description="Read official patch notes and extract stat changes into the Tuning UI. Best used once the official article is published."
+          badge={crawlRunning ? 'Running' : crawlStatus === 'completed' ? 'Last: Success' : crawlStatus === 'error' ? 'Last: Failed' : undefined}
+          badgeColor={crawlRunning ? '#fbbf24' : crawlStatus === 'completed' ? '#4ade80' : '#f87171'}
+          actionLabel="Start Crawling"
+          actionLoading={crawlRunning}
+          onAction={handleCrawl}
+        >
+          <div className="card-inline-config full-width" style={{ marginTop: '16px' }}>
+            <div className="config-field" style={{ width: '100%' }}>
+              <label htmlFor="crawl-url-input" className="config-label">Official URL (Auto-detect if empty)</label>
+              <input
+                id="crawl-url-input"
+                className="config-input"
+                value={crawlUrl}
+                onChange={e => setCrawlUrl(e.target.value.trim())}
+                placeholder="https://..."
+                disabled={crawlRunning}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        </ActionCard>
       </div>
 
       {/* SSE Consoles */}
@@ -345,6 +505,30 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         </div>
       )}
 
+      {cdragonJobId && (
+        <div className="sync-console-wrap">
+          <SyncConsole
+            jobId={cdragonJobId}
+            setPrefix={setPrefix}
+            ddVersion={`cdragon-${cdragonSource}`}
+            streamUrl={`/api/admin/sync/stream?job_id=${cdragonJobId}`}
+            onDone={handleCDragonDone}
+          />
+        </div>
+      )}
+
+      {crawlJobId && (
+        <div className="sync-console-wrap">
+          <SyncConsole
+            jobId={crawlJobId}
+            setPrefix="patch-notes"
+            ddVersion="live"
+            streamUrl={`/api/admin/patch-notes/stream?job_id=${crawlJobId}`}
+            onDone={handleCrawlDone}
+          />
+        </div>
+      )}
+
       {/* Done Banners */}
       {!running && lastStatus && (
         <div className={`sync-banner ${lastStatus}`}>
@@ -362,6 +546,22 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         </div>
       )}
 
+      {!cdragonRunning && cdragonStatus && (
+        <div className={`sync-banner ${cdragonStatus}`}>
+          {cdragonStatus === 'completed'
+            ? '✅ CDragon Sync complete! New data is ready in the database.'
+            : '❌ CDragon Sync failed. Check the log above.'}
+        </div>
+      )}
+
+      {!crawlRunning && crawlStatus && (
+        <div className={`sync-banner ${crawlStatus}`}>
+          {crawlStatus === 'completed'
+            ? '✅ Patch crawl complete! Review the changes in the Tuning UI.'
+            : '❌ Patch crawl failed. Check the log above.'}
+        </div>
+      )}
+
       {/* Recent jobs table */}
       <div className="sync-history">
         <h3 className="history-heading">Recent Sync Jobs</h3>
@@ -372,34 +572,67 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
             <table className="history-table">
               <thead>
                 <tr>
-                  <th>Version</th>
+                  <th>Type</th>
                   <th>Set</th>
+                  <th>Details</th>
                   <th>Status</th>
-                  <th>Champions</th>
-                  <th>Augments</th>
+                  <th>Duration</th>
                   <th>Started</th>
                 </tr>
               </thead>
               <tbody>
-                {jobs.map(job => (
-                  <tr key={job.id} id={`job-${job.id}`}>
-                    <td className="mono">{job.ddragon_version}</td>
-                    <td className="mono">{job.set_prefix}</td>
-                    <td>
-                      <div className="status-cell">
-                        <span className={`job-status ${job.status}`}>
-                          {job.status === 'completed' ? '✅ Done' : job.status === 'error' ? '❌ Error' : '⏳ Running'}
+                {jobs.map(job => {
+                  const isPipeline = job.job_type === 'pipeline'
+                  const isCDragon = job.job_type === 'cdragon'
+                  const duration = job.finished_at && job.started_at
+                    ? (() => {
+                        const ms = new Date(job.finished_at!).getTime() - new Date(job.started_at).getTime()
+                        const sec = Math.floor(ms / 1000)
+                        if (sec < 60) return `${sec}s`
+                        const min = Math.floor(sec / 60)
+                        const remSec = sec % 60
+                        return `${min}m ${remSec}s`
+                      })()
+                    : job.status === 'running' ? '⏳' : '—'
+                  return (
+                    <tr key={job.id} id={`job-${job.id}`} className={isPipeline ? 'row-pipeline' : isCDragon ? 'row-cdragon' : 'row-ddragon'}>
+                      <td>
+                        <span className={`job-type-badge ${isPipeline ? 'pipeline' : isCDragon ? 'cdragon' : 'ddragon'}`}>
+                          {isPipeline ? '🔄 Pipeline' : isCDragon ? '🐉 CDragon' : '📦 DDragon'}
                         </span>
-                        <button className="view-log-btn" onClick={() => fetchAndShowLog(job.id)}>Log</button>
-                      </div>
-                    </td>
-                    <td>{job.champion_count ?? '—'}</td>
-                    <td>{job.augment_count ?? '—'}</td>
-                    <td className="mono dimmed">
-                      {new Date(job.started_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="mono">{job.set_prefix || '—'}</td>
+                      <td className="details-cell">
+                        {isPipeline ? (
+                          <span className="detail-tag">Match Ingestion</span>
+                        ) : isCDragon ? (
+                          <span className="detail-tag">
+                            Source: {job.ddragon_version?.replace('cdragon-', '').toUpperCase()}
+                          </span>
+                        ) : (
+                          <span className="detail-tag">
+                            v{job.ddragon_version}
+                            {job.champion_count != null && <span className="detail-count"> · {job.champion_count} champs</span>}
+                            {job.augment_count != null && <span className="detail-count"> · {job.augment_count} augments</span>}
+                            {job.item_count != null && <span className="detail-count"> · {job.item_count} items</span>}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="status-cell">
+                          <span className={`job-status ${job.status}`}>
+                            {job.status === 'completed' ? '✅ Done' : job.status === 'error' ? '❌ Error' : '⏳ Running'}
+                          </span>
+                          <button className="view-log-btn" onClick={() => fetchAndShowLog(job.id)}>Log</button>
+                        </div>
+                      </td>
+                      <td className="mono dimmed">{duration}</td>
+                      <td className="mono dimmed">
+                        {new Date(job.started_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -475,6 +708,22 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         .job-status.completed { background: #E8F7F3; color: #50E3C2; }
         .job-status.error { background: #FDECEA; color: #EB5E28; }
         .job-status.running { background: #FFF7EB; color: #F5A623; }
+
+        .job-type-badge {
+          display: inline-flex; align-items: center; gap: 4px;
+          font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 20px;
+          white-space: nowrap;
+        }
+        .job-type-badge.ddragon { background: #EDE9FE; color: #7C3AED; }
+        .job-type-badge.pipeline { background: #DBEAFE; color: #2563EB; }
+        .job-type-badge.cdragon { background: #FCE7F3; color: #DB2777; }
+
+        .on.cdragon { background: #DB2777; color: #FFF; }
+        .on.pbe-btn { background: #F59E0B; color: #FFF; }
+
+        .details-cell { min-width: 140px; }
+        .detail-tag { font-size: 12px; font-weight: 500; color: #555; }
+        .detail-count { font-size: 11px; color: #9A9A9A; }
 
         .pipeline-section { margin-top: 40px; }
 

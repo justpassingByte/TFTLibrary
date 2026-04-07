@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
-import { AdminTopbar } from '@/components/admin/AdminTopbar'
+import { AdminSetProvider } from '@/components/admin/AdminSetContext'
 
 export const metadata: Metadata = {
   title: 'Admin — TFT Grimoire',
@@ -13,6 +13,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
+    <AdminSetProvider>
     <div className="admin-shell">
       <AdminSidebar />
       <div className="admin-main">
@@ -58,5 +59,6 @@ export default function AdminLayout({
         }
       `}</style>
     </div>
+    </AdminSetProvider>
   )
 }

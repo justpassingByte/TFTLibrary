@@ -4,6 +4,43 @@ import { runAggregation } from '../services/aggregation.service';
 
 const router = Router();
 
+import fs from 'fs';
+import path from 'path';
+
+const SETTINGS_FILE = path.join(__dirname, '../../data/settings.json');
+
+// ── Settings (Active Set etc) ────────────────────────────────────────
+
+router.get('/settings', (req, res) => {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+      res.json(data);
+    } else {
+      res.json({ active_set: 'TFT16' });
+    }
+  } catch (e) {
+    res.json({ active_set: 'TFT16' });
+  }
+});
+
+router.post('/settings', (req, res) => {
+  try {
+    const { active_set } = req.body;
+    const current = fs.existsSync(SETTINGS_FILE) ? JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')) : {};
+    current.active_set = active_set || 'TFT16';
+    
+    if (!fs.existsSync(path.dirname(SETTINGS_FILE))) {
+      fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
+    }
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(current, null, 2));
+    res.json({ success: true, settings: current });
+  } catch (e) {
+    console.error('POST /api/admin/settings error:', e);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
 // ── Aggregation ──────────────────────────────────────────────────────
 
 router.post('/aggregation/run', async (req, res) => {
@@ -66,6 +103,18 @@ router.post('/augments/bulk', async (req, res) => {
 });
 
 // ── Champions ────────────────────────────────────────────────────────
+
+router.patch('/champions/:id/icon', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { icon } = req.body;
+    await prisma.champion.update({ where: { id }, data: { icon } });
+    res.json({ success: true, champion_id: id, icon });
+  } catch (error) {
+    console.error('PATCH /api/admin/champions/:id/icon error:', error);
+    res.status(500).json({ error: 'Failed to update champion icon' });
+  }
+});
 
 router.patch('/champions/:id/traits', async (req, res) => {
   try {
@@ -294,6 +343,178 @@ router.patch('/insights/:id', async (req, res) => {
   } catch (error) {
     console.error('PATCH /api/admin/insights/:id error:', error);
     res.status(500).json({ error: 'Failed to update insight' });
+  }
+});
+
+// ── Patch Notes (Tuning) ─────────────────────────────────────────────
+
+// Get all changes + predictions for a patch
+router.get('/patch-notes', async (req, res) => {
+  try {
+    const { patch } = req.query;
+
+    // If no patch specified, find the latest
+    let targetPatch = patch as string;
+    if (!targetPatch) {
+      const latest = await prisma.patchChange.findFirst({
+        orderBy: { created_at: 'desc' },
+        select: { patch: true },
+      });
+      targetPatch = latest?.patch || '';
+    }
+
+    if (!targetPatch) return res.json({ patch: '', changes: [], predictions: [], available_patches: [] });
+
+    const [changes, predictions, patchList] = await Promise.all([
+      prisma.patchChange.findMany({
+        where: { patch: targetPatch },
+        orderBy: [{ entity_type: 'asc' }, { score: 'desc' }],
+      }),
+      prisma.patchMetaPrediction.findMany({
+        where: { patch: targetPatch },
+        orderBy: { sort_order: 'asc' },
+      }),
+      prisma.patchChange.findMany({
+        distinct: ['patch'],
+        select: { patch: true },
+        orderBy: { created_at: 'desc' },
+      }),
+    ]);
+
+    const [champIcons, traitIcons, augmentIcons, itemIcons] = await Promise.all([
+      prisma.champion.findMany({ select: { id: true, name: true, icon: true } }),
+      prisma.trait.findMany({ select: { id: true, name: true, icon: true } }),
+      prisma.augment.findMany({ select: { id: true, name: true, icon: true } }),
+      // @ts-ignore
+      prisma.item?.findMany ? prisma.item.findMany({ select: { id: true, name: true, icon: true } }) : Promise.resolve([])
+    ]);
+
+    const iconMap = new Map<string, string>();
+    const idMap = new Map<string, string>();
+    const champNames = new Set<string>();
+    const traitNames = new Set<string>();
+    const augmentNames = new Set<string>();
+
+    champIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); champNames.add(n); } });
+    traitIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); traitNames.add(n); } });
+    augmentIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); augmentNames.add(n); } });
+    itemIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); } });
+
+    const getIconUrl = (iconPath: string) => {
+      if (!iconPath) return '';
+      // DB now stores full HTTPS URLs — pass through directly
+      if (iconPath.startsWith('http')) return iconPath;
+      // Fallback for any legacy relative paths
+      return `https://raw.communitydragon.org/latest/game/${iconPath}`;
+    };
+
+    res.json({
+      patch: targetPatch,
+      changes: changes.map(c => {
+        const entNorm = c.entity.toLowerCase().trim();
+        let actualType = c.entity_type;
+        if (champNames.has(entNorm)) actualType = 'unit';
+        else if (traitNames.has(entNorm)) actualType = 'trait';
+        else if (augmentNames.has(entNorm)) actualType = 'augment';
+
+        return {
+          ...c,
+          entity_type: actualType,
+          entity_id: idMap.get(entNorm) || '',
+          iconUrl: getIconUrl(iconMap.get(entNorm) || '')
+        };
+      }),
+      predictions,
+      available_patches: patchList.map(p => p.patch),
+    });
+  } catch (error) {
+    console.error('GET /api/admin/patch-notes error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Update a single change (score, change_type)
+router.patch('/patch-notes/changes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { score, change_type } = req.body;
+    const data: any = {};
+    if (score !== undefined) data.score = parseFloat(score);
+    if (change_type !== undefined) data.change_type = change_type;
+
+    const change = await prisma.patchChange.update({ where: { id }, data });
+    res.json(change);
+  } catch (error) {
+    console.error('PATCH /api/admin/patch-notes/changes/:id error:', error);
+    res.status(500).json({ error: 'Failed to update change' });
+  }
+});
+
+// Bulk update changes
+router.post('/patch-notes/changes/bulk', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) return res.status(400).json({ error: 'items must be array' });
+
+    let updated = 0;
+    for (const item of items) {
+      const data: any = {};
+      if (item.score !== undefined) data.score = parseFloat(item.score);
+      if (item.change_type !== undefined) data.change_type = item.change_type;
+      if (Object.keys(data).length > 0) {
+        await prisma.patchChange.update({ where: { id: item.id }, data });
+        updated++;
+      }
+    }
+    res.json({ success: true, updated });
+  } catch (error) {
+    console.error('POST /api/admin/patch-notes/changes/bulk error:', error);
+    res.status(500).json({ error: 'Failed to bulk update' });
+  }
+});
+
+// Update a prediction
+router.patch('/patch-notes/predictions/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { tier, score, reason, name, key_units, buffed_entities, nerfed_entities, sort_order } = req.body;
+    const data: any = {};
+    if (tier !== undefined) data.tier = tier;
+    if (score !== undefined) data.score = parseFloat(score);
+    if (reason !== undefined) data.reason = reason;
+    if (name !== undefined) data.name = name;
+    if (key_units !== undefined) data.key_units = key_units;
+    if (buffed_entities !== undefined) data.buffed_entities = buffed_entities;
+    if (nerfed_entities !== undefined) data.nerfed_entities = nerfed_entities;
+    if (sort_order !== undefined) data.sort_order = parseInt(sort_order);
+
+    const pred = await prisma.patchMetaPrediction.update({ where: { id }, data });
+    res.json(pred);
+  } catch (error) {
+    console.error('PATCH /api/admin/patch-notes/predictions/:id error:', error);
+    res.status(500).json({ error: 'Failed to update prediction' });
+  }
+});
+
+// Create a new prediction
+router.post('/patch-notes/predictions', async (req, res) => {
+  try {
+    const pred = await prisma.patchMetaPrediction.create({ data: req.body });
+    res.json(pred);
+  } catch (error) {
+    console.error('POST /api/admin/patch-notes/predictions error:', error);
+    res.status(500).json({ error: 'Failed to create prediction' });
+  }
+});
+
+// Delete a prediction
+router.delete('/patch-notes/predictions/:id', async (req, res) => {
+  try {
+    await prisma.patchMetaPrediction.delete({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('DELETE /api/admin/patch-notes/predictions/:id error:', error);
+    res.status(500).json({ error: 'Failed to delete prediction' });
   }
 });
 

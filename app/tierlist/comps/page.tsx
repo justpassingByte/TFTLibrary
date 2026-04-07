@@ -7,12 +7,20 @@ export default async function TierlistCompsPage() {
   let traitsMap: Record<string, string[]> = {};
   let champions: any[] = [];
   let items: any[] = [];
+  let setPrefix = 'TFT16';
 
   try {
+    try {
+      const settingsRes = await fetch(`${API_URL}/api/admin/settings`, { cache: 'no-store' });
+      if (settingsRes.ok) {
+        setPrefix = (await settingsRes.json()).active_set || 'TFT16';
+      }
+    } catch(e) {}
+
     const [compsRes, champsRes, itemsRes] = await Promise.all([
-      fetch(`${API_URL}/api/meta/curated-comps`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/champions`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/items`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/curated-comps?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/champions?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/items?set_prefix=${setPrefix}`, { cache: 'no-store' }),
     ]);
 
     if (compsRes.ok) {
@@ -56,12 +64,25 @@ export default async function TierlistCompsPage() {
     console.error('Comps tierlist fetch error:', e);
   }
 
+  let augments: any[] = [];
+  let traitsDb: any[] = [];
+  try {
+    const [augsRes, traitsRes] = await Promise.all([
+      fetch(`${API_URL}/api/meta/augments?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+      fetch(`${API_URL}/api/meta/traits?set_prefix=${setPrefix}`, { cache: 'no-store' }),
+    ]);
+    if (augsRes.ok) augments = await augsRes.json();
+    if (traitsRes.ok) traitsDb = await traitsRes.json();
+  } catch(e) {}
+
   return (
     <CompsTierlistClient
       comps={comps}
       traitsMap={traitsMap}
       champions={champions}
       items={items}
+      augments={augments}
+      traitsDb={traitsDb}
     />
   );
 }

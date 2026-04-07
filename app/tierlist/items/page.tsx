@@ -7,10 +7,16 @@ export default async function ItemsTierlistPage() {
   let items: any[] = [];
 
   try {
+    let setPrefix = 'TFT16';
+    try {
+      const settingsRes = await fetch(`${API_URL}/api/admin/settings`, { cache: 'no-store' });
+      if (settingsRes.ok) setPrefix = (await settingsRes.json()).active_set || 'TFT16';
+    } catch(e) {}
+
     const [tiersRes, statsRes, itemsRes] = await Promise.all([
       fetch(`${API_URL}/api/admin/item-tiers`, { cache: 'no-store' }),
-      fetch(`${API_URL}/api/meta/stats/items`, { cache: 'no-store' }).catch(() => null),
-      fetch(`${API_URL}/api/meta/items`, { cache: 'no-store' })
+      fetch(`${API_URL}/api/meta/stats/items?set_prefix=${setPrefix}`, { cache: 'no-store' }).catch(() => null),
+      fetch(`${API_URL}/api/meta/items?set_prefix=${setPrefix}`, { cache: 'no-store' })
     ]);
 
     const tiersData = tiersRes.ok ? await tiersRes.json() : { data: [] };

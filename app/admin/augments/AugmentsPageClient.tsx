@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { bulkUpdateAugments, type Augment } from './actions'
+import { useAdminSet } from '@/components/admin/AdminSetContext'
+import { GameIcon } from '@/components/ui/game-icon'
 
 const TIERS = ['S', 'A', 'B', 'C', 'D'] as const
 const TIER_COLORS: Record<string, string> = { S: '#EB5E28', A: '#F3BB45', B: '#7AC29A', C: '#68B3C8', D: '#9A9A9A' }
@@ -17,6 +19,7 @@ const BASE_TIERS = [
 ]
 
 export function AugmentsPageClient({ augments }: Props) {
+  const { currentSet, availableSets, setCurrentSet } = useAdminSet()
   // meta_tier state
   const [tiers, setTiers] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {}
@@ -40,6 +43,8 @@ export function AugmentsPageClient({ augments }: Props) {
   const [draggedItem, setDraggedItem] = useState<string | null>(null)
 
   const displayAugments = augments.filter(a => {
+    // Filter by set
+    if (currentSet && a.set_prefix && !a.set_prefix.includes(currentSet)) return false
     const currentBaseTier = baseTiers[a.id]
     if (currentBaseTier !== categoryFilter) return false
     if (search && !a.name.toLowerCase().includes(search.toLowerCase())) return false
@@ -136,6 +141,8 @@ export function AugmentsPageClient({ augments }: Props) {
         
         <div className="ia-controls">
           <div className="ia-filters" style={{ display: 'flex', gap: '5px' }}>
+            <div className="ia-base-tab" style={{ fontWeight: 'bold', color: '#68B3C8', cursor: 'default' }}>{currentSet.replace('TFT', 'Set ')}</div>
+            <div style={{ width: '1px', background: '#DDD', margin: '0 5px' }} />
              {BASE_TIERS.map(cat => (
                 <div 
                    key={cat.id} 
@@ -186,7 +193,7 @@ export function AugmentsPageClient({ augments }: Props) {
                       title={aug.name + ' (Right click to remove)'}
                     >
                       {aug.icon && (
-                        <img src={`https://ddragon.leagueoflegends.com/cdn/16.7.1/img/tft-augment/${aug.icon}`} alt={aug.name} className="ia-item-icon" loading="lazy" />
+                        <GameIcon type="augment" id={aug.id} icon={aug.icon} alt={aug.name} className="ia-item-icon" />
                       )}
                     </div>
                   )})}
@@ -219,7 +226,7 @@ export function AugmentsPageClient({ augments }: Props) {
                    title={aug.name}
                  >
                    {aug.icon && (
-                     <img src={`https://ddragon.leagueoflegends.com/cdn/16.7.1/img/tft-augment/${aug.icon}`} alt={aug.name} className="ia-item-icon" loading="lazy" />
+                     <GameIcon type="augment" id={aug.id} icon={aug.icon} alt={aug.name} className="ia-item-icon" />
                    )}
                  </div>
                )})
