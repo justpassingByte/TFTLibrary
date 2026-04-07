@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   getChampionImageUrl,
   getAugmentImageUrl,
@@ -6,46 +7,54 @@ import {
   getTraitImageUrl,
 } from '@/lib/riot-cdn';
 
-interface SpriteIconProps {
+export interface SpriteIconProps {
   type: 'champion' | 'item' | 'augment' | 'trait';
-  id: string;
+  id?: string; // Kept for fallback text if icon fails
+  icon?: string | null;
   className?: string;
   alt?: string;
   scale?: number;
+  style?: React.CSSProperties;
 }
 
-export function SpriteIcon({ type, id, className = '', alt, scale = 1 }: SpriteIconProps) {
-  if (!id) return <div className={`inline-block ${className}`} />;
+export function SpriteIcon({ type, id, icon, className = '', alt, scale = 1, style }: SpriteIconProps) {
+  const [error, setError] = useState(false);
+  
+  if (!icon) {
+    return (
+      <div className={`inline-flex bg-white/10 text-[10px] items-center justify-center font-bold px-1 ${className.replace(/w-\d+ h-\d+|w-full h-full/g, '')} min-h-[16px] min-w-[20px] rounded shadow-sm text-white`} title={alt || id || ''}>
+        {(alt || id || '').slice(0, 3)}
+      </div>
+    );
+  }
 
   let imageUrl = '';
   switch (type) {
-    case 'champion': imageUrl = getChampionImageUrl(id); break;
-    case 'augment': imageUrl = getAugmentImageUrl(id); break;
-    case 'item': imageUrl = getItemImageUrl(id); break;
-    case 'trait': imageUrl = getTraitImageUrl(id); break;
+    case 'champion': imageUrl = getChampionImageUrl(icon); break;
+    case 'augment': imageUrl = getAugmentImageUrl(icon); break;
+    case 'item': imageUrl = getItemImageUrl(icon); break;
+    case 'trait': imageUrl = getTraitImageUrl(icon); break;
   }
 
-  if (!imageUrl) {
+  if (!imageUrl || error) {
     return (
-      <div className={`inline-block bg-white/5 flex text-[8px] items-center justify-center ${className}`} title={alt || id}>
-        {(alt || id).slice(0, 3)}
+      <div className={`inline-flex bg-white/10 text-[10px] items-center justify-center font-bold px-1 ${className.replace(/w-\d+ h-\d+|w-full h-full/g, '')} min-h-[16px] min-w-[20px] rounded shadow-sm text-white`} title={alt || id || ''}>
+        {(alt || id || '').slice(0, 3)}
       </div>
     );
   }
 
   return (
-    <div className={`relative flex items-center justify-center overflow-hidden ${className}`} title={alt || id}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+    <div className={`relative flex items-center justify-center overflow-hidden ${className}`} style={{ ...style, transform: scale !== 1 ? `scale(${scale})` : undefined }} title={alt || id}>
+      <Image
         src={imageUrl}
-        alt={alt || id}
+        alt={alt || id || ''}
+        fill
+        sizes="50vw"
         className="object-contain"
-        style={{
-          transform: scale !== 1 ? `scale(${scale})` : undefined,
-          width: '100%',
-          height: '100%',
-        }}
-        loading="lazy"
+        crossOrigin="anonymous"
+        unoptimized={true}
+        onError={() => setError(true)}
       />
     </div>
   );

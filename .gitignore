@@ -16,7 +16,11 @@
 # next.js
 /.next/
 /out/
-
+/backend/node_modules
+/backend/dist
+/backend/logs
+/backend/generated/*
+/backend/prisma/*
 # production
 /build
 

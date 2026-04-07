@@ -112,6 +112,18 @@ export function Header() {
             >
               Join Coven
             </Link>
+            <Link
+              href="/login"
+              id="header-admin-login"
+              title="Admin login"
+              className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all duration-200"
+              aria-label="Admin login"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            </Link>
           </div>
 
           {/* Mobile toggle */}
@@ -168,6 +180,14 @@ export function Header() {
                 className="block px-3 py-2 rounded-lg text-sm font-semibold text-center bg-[var(--color-pumpkin)] text-black"
               >
                 Join Coven
+              </Link>
+              <Link
+                href="/login"
+                id="mobile-admin-login"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2 rounded-lg text-sm font-medium text-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)] hover:bg-white/5 transition-colors"
+              >
+                🔒 Admin Login
               </Link>
             </div>
           </motion.div>

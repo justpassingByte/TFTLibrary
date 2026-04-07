@@ -1,84 +1,62 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DDRAGON_VERSION } from '@/lib/riot-cdn';
-import { GENERATED_CHAMPIONS } from '@/lib/generated-data';
+import { getChampionImageUrl } from '@/lib/riot-cdn';
 
-interface ChampionAvatarProps {
+export interface ChampionAvatarProps {
+  id?: string;
   name: string;
+  icon?: string;
   className?: string;
   shape?: 'circle' | 'hexagon';
 }
 
-export function getChampionName(character_id: string): string {
-  if (!character_id.startsWith('TFT16_')) return '';
-  return character_id.toLowerCase();
+export function getCDragonUrl(character_id: string): string {
+  const norm = character_id.toLowerCase();
+  return `https://raw.communitydragon.org/latest/game/assets/characters/${norm}/hud/${norm}_square.tft_set16.png`;
 }
 
-export function getCDragonUrl(normalizedName: string): string {
-  return `https://raw.communitydragon.org/latest/game/assets/characters/${normalizedName}/hud/${normalizedName}_square.tft_set16.png`;
-}
-
-export function ChampionAvatar({ name, className = "", shape = 'circle' }: ChampionAvatarProps) {
-  const [imgState, setImgState] = useState<'primary' | 'sprite' | 'fallback'>('primary');
+export function ChampionAvatar({ id, name, icon, className = "", shape = 'circle' }: ChampionAvatarProps) {
+  const [imgState, setImgState] = useState<'primary' | 'secondary' | 'fallback' | 'error'>('primary');
 
   const clipPath = shape === 'hexagon' ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' : undefined;
   const roundedClass = shape === 'circle' ? 'rounded-full' : '';
 
-  const champ = GENERATED_CHAMPIONS.find(c => c.name === name || c.id === name);
-  const character_id = champ?.id || name;
-
-  const containerClasses = `overflow-hidden flex-shrink-0 flex items-center justify-center bg-black ${roundedClass} ${className}`;
+  const containerClasses = `overflow-hidden flex-shrink-0 flex items-center justify-center bg-[#1e1e24] ${roundedClass} ${className} relative`;
   const defaultSize = className.includes('w-') ? {} : { width: '48px', height: '48px' };
 
-  if (!character_id.startsWith('TFT16_')) {
-    return (
-      <div className={containerClasses} style={{ ...defaultSize, clipPath }}>
-        <img src="/images/placeholder.png" alt="Fallback" className="w-full h-full object-cover" />
-      </div>
-    );
-  }
-
-  const normalizedName = getChampionName(character_id);
-  const primaryUrl = getCDragonUrl(normalizedName);
-
-  const renderSprite = () => {
-    if (!champ || !champ.image || !champ.image.sprite) {
-      if (imgState !== 'fallback') {
-        setTimeout(() => setImgState('fallback'), 0);
-      }
-      return null;
-    }
-    const { sprite, x, y, w, h } = champ.image;
-    const spriteUrl = `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/img/sprite/${sprite}`;
-
-    return (
-      <div
-        style={{
-          width: w,
-          height: h,
-          backgroundImage: `url(${spriteUrl})`,
-          backgroundPosition: `-${x}px -${y}px`,
-          backgroundRepeat: 'no-repeat',
-        }}
-        title={champ.name}
-      />
-    );
-  };
+  const assumedId = id || (name.startsWith('TFT16_') ? name : `TFT16_${name.replace(/[^a-zA-Z]/g, '')}`);
+  const cdragonUrl = getCDragonUrl(assumedId);
+  const ddragonUrl = icon ? getChampionImageUrl(icon) : '';
+  const fallbackUrl = `/images/placeholder.png`;
 
   return (
-    <div className={containerClasses} style={{ ...defaultSize, clipPath }}>
+    <div className={containerClasses} style={{ ...defaultSize, clipPath }} title={name}>
       {imgState === 'primary' && (
         <img 
-          src={primaryUrl} 
-          alt={character_id}
-          className="w-full h-full object-cover" 
-          onError={() => setImgState('sprite')} 
+          src={cdragonUrl} 
+          alt={name}
+          className="w-full h-full object-cover object-center absolute pointer-events-none" 
+          onError={() => setImgState(ddragonUrl ? 'secondary' : 'fallback')} 
+          loading="lazy"
+          crossOrigin="anonymous"
         />
       )}
-      {imgState === 'sprite' && renderSprite()}
+      {imgState === 'secondary' && ddragonUrl && (
+        <img 
+          src={ddragonUrl} 
+          alt={name}
+          className="w-full h-full object-cover object-center absolute pointer-events-none" 
+          onError={() => setImgState('fallback')} 
+          loading="lazy"
+          crossOrigin="anonymous"
+        />
+      )}
       {imgState === 'fallback' && (
-        <img src="/images/placeholder.png" alt="Fallback" className="w-full h-full object-cover" />
+        <img src={fallbackUrl} alt="Fallback" className="w-full h-full object-cover pointer-events-none opacity-50" />
+      )}
+      {imgState === 'error' && (
+        <div className="w-full h-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs">{name.slice(0,3)}</div>
       )}
     </div>
   );

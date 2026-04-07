@@ -1,155 +1,219 @@
 'use client';
 
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-
-const GUIDES = [
-  {
-    id: '1',
-    title: 'Mastering Economy: When to Roll vs Level',
-    category: 'Fundamentals',
-    author: 'Dishsoap',
-    readTime: '8 min',
-    excerpt: 'Understanding econ breakpoints is the single most impactful skill in TFT. Learn the 50g rule, when to break it, and how top players think about gold.',
-    tag: 'Economy',
-  },
-  {
-    id: '2',
-    title: 'Set 17 Space Gods: Complete Trait Guide',
-    category: 'New Set',
-    author: 'Frodan',
-    readTime: '12 min',
-    excerpt: 'Deep dive into every new trait in Set 17. Which ones are sleeper OP, which look good but underperform, and which comps to start testing on day one.',
-    tag: 'Set 17',
-  },
-  {
-    id: '3',
-    title: 'Positioning Masterclass: Anti-Assassin & Zephyr',
-    category: 'Advanced',
-    author: 'KCDouble0',
-    readTime: '6 min',
-    excerpt: 'Positioning wins games. Learn the corner carry setup, anti-assassin formations, and how to bait Zephyr in high elo lobbies.',
-    tag: 'Positioning',
-  },
-  {
-    id: '4',
-    title: 'How to Scout Efficiently in 10 Seconds',
-    category: 'Intermediate',
-    author: 'Soju',
-    readTime: '5 min',
-    excerpt: 'You don\'t need to check every board. Focus on these 3 things to get 90% of the information you need in under 10 seconds every round.',
-    tag: 'Scouting',
-  },
-  {
-    id: '5',
-    title: 'Augment Selection Framework',
-    category: 'Advanced',
-    author: 'MismatchedSocks',
-    readTime: '10 min',
-    excerpt: 'A decision framework for every augment choice. Economy augments vs combat augments: when each is correct, and the math behind the decision.',
-    tag: 'Augments',
-  },
-  {
-    id: '6',
-    title: 'Climbing from Diamond to Masters: Mindset Guide',
-    category: 'Mindset',
-    author: 'Bebe872',
-    readTime: '7 min',
-    excerpt: 'The biggest difference between Diamond and Master isn\'t mechanics — it\'s consistency. Learn the mental habits that separate hardstuck players from climbers.',
-    tag: 'Mindset',
-  },
-];
+import { Clock, User, BookOpen, PenLine, Search } from 'lucide-react';
 
 const TAG_COLORS: Record<string, string> = {
   Economy: 'text-[var(--color-gold)] border-[var(--color-gold)]/30 bg-[var(--color-gold)]/10',
-  'Set 17': 'text-[var(--color-spectral)] border-[var(--color-spectral)]/30 bg-[var(--color-spectral)]/10',
+  Fundamentals: 'text-[var(--color-spectral)] border-[var(--color-spectral)]/30 bg-[var(--color-spectral)]/10',
   Positioning: 'text-[var(--color-necrotic)] border-[var(--color-necrotic)]/30 bg-[var(--color-necrotic)]/10',
-  Scouting: 'text-[var(--color-pumpkin)] border-[var(--color-pumpkin)]/30 bg-[var(--color-pumpkin)]/10',
+  Advanced: 'text-[var(--color-blood)] border-[var(--color-blood)]/30 bg-[var(--color-blood)]/10',
   Augments: 'text-[var(--color-amethyst)] border-[var(--color-amethyst)]/30 bg-[var(--color-amethyst)]/10',
-  Mindset: 'text-[var(--color-blood)] border-[var(--color-blood)]/30 bg-[var(--color-blood)]/10',
+  Mindset: 'text-[var(--color-pumpkin)] border-[var(--color-pumpkin)]/30 bg-[var(--color-pumpkin)]/10',
+};
+
+type ArticleSummary = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  tags: string[];
+  author_name: string;
+  read_time: string;
+  published_at: string;
+  cover_image?: string;
 };
 
 export default function StudyHallPage() {
+  const [articles, setArticles] = useState<ArticleSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTag, setActiveTag] = useState('All');
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    fetch(`${apiUrl}/api/admin/insights?status=published`)
+      .then(r => r.json())
+      .then(res => {
+         const mapped = (Array.isArray(res) ? res : []).map((i: any) => {
+            let parsedBody: any = {};
+            try { parsedBody = JSON.parse(i.body || "{}"); } catch(e){}
+            return {
+               id: i.id,
+               slug: i.id,
+               title: i.title,
+               excerpt: parsedBody.excerpt || i.body || '',
+               tags: i.tags || [],
+               author_name: i.author_id || 'Unknown',
+               read_time: '5 min',
+               published_at: i.created_at
+            };
+         });
+         setArticles(mapped);
+      })
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const allTags = ['All', ...Array.from(new Set(articles.flatMap(a => a.tags)))];
+
+  const filtered = articles.filter(a => {
+    const matchesTag = activeTag === 'All' || a.tags.includes(activeTag);
+    const matchesSearch = !search || a.title.toLowerCase().includes(search.toLowerCase()) || a.excerpt.toLowerCase().includes(search.toLowerCase());
+    return matchesTag && matchesSearch;
+  });
+
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
-        <div className="mb-10">
-          <h1
-            className="text-3xl sm:text-4xl font-extrabold flex items-center gap-3 mb-2"
-            style={{ fontFamily: "'Cinzel', serif" }}
-          >
-            <span className="text-3xl">📚</span>
-            <span className="gradient-text">The Archives</span>
-          </h1>
-          <p className="text-[var(--color-text-secondary)] max-w-xl">
-            Deep-dive strategy guides written by high-elo players and coaches. Open a scroll and learn the dark arts of TFT.
-          </p>
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1
+              className="text-3xl sm:text-4xl font-extrabold flex items-center gap-3 mb-2"
+              style={{ fontFamily: "'Cinzel', serif" }}
+            >
+              <BookOpen size={32} className="text-[var(--color-amethyst)]" />
+              <span className="gradient-text">The Archives</span>
+            </h1>
+            <p className="text-[var(--color-text-secondary)] max-w-xl">
+              Deep-dive strategy guides written by high-elo players and coaches. Open a scroll and learn the dark arts of TFT.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Search */}
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+              <input
+                type="text"
+                placeholder="Search articles..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9 pr-4 py-2 rounded-xl bg-[var(--color-grimoire)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-amethyst)] transition-colors w-48"
+              />
+            </div>
+            {/* Editor link */}
+            <Link
+              href="/studyhall/editor"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-grimoire-light)] border border-[var(--color-border)] hover:border-[var(--color-amethyst)]/50 text-sm text-[var(--color-text-secondary)] hover:text-white transition-all group"
+            >
+              <PenLine size={15} className="text-[var(--color-amethyst)] group-hover:scale-110 transition-transform" />
+              Write an article
+            </Link>
+          </div>
         </div>
 
-        {/* Category tags filter */}
+        {/* Tag filter */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {['All', 'Economy', 'Set 17', 'Positioning', 'Scouting', 'Augments', 'Mindset'].map((cat, i) => (
+          {allTags.map((tag) => (
             <button
-              key={cat}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                i === 0
-                  ? 'bg-[var(--color-amethyst)] text-white border-[var(--color-amethyst)]'
+              key={tag}
+              onClick={() => setActiveTag(tag)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                activeTag === tag
+                  ? 'bg-[var(--color-amethyst)] text-white border-[var(--color-amethyst)] shadow-[0_0_12px_var(--color-amethyst)/30]'
                   : 'bg-[var(--color-grimoire)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:border-[var(--color-border-hover)] hover:text-[var(--color-text-secondary)]'
               }`}
             >
-              {cat}
+              {tag}
             </button>
           ))}
         </div>
 
-        {/* Guide Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {GUIDES.map((guide, i) => (
-            <motion.article
-              key={guide.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="grimoire-card p-5 hover-float group cursor-pointer"
-            >
-              {/* Tag + Meta */}
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${TAG_COLORS[guide.tag] || ''}`}>
-                  {guide.tag}
-                </span>
-                <span className="text-[10px] text-[var(--color-text-muted)]">
-                  {guide.readTime} read
-                </span>
+        {/* Skeleton / Article Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="grimoire-card p-5 animate-pulse space-y-3">
+                <div className="h-3 w-24 rounded bg-white/10" />
+                <div className="h-5 w-3/4 rounded bg-white/10" />
+                <div className="h-3 w-full rounded bg-white/5" />
+                <div className="h-3 w-5/6 rounded bg-white/5" />
               </div>
-
-              {/* Title */}
-              <h3
-                className="text-base font-bold mb-2 text-[var(--color-text-primary)] group-hover:text-[var(--color-pumpkin)] transition-colors leading-snug"
-                style={{ fontFamily: "'Cinzel', serif" }}
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map((article, i) => (
+              <motion.div
+                key={article.slug}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07 }}
               >
-                {guide.title}
-              </h3>
+                <Link
+                  href={`/studyhall/${article.slug}`}
+                  className="grimoire-card p-5 hover-float group cursor-pointer block"
+                >
+                  {/* Cover image */}
+                  {article.cover_image && (
+                    <div className="w-full h-36 rounded-lg overflow-hidden mb-3 bg-[var(--color-grimoire-light)]">
+                      <img src={article.cover_image} alt={article.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
 
-              {/* Excerpt */}
-              <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed mb-4 line-clamp-3">
-                {guide.excerpt}
-              </p>
+                  {/* Tags + read time */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex gap-1.5 flex-wrap">
+                      {article.tags.slice(0, 2).map((tag) => (
+                        <span
+                          key={tag}
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${TAG_COLORS[tag] ?? ''}`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1">
+                      <Clock size={10} />
+                      {article.read_time}
+                    </span>
+                  </div>
 
-              {/* Author */}
-              <div className="flex items-center gap-2 border-t border-[var(--color-border)] pt-3">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--color-amethyst)] to-[var(--color-pumpkin)] flex items-center justify-center text-[10px] font-bold text-white">
-                  {guide.author[0]}
-                </div>
-                <span className="text-xs text-[var(--color-text-muted)]">
-                  by <span className="text-[var(--color-text-secondary)]">{guide.author}</span>
-                </span>
-                <span className="text-[8px] text-[var(--color-text-muted)] ml-auto px-1.5 py-0.5 rounded bg-[var(--color-grimoire-light)]">
-                  {guide.category}
-                </span>
-              </div>
-            </motion.article>
-          ))}
-        </div>
+                  {/* Title */}
+                  <h3
+                    className="text-base font-bold mb-2 text-[var(--color-text-primary)] group-hover:text-[var(--color-pumpkin)] transition-colors leading-snug"
+                    style={{ fontFamily: "'Cinzel', serif" }}
+                  >
+                    {article.title}
+                  </h3>
+
+                  {/* Excerpt */}
+                  <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed mb-4 line-clamp-3">
+                    {article.excerpt}
+                  </p>
+
+                  {/* Author */}
+                  <div className="flex items-center gap-2 border-t border-[var(--color-border)] pt-3">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--color-amethyst)] to-[var(--color-pumpkin)] flex items-center justify-center text-[10px] font-bold text-white">
+                      {article.author_name[0]}
+                    </div>
+                    <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
+                      <User size={10} />
+                      <span className="text-[var(--color-text-secondary)]">{article.author_name}</span>
+                    </span>
+                    <span className="ml-auto text-[9px] text-[var(--color-text-muted)] flex items-center gap-1">
+                      <BookOpen size={10} />
+                      Open article →
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && filtered.length === 0 && (
+          <div className="text-center py-20 text-[var(--color-text-muted)]">
+            {articles.length === 0
+              ? 'No articles yet. Be the first to write one!'
+              : `No articles for "${activeTag}" yet.`
+            }
+          </div>
+        )}
       </div>
     </div>
   );

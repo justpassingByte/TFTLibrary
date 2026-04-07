@@ -9,31 +9,32 @@
   --font-sans: 'Outfit', system-ui, sans-serif;
   --font-display: 'Cinzel', 'Palatino', serif;
 
-  --color-void: #0a0a0a;
-  --color-void-light: #111111;
-  --color-grimoire: #1a1a1a;
-  --color-grimoire-light: #222222;
-  --color-grimoire-lighter: #2a2a2a;
+  /* Deep Arcane / Premium Dark Mode (TFT Academy / Mobalytics vibe) */
+  --color-void: #090b14;
+  --color-void-light: #101423;
+  --color-grimoire: #161b2e;
+  --color-grimoire-light: #1e253c;
+  --color-grimoire-lighter: #2a3454;
 
-  --color-pumpkin: #FFD700;
+  --color-pumpkin: #ffd700;
   --color-pumpkin-dim: #ccaa00;
-  --color-necrotic: #39FF14;
-  --color-necrotic-dim: #2dcc10;
+  --color-necrotic: #00ff88;
+  --color-necrotic-dim: #00cc6a;
   --color-spectral: #00f0ff;
   --color-spectral-dim: #00c0cc;
-  --color-blood: #ff2244;
-  --color-blood-dim: #cc1a36;
-  --color-amethyst: #FFD700;
-  --color-amethyst-dim: #ccaa00;
+  --color-blood: #ff2a5f;
+  --color-blood-dim: #cc224c;
+  --color-amethyst: #a855f7;
+  --color-amethyst-dim: #9333ea;
   --color-gold: #fbbf24;
   --color-gold-dim: #d4a020;
 
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #a0a0a0;
-  --color-text-muted: #606060;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e2e8f0;
+  --color-text-muted: #818ea3; /* Slightly brighter muted text */
 
-  --color-border: #222222;
-  --color-border-hover: #333333;
+  --color-border: rgba(255, 255, 255, 0.08); /* Increased contrast */
+  --color-border-hover: rgba(255, 255, 255, 0.15);
 }
 
 /* Hide scrollbar */
@@ -47,25 +48,32 @@
 
 body {
   background: var(--color-void);
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.04), transparent 45%);
+  background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ===============================================
    GLASSMORPHISM
    =============================================== */
 .glass {
-  background: rgba(20, 20, 20, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 215, 0, 0.06);
+  background: rgba(25, 20, 40, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .glass-strong {
-  background: rgba(14, 14, 14, 0.92);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 215, 0, 0.08);
+  background: rgba(20, 16, 35, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* ===============================================
@@ -192,13 +200,17 @@ body {
    =============================================== */
 .grimoire-card {
   background: var(--color-grimoire);
+  background: linear-gradient(180deg, rgba(30, 37, 60, 0.6) 0%, rgba(22, 27, 46, 0.8) 100%);
   border: 1px solid var(--color-border);
   border-radius: 12px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.06);
   transition: all 0.3s ease;
 }
 .grimoire-card:hover {
   border-color: var(--color-border-hover);
-  box-shadow: 0 4px 24px rgba(255, 215, 0, 0.06);
+  box-shadow: 0 8px 40px rgba(59, 130, 246, 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 /* ===============================================

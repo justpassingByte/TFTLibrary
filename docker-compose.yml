@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Tell Next.js where the backend server is in the docker network
+      - BACKEND_API_URL=http://backend:3001
+    env_file:
+      - .env.local
+    depends_on:
+      - backend
+    networks:
+      - grimoire-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./backend/.env
+    networks:
+      - grimoire-net
+
+networks:
+  grimoire-net:
+    driver: bridge

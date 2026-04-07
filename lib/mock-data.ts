@@ -68,19 +68,11 @@ export interface AugmentData {
   rarity: 'Silver' | 'Gold' | 'Prismatic';
 }
 
-import { GENERATED_CHAMPIONS, GENERATED_ITEMS } from '@/lib/generated-data';
-
-// ============================================================
-// Champion Pool
-// ============================================================
-const CHAMPIONS: Champion[] = GENERATED_CHAMPIONS.map(c => ({
-  id: c.id,
-  name: c.name,
-  cost: c.cost,
-  image: '', // We don't use this anymore as we use HexagonFrame and CDN
-  traits: c.traits,
-  isCarry: false // we can add specific carry logic if needed
-}));
+// Hardcoded tiny subset of standard comps since static data is deleted.
+const CHAMPIONS: Champion[] = [
+  { id: 'TFT16_Ekko', name: 'Ekko', cost: 5, image: '', traits: [], isCarry: false },
+  { id: 'TFT16_Ambessa', name: 'Ambessa', cost: 4, image: '', traits: [], isCarry: false }
+];
 
 function pick(ids: string[]): Champion[] {
   return ids.map(id => {
@@ -309,8 +301,8 @@ export const TRENDS: TrendData[] = [
 // ============================================================
 // Items
 // ============================================================
-// Filter out standard items vs augments heuristic
-const allItems = GENERATED_ITEMS.filter(i => !i.name.includes('Augment') && !i.name.includes('Crest') && !i.name.includes('Crown'));
+// Randomize Items securely
+const allItems = [] as any[];
 export const ITEMS: ItemData[] = allItems.map(i => ({
   id: i.id,
   name: i.name,

@@ -4,14 +4,31 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendCard } from '@/components/ui/trend-card';
 import { SkeletonCard } from '@/components/ui/skeleton';
-import { TRENDS, ITEMS, AUGMENTS, getRecommendations, type RecommendResult } from '@/lib/mock-data';
+import { TRENDS, AUGMENTS, getRecommendations, type RecommendResult } from '@/lib/mock-data';
+import { getItemImageUrl } from '@/lib/riot-cdn';
+import { categorizeItem } from '@/app/builder/builder-data';
 
 export default function MetaOraclePage() {
   const [interval, setInterval] = useState<'24h' | '7d'>('24h');
   const [showLoading, setShowLoading] = useState(false);
+  const [builderItems, setBuilderItems] = useState<any[]>([]);
+
+  // Fetch items
+  import('react').then(React => {
+    React.useEffect(() => {
+      fetch('/api/meta/items')
+        .then(r => r.json())
+        .then(data => {
+          const categorized = data.map((i: any) => ({ ...i, category: categorizeItem(i.id) }));
+          setBuilderItems(categorized);
+        })
+        .catch(() => {})
+    }, [])
+  })
 
   // Recommendation state
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [itemTab, setItemTab] = useState<'Components' | 'Completed' | 'Radiants' | 'Emblems'>('Components');
   const [selectedAugment, setSelectedAugment] = useState<string>('');
   const [recommendations, setRecommendations] = useState<RecommendResult[]>([]);
   const [isRecommending, setIsRecommending] = useState(false);
@@ -122,29 +139,42 @@ export default function MetaOraclePage() {
             <div className="lg:col-span-2 space-y-6">
               {/* Item Selector */}
               <div className="grimoire-card p-5">
-                <h3 className="text-sm font-semibold text-[var(--color-pumpkin)] uppercase mb-3" style={{ fontFamily: "'Cinzel', serif" }}>
-                  Select Items (up to 4)
-                </h3>
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                  {ITEMS.slice(0, 14).map(item => {
-                    const isSelected = selectedItems.includes(item.name);
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => toggleItem(item.name)}
-                        className={`flex flex-col items-center gap-0.5 p-2 rounded-xl border transition-all duration-200 ${
-                          isSelected
-                            ? 'border-[var(--color-pumpkin)] bg-[var(--color-pumpkin)]/10 shadow-[0_0_12px_rgba(255,122,0,0.2)]'
-                            : 'border-[var(--color-border)] bg-[var(--color-grimoire-light)] hover:border-[var(--color-border-hover)]'
-                        }`}
-                      >
-                        <span className="text-lg">{item.image}</span>
-                        <span className="text-[8px] text-[var(--color-text-muted)] truncate max-w-full">
-                          {item.name.split(' ').slice(-1)}
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-[var(--color-pumpkin)] uppercase" style={{ fontFamily: "'Cinzel', serif" }}>
+                    Select Items (up to 4)
+                  </h3>
+                </div>
+                
+                {/* Tabs */}
+                <div className="flex flex-wrap gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-1 border border-[var(--color-border)]">
+                  {(['Components', 'Completed', 'Radiants', 'Emblems'] as const).map(tab => (
+                    <button key={tab} onClick={() => setItemTab(tab)}
+                      className={`flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-colors uppercase ${itemTab === tab ? 'bg-[var(--color-pumpkin)] text-black' : 'text-[var(--color-text-muted)] hover:text-white'}`}>
+                      {tab === 'Completed' ? 'Craftables' : tab}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="h-[200px] overflow-y-auto show-scrollbar pr-1">
+                  <div className="grid grid-cols-8 gap-1.5">
+                    {builderItems.filter((i: any) => i.category === itemTab).map((item: any) => {
+                      const isSelected = selectedItems.includes(item.name);
+                      return (
+                        <button
+                          key={item.id}
+                          title={item.name}
+                          onClick={() => toggleItem(item.name)}
+                          className={`w-[34px] h-[34px] flex items-center justify-center rounded-lg border transition-all duration-200 overflow-hidden ${
+                            isSelected
+                              ? 'border-[var(--color-pumpkin)] bg-[var(--color-pumpkin)]/20 shadow-[0_0_8px_rgba(255,122,0,0.4)]'
+                              : 'border-[var(--color-border)] bg-[var(--color-grimoire-light)] hover:border-[var(--color-pumpkin)]/40 hover:bg-[var(--color-pumpkin)]/5'
+                          }`}
+                        >
+                          <img src={getItemImageUrl(item.icon || item.id)} alt={item.name} className="w-[26px] h-[26px] object-contain drop-shadow-sm pointer-events-none" />
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 {selectedItems.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">

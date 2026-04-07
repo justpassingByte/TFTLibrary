@@ -2,34 +2,34 @@
 // Builder Data & Types
 // ============================================================
 
-import { GENERATED_CHAMPIONS, GENERATED_AUGMENTS, GENERATED_ITEMS } from '@/lib/generated-data';
+export function getChampionOrigin(champ: Omit<BuilderChampion, 'cost'> & { traits: string[] }, traitsDb: any[]): string {
+  return champ.traits.find(t => traitsDb.find(gen => gen.name === t)?.type === 'Origin') || champ.traits[0] || '';
+}
 
+export function getChampionClass(champ: Omit<BuilderChampion, 'cost'> & { traits: string[] }, traitsDb: any[]): string {
+  return champ.traits.find(t => traitsDb.find(gen => gen.name === t)?.type === 'Class') || champ.traits[1] || champ.traits[0] || '';
+}
 export interface BuilderAugment {
   id: string;
   name: string;
   desc: string;
-  rarity: 'Silver' | 'Gold' | 'Prismatic';
+  icon?: string;
 }
 
-export const ALL_AUGMENTS: BuilderAugment[] = GENERATED_AUGMENTS.map((a: any) => {
-  return {
-    id: a.id,
-    name: a.name,
-    desc: a.desc,
-    rarity: (a.tier && a.tier !== 'Unknown') ? a.tier : 'Gold'
-  };
-});
+
 
 export interface BuilderChampion {
   id: string;
   name: string;
   cost: number;
   traits: string[];
+  icon?: string;
 }
 
 export interface PlacedUnit {
   champion: BuilderChampion;
   items: string[];
+  starLevel?: 1 | 2 | 3;
 }
 
 export type BoardCell = PlacedUnit | null;
@@ -45,7 +45,7 @@ export interface TierRow {
   nodes: TierNode[];
 }
 
-export type ItemCategory = 'Components' | 'Completed' | 'Artifacts' | 'Emblems';
+export type ItemCategory = 'Components' | 'Completed' | 'Radiants' | 'Support' | 'Artifacts' | 'Emblems';
 
 export interface ItemDef {
   id: string;
@@ -65,6 +65,7 @@ const COMPONENT_IDS = new Set([
   'TFT_Item_GiantsBelt',
   'TFT_Item_SparringGloves',
   'TFT_Item_Spatula',
+  'TFT_Item_FryingPan',
 ]);
 
 // ── Completed (craftable) item IDs — real equippable combined items ──
@@ -107,9 +108,7 @@ const COMPLETED_IDS = new Set([
   'TFT_Item_SpectralGauntlet',
   'TFT_Item_Crownguard',
   'TFT_Item_NightHarvester',
-  'TFT_Item_EternalFlame',
   'TFT_Item_SentinelSwarm',
-  'TFT_Item_FryingPan',
 ]);
 
 // ── Support item IDs ──
@@ -123,36 +122,20 @@ const SUPPORT_IDS = new Set([
   'TFT_Item_BansheesVeil',
   'TFT_Item_SupportKnightsVow',
   'TFT_Item_Moonstone',
-  'TFT_Item_RadiantVirtue',
+  // Note: RadiantVirtue is treated as Support item by TFT, but its ID has Radiant.
+  'TFT_Item_EternalFlame',
 ]);
 
-function categorizeItem(id: string): ItemCategory | null {
+export function categorizeItem(id: string): ItemCategory | null {
   if (COMPONENT_IDS.has(id)) return 'Components';
   if (COMPLETED_IDS.has(id)) return 'Completed';
+  if (SUPPORT_IDS.has(id) || id === 'TFT_Item_RadiantVirtue') return 'Support';
+  if (id.includes('Radiant')) return 'Radiants';
   if (id.includes('Artifact_') || id.includes('Darkin')) return 'Artifacts';
   if (id.includes('EmblemItem')) return 'Emblems';
   return null; // not a real equippable item → exclude
 }
 
-// Build items from generated data — only real equippable items
-export const ITEMS: ItemDef[] = GENERATED_ITEMS
-  .filter(item => {
-    if (!item.id || !item.name || !item.name.trim()) return false;
-    return categorizeItem(item.id) !== null;
-  })
-  .map(item => ({
-    id: item.id,
-    name: item.name.replace(/<[^>]*>/g, ''),
-    icon: item.icon,
-    category: categorizeItem(item.id)!,
-  }));
-
-export const ALL_CHAMPIONS: BuilderChampion[] = GENERATED_CHAMPIONS.map(c => ({
-  id: c.id,
-  name: c.name,
-  cost: c.cost,
-  traits: c.traits
-}));
 
 export const COST_COLORS: Record<number, string> = {
   1: '#9ca3af', 2: '#22c55e', 3: '#3b82f6', 4: '#a855f7', 5: '#fbbf24',
