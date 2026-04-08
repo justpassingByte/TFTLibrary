@@ -1,6 +1,9 @@
 import { ItemsTierlistClient } from './ItemsTierlistClient';
 import { categorizeItem } from '@/app/builder/builder-data';
 
+export const dynamic = 'force-dynamic';
+
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default async function ItemsTierlistPage() {

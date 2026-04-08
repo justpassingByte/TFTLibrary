@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import { AdminSetProvider } from '@/components/admin/AdminSetContext'
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Admin — TFT Grimoire',
   robots: { index: false, follow: false },
