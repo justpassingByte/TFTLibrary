@@ -1,6 +1,7 @@
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl
 
 # Copy package info and install dependencies
 COPY package.json package-lock.json* ./
