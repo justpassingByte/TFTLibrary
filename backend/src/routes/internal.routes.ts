@@ -90,11 +90,8 @@ router.post('/match/fetch-latest', async (req, res) => {
       endTime,
       count = 5,
       allPuuids,
+      matchId,
     } = req.body;
-
-    if (!puuids || !Array.isArray(puuids) || puuids.length === 0) {
-      return res.status(400).json({ success: false, error: 'puuids array is required' });
-    }
 
     if (!region) {
       return res.status(400).json({ success: false, error: 'region is required (e.g. vn2, sg2, na1, kr, euw1)' });
@@ -105,59 +102,75 @@ router.post('/match/fetch-latest', async (req, res) => {
       return res.status(400).json({ success: false, error: `Unknown region '${region}'. Valid: ${Object.keys(REGION_ROUTER).join(', ')}` });
     }
 
-    const pollingPuuid = puuids[0]; // Use first PUUID to poll match IDs
-
-    // Step 1: Fetch recent match IDs for the polling PUUID
-    let matchIdsUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/by-puuid/${pollingPuuid}/ids?count=${count}`;
-    if (startTime) matchIdsUrl += `&startTime=${startTime}`;
-    if (endTime) matchIdsUrl += `&endTime=${endTime}`;
-
-    console.log(`[internal] Fetching match IDs for ${pollingPuuid.substring(0, 12)}... from ${routerRegion}`);
-    const matchIds: string[] = await riotFetch(matchIdsUrl, routerRegion);
-
-    if (!matchIds || matchIds.length === 0) {
-      return res.json({ success: true, match: null, message: 'No matches found for this PUUID' });
-    }
-
-    console.log(`[internal] Found ${matchIds.length} match IDs: ${matchIds.join(', ')}`);
-
-    // Step 2: For each match, fetch detail and check if all participants are present
-    const verifyPuuids = allPuuids && Array.isArray(allPuuids) && allPuuids.length > 0 ? allPuuids : puuids;
-
     let matchData: any = null;
     let matchedId: string | null = null;
+    let matchIds: string[] = [];
 
-    for (const matchId of matchIds) {
+    if (matchId) {
+      // Step 1: Fetch match directly if matchId is provided
+      console.log(`[internal] Fetching specific match ID ${matchId} from ${routerRegion}`);
       try {
         const matchUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/${matchId}`;
-        const data = await riotFetch(matchUrl, routerRegion, true); // true = detail endpoint (250/10s)
-        const participants = data?.info?.participants || [];
-        const participantPuuids = participants.map((p: any) => p.puuid);
-
-        // Check if all target PUUIDs are in this match
-        const allFound = verifyPuuids.every((targetPuuid: string) =>
-          participantPuuids.includes(targetPuuid)
-        );
-
-        if (allFound) {
-          matchData = data;
-          matchedId = matchId;
-          console.log(`[internal] Found matching match: ${matchId}`);
-          break;
-        }
+        matchData = await riotFetch(matchUrl, routerRegion, true);
+        matchedId = matchId;
       } catch (err: any) {
-        console.warn(`[internal] Failed to fetch match ${matchId}: ${err.message}`);
-        continue;
+        return res.status(404).json({ success: false, message: `Failed to fetch match ${matchId}: ${err.message}` });
       }
-    }
+    } else {
+      // Step 1: Fetch recent match IDs for the polling PUUID
+      if (!puuids || !Array.isArray(puuids) || puuids.length === 0) {
+        return res.status(400).json({ success: false, error: 'puuids array is required when matchId is not provided' });
+      }
 
-    if (!matchData) {
-      return res.json({
-        success: true,
-        match: null,
-        matchIds, // Return the IDs we checked so caller knows polling happened
-        message: 'No match found containing all specified participants',
-      });
+      const pollingPuuid = puuids[0]; 
+      let matchIdsUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/by-puuid/${pollingPuuid}/ids?count=${count}`;
+      if (startTime) matchIdsUrl += `&startTime=${startTime}`;
+      if (endTime) matchIdsUrl += `&endTime=${endTime}`;
+
+      console.log(`[internal] Fetching match IDs for ${pollingPuuid.substring(0, 12)}... from ${routerRegion}`);
+      matchIds = await riotFetch(matchIdsUrl, routerRegion);
+
+      if (!matchIds || matchIds.length === 0) {
+        return res.json({ success: true, match: null, message: 'No matches found for this PUUID' });
+      }
+
+      console.log(`[internal] Found ${matchIds.length} match IDs: ${matchIds.join(', ')}`);
+
+      // Step 2: For each match, fetch detail and check if all participants are present
+      const verifyPuuids = allPuuids && Array.isArray(allPuuids) && allPuuids.length > 0 ? allPuuids : puuids;
+
+      for (const currentMatchId of matchIds) {
+        try {
+          const matchUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/${currentMatchId}`;
+          const data = await riotFetch(matchUrl, routerRegion, true); 
+          const participants = data?.info?.participants || [];
+          const participantPuuids = participants.map((p: any) => p.puuid);
+
+          // Check if all target PUUIDs are in this match
+          const allFound = verifyPuuids.every((targetPuuid: string) =>
+            participantPuuids.includes(targetPuuid)
+          );
+
+          if (allFound) {
+            matchData = data;
+            matchedId = currentMatchId;
+            console.log(`[internal] Found matching match: ${currentMatchId}`);
+            break;
+          }
+        } catch (err: any) {
+          console.warn(`[internal] Failed to fetch match ${currentMatchId}: ${err.message}`);
+          continue;
+        }
+      }
+
+      if (!matchData) {
+        return res.json({
+          success: true,
+          match: null,
+          matchIds, 
+          message: 'No match found containing all specified participants',
+        });
+      }
     }
 
     // Step 3: Enrich with icons from Grimoire's database
@@ -275,6 +288,81 @@ router.post('/match/fetch-latest', async (req, res) => {
 
   } catch (error: any) {
     console.error('[internal] Error in /match/fetch-latest:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// POST /api/internal/summoner/puuid
+// 
+// Retrieves a player's PUUID by using their Riot ID.
+//
+// Body: {
+//   gameName: string,      
+//   tagLine: string,       
+//   region: string,        // e.g. vn2, sg2, etc. (uses REGION_ROUTER inside)
+// }
+// ══════════════════════════════════════════════════════════════
+
+router.post('/summoner/puuid', async (req, res) => {
+  try {
+    if (!RIOT_API_KEY) {
+      return res.status(500).json({ success: false, error: 'Riot API key not configured on Grimoire' });
+    }
+
+    const { gameName, tagLine, region } = req.body;
+
+    if (!gameName || !tagLine || !region) {
+      return res.status(400).json({ success: false, error: 'gameName, tagLine, and region are required' });
+    }
+
+    // Default to 'sea' if region maps to undefined
+    const routerRegion = REGION_ROUTER[region.toLowerCase()] || 'sea';
+
+    const cleanedTagLine = tagLine.startsWith('#') ? tagLine.substring(1) : tagLine;
+    const url = `https://${routerRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(cleanedTagLine)}`;
+
+    const response = await riotFetch(url, routerRegion);
+
+    if (response && response.puuid) {
+      res.json({ success: true, puuid: response.puuid });
+    } else {
+      res.status(404).json({ success: false, error: 'PUUID not found in response' });
+    }
+
+  } catch (error: any) {
+    console.error('[internal] Error in /summoner/puuid:', error.message);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// POST /api/internal/riot/match
+// 
+// Proxies raw Riot Match data for backward compatibility with TesTicTour.
+// ══════════════════════════════════════════════════════════════
+
+router.post('/riot/match', async (req, res) => {
+  try {
+    if (!RIOT_API_KEY) {
+      return res.status(500).json({ success: false, error: 'Riot API key not configured on Grimoire' });
+    }
+
+    const { matchId, region } = req.body;
+
+    if (!matchId || !region) {
+      return res.status(400).json({ success: false, error: 'matchId and region are required' });
+    }
+
+    const routerRegion = REGION_ROUTER[region.toLowerCase()] || 'sea';
+    const matchUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/${matchId}`;
+
+    const data = await riotFetch(matchUrl, routerRegion, true);
+    
+    res.json({ success: true, data });
+
+  } catch (error: any) {
+    console.error('[internal] Error in /riot/match:', error.message);
     res.status(500).json({ success: false, error: error.message });
   }
 });
