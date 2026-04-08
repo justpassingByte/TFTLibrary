@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import metaRoutes from './routes/meta.routes';
 import adminRoutes from './routes/admin.routes';
 import syncRoutes from './routes/sync.routes';
+import internalRoutes from './routes/internal.routes';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/meta', metaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', syncRoutes);
+app.use('/api/internal', internalRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

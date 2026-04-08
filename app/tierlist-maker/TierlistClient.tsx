@@ -203,10 +203,46 @@ export function TierlistClient({
         Object.defineProperty(CSSStyleSheet.prototype, 'cssRules', originalDesc);
       }
 
+      // Add watermark
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise(r => { img.onload = r; });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+
+      // Watermark text
+      const wmText = 'TFT Grimoire';
+      const fontSize = Math.max(16, Math.floor(canvas.width * 0.025));
+      ctx.font = `bold ${fontSize}px 'Cinzel', 'Georgia', serif`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      // Outer glow
+      ctx.shadowColor = 'rgba(235, 94, 40, 0.4)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.fillText(wmText, canvas.width - 20, canvas.height - 14);
+      // Subtle sub-text
+      ctx.shadowBlur = 0;
+      ctx.font = `${Math.max(10, fontSize * 0.55)}px sans-serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillText('grimoire.gg', canvas.width - 20, canvas.height - 14 + fontSize * 0.05);
+
+      const finalUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
-      a.href = dataUrl;
+      a.href = finalUrl;
       a.download = `${tierTitle.trim() || 'tierlist'}.png`;
       a.click();
+
+      // Track export (fire and forget)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      fetch(`${apiUrl}/api/admin/exports/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'tierlist' }),
+      }).catch(() => {});
     } catch (err) {
       console.error(err);
       alert('Failed to generate image');

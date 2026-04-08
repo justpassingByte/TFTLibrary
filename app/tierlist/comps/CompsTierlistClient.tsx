@@ -187,7 +187,6 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
         {/* Traits */}
         {dbTraits.length > 0 && (
           <div>
-            <div className="text-[0.65rem] font-extrabold tracking-wider text-[#a8a1cb] mb-3 mt-1 uppercase">Full Synergy List</div>
             <div className="flex flex-wrap gap-x-2 gap-y-3">
               {dbTraits.map((t) => (
                 <TraitBadge key={t.name} t={t} traitsDb={traitsDb} />

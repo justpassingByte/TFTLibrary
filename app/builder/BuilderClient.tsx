@@ -74,34 +74,35 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
       if (compParam) {
         try {
           const compData = JSON.parse(compParam);
-          const champions = compData.champions || [];
+          const compChampions = compData.champions || [];
           const boardPositions = compData.board_positions || [];
 
           const nextBoard: BoardCell[][] = Array.from({ length: BOARD_ROWS }, () => Array(BOARD_COLS).fill(null));
 
           // Place champions at saved board positions
+          // Resolve each champion ID against the full champions prop (which has traits, name, cost, icon)
           boardPositions.forEach((pos: any) => {
-            const cc = champions.find((c: any) => c.id === pos.champion_id);
-            const champ = champions.find((c: any) => c.id === pos.champion_id);
-            if (champ && pos.row < BOARD_ROWS && pos.col < BOARD_COLS) {
+            const cc = compChampions.find((c: any) => c.id === pos.champion_id);
+            const fullChamp = champions.find((c: any) => c.id === pos.champion_id);
+            if (fullChamp && pos.row < BOARD_ROWS && pos.col < BOARD_COLS) {
               nextBoard[pos.row][pos.col] = {
-                champion: champ,
-                items: [],
+                champion: fullChamp,
+                items: cc?.items || [],
                 starLevel: (cc?.star || 1) as 1 | 2 | 3,
               };
             }
           });
 
           // If no positions, place champions in a line
-          if (boardPositions.length === 0 && champions.length > 0) {
+          if (boardPositions.length === 0 && compChampions.length > 0) {
             let slot = 0;
-            champions.forEach((cc: any) => {
-              const champ = champions.find((c: any) => c.id === cc.id);
-              if (champ) {
+            compChampions.forEach((cc: any) => {
+              const fullChamp = champions.find((c: any) => c.id === cc.id);
+              if (fullChamp) {
                 const row = Math.floor(slot / BOARD_COLS);
                 const col = slot % BOARD_COLS;
                 if (row < BOARD_ROWS) {
-                  nextBoard[row][col] = { champion: champ, items: [], starLevel: (cc.star || 1) as 1 | 2 | 3 };
+                  nextBoard[row][col] = { champion: fullChamp, items: cc.items || [], starLevel: (cc.star || 1) as 1 | 2 | 3 };
                 }
                 slot++;
               }
@@ -162,7 +163,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
       // Calculate traits from champion (base stats - only counted once per unique champ id)
       if (!seenChampIds.has(cell.champion.id)) {
         seenChampIds.add(cell.champion.id);
-        cell.champion.traits.forEach(t => { map[t] = (map[t] || 0) + 1; });
+        (cell.champion.traits || []).forEach(t => { map[t] = (map[t] || 0) + 1; });
       }
 
       // Calculate traits from Emblems
@@ -323,10 +324,46 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
         Object.defineProperty(CSSStyleSheet.prototype, 'cssRules', originalDesc);
       }
 
+      // Add watermark
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise(r => { img.onload = r; });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+
+      // Watermark text
+      const wmText = 'TFT Grimoire';
+      const fontSize = Math.max(16, Math.floor(canvas.width * 0.025));
+      ctx.font = `bold ${fontSize}px 'Cinzel', 'Georgia', serif`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'bottom';
+      // Outer glow
+      ctx.shadowColor = 'rgba(235, 94, 40, 0.4)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.fillText(wmText, canvas.width - 20, canvas.height - 14);
+      // Subtle sub-text
+      ctx.shadowBlur = 0;
+      ctx.font = `${Math.max(10, fontSize * 0.55)}px sans-serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillText('grimoire.gg', canvas.width - 20, canvas.height - 14 + fontSize * 0.05);
+
+      const finalUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
-      a.href = dataUrl;
+      a.href = finalUrl;
       a.download = 'tft-comp.png';
       a.click();
+
+      // Track export (fire and forget)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      fetch(`${apiUrl}/api/admin/exports/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'builder' }),
+      }).catch(() => {});
     } catch (err) {
       console.error(err);
       alert('Failed to generate image');
@@ -436,21 +473,60 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
               ) : (
                 <div className="space-y-1">
                   {activeTraits.map(([trait, count]) => {
+                    // Determine tier based on count thresholds
+                    const isPrismatic = count >= 6;
+                    const isGold = count >= 4 && count < 6;
+                    const isSilver = count >= 2 && count < 4;
+                    const isBronze = count === 1;
+
+                    // Hex gradient by tier (only the icon frame changes color)
+                    const hexBg = isPrismatic
+                      ? 'linear-gradient(135deg, #f7b490 0%, #eb6851 100%)'
+                      : isGold
+                      ? 'linear-gradient(135deg, #d4a24c 0%, #aa7a22 100%)'
+                      : isSilver
+                      ? 'linear-gradient(135deg, #a8b7c0 0%, #7d9099 100%)'
+                      : 'linear-gradient(135deg, #916c5a 0%, #6d4b3b 100%)';
+
                     const isActive = count >= 2;
-                    const isGold = count >= 4;
+
+                    // Breakpoints for display
+                    const breakpoints = [2, 4, 6];
+
                     return (
-                      <div key={trait} className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
-                        style={{ backgroundColor: isGold ? 'rgba(255,215,0,0.08)' : isActive ? 'rgba(255,255,255,0.03)' : 'transparent' }}>
-                        <span className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 z-10"
-                          style={{ backgroundColor: isGold ? 'rgba(255,215,0,0.15)' : isActive ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)', color: isGold ? 'var(--color-pumpkin)' : isActive ? 'var(--color-text-primary)' : 'var(--color-text-muted)' }}>
+                      <div key={trait} className="flex items-center gap-2 px-2 py-1.5 rounded-lg">
+                        {/* Trait icon inside pointy-topped hex with tier gradient */}
+                        <div className="relative z-10 flex-shrink-0" style={{ width: '28px', height: '32px' }}>
+                          <div className="w-full h-full flex items-center justify-center"
+                            style={{
+                              background: hexBg,
+                              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+                            }}>
+                            <div className="w-[16px] h-[16px]" style={{ filter: 'brightness(0) invert(1) drop-shadow(0px 1px 1px rgba(0,0,0,0.5))' }}>
+                              <GameIcon type="trait" id={trait} icon={traitsDb.find((t: any) => t.name === trait)?.icon} alt={trait} className="w-full h-full" />
+                            </div>
+                          </div>
+                        </div>
+                        {/* Count number */}
+                        <span className={`text-[12px] font-black flex-shrink-0 w-4 text-center ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>
                           {count}
                         </span>
-                        <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center opacity-80" style={{ filter: isGold ? 'sepia(1) saturate(5) hue-rotate(-30deg)' : isActive ? 'none' : 'grayscale(1) opacity(0.5)' }}>
-                          <GameIcon type="trait" id={trait} icon={traitsDb.find((t: any) => t.name === trait)?.icon} alt={trait} className="w-full h-full drop-shadow-md" />
-                        </div>
                         <div className="flex-1 min-w-0 flex flex-col justify-center">
-                          <span className={`text-xs font-medium truncate block ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>{trait}</span>
-                          <span className="text-[8px] text-[var(--color-text-muted)] mt-0.5 opacity-60">2 › 4 › 6</span>
+                          <span className={`text-[11px] font-semibold truncate block ${isActive ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>{trait}</span>
+                          {/* Breakpoint indicators */}
+                          <div className="flex items-center gap-[3px] mt-0.5">
+                            {breakpoints.map((bp, i) => {
+                              const isReached = count >= bp;
+                              return (
+                                <span key={bp} className="flex items-center gap-[2px]">
+                                  {i > 0 && <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.15)' }}>›</span>}
+                                  <span className="text-[8px] font-bold" style={{
+                                    color: isReached ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.12)',
+                                  }}>{bp}</span>
+                                </span>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     );

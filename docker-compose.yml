@@ -5,30 +5,34 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: grimoire-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
       # Tell Next.js where the backend server is in the docker network
-      - BACKEND_API_URL=http://backend:3001
+      - BACKEND_API_URL=http://grimoire-backend:3001
     env_file:
       - .env.local
     depends_on:
       - backend
     networks:
-      - grimoire-net
+      - vps-net
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: grimoire-backend
+    restart: unless-stopped
     ports:
       - "3001:3001"
     env_file:
       - ./backend/.env
     networks:
-      - grimoire-net
+      - vps-net
 
 networks:
-  grimoire-net:
-    driver: bridge
+  vps-net:
+    external: true

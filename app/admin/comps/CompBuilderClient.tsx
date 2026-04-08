@@ -343,24 +343,24 @@ export function CompBuilderClient({ comps, champions: allChampions = [], dbAugme
                 {tierComps.map(comp => {
                   const carry = champions.find(c => c.id === comp.carry_id)
                   return (
-                    <div key={comp.id} className="flex items-center gap-3 px-4 py-2.5 bg-[#13111e] border border-white/[0.08] rounded-xl cursor-pointer transition-all hover:border-white/[0.2] hover:bg-[rgba(167,139,250,0.04)]"
+                    <div key={comp.id} className="flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl cursor-pointer transition-all hover:border-gray-300 hover:shadow-sm"
                       onClick={() => openEdit(comp)}>
                       {carry && <HexagonFrame color={TIER_COLORS[comp.tier]} bg={COST_BG[carry.cost]} size={44} padding={1.5}>
                         <ChampionAvatar name={carry.name} icon={carry.icon} shape="hexagon" className="w-[38px] h-[38px]" />
                       </HexagonFrame>}
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-[#e2ddf5] text-sm">{comp.name}</div>
-                        <div className="text-xs text-[#5a5470] flex items-center gap-2">
+                        <div className="font-semibold text-gray-900 text-sm">{comp.name}</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-2">
                           {(comp.champions as CompChampion[]).length} units · {comp.playstyle || comp.difficulty}
-                          {comp.is_published && <span className="text-[0.65rem] font-extrabold text-[#4ade80] bg-[rgba(74,222,128,0.1)] px-1.5 py-0.5 rounded">LIVE</span>}
+                          {comp.is_published && <span className="text-[0.65rem] font-extrabold text-[#22c55e] bg-[#22c55e]/10 px-1.5 py-0.5 rounded">LIVE</span>}
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <button className="bg-none border-none cursor-pointer text-base p-1 rounded-md hover:bg-white/[0.05]" title="Duplicate"
-                          onClick={e => { e.stopPropagation(); startTransition(() => duplicateComp(comp.id)) }}>📋</button>
-                        <button className="bg-none border-none cursor-pointer text-base p-1 rounded-md hover:bg-white/[0.05]" title={comp.is_published ? 'Unpublish' : 'Publish'}
+                      <div className="flex gap-2">
+                        <button className="px-3 py-1.5 text-xs font-semibold rounded-md border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer shadow-sm" title="Duplicate Comp"
+                          onClick={e => { e.stopPropagation(); startTransition(() => duplicateComp(comp.id)) }}>Copy</button>
+                        <button className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors cursor-pointer shadow-sm ${comp.is_published ? 'border-[#22c55e]/30 bg-[#22c55e]/10 text-[#16a34a] hover:bg-[#22c55e]/20' : 'border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100'}`} title={comp.is_published ? 'Unpublish' : 'Publish'}
                           onClick={e => { e.stopPropagation(); startTransition(() => togglePublish(comp.id, !comp.is_published)) }}>
-                          {comp.is_published ? '🟢' : '⚪'}
+                          {comp.is_published ? 'Live' : 'Draft'}
                         </button>
                       </div>
                     </div>

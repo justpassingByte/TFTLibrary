@@ -785,4 +785,85 @@ router.delete('/patch-notes/predictions/:id', async (req, res) => {
   }
 });
 
+// ── Export Tracking ──────────────────────────────────────────────────
+
+function getExportStats(): Record<string, { builder: number; tierlist: number }> {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+      return data.export_stats || {};
+    }
+  } catch (e) { }
+  return {};
+}
+
+function saveExportStats(stats: Record<string, { builder: number; tierlist: number }>) {
+  const current = fs.existsSync(SETTINGS_FILE) ? JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')) : {};
+  current.export_stats = stats;
+  if (!fs.existsSync(path.dirname(SETTINGS_FILE))) {
+    fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
+  }
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(current, null, 2));
+}
+
+// POST /api/admin/exports/track — increment export count
+router.post('/exports/track', (req, res) => {
+  try {
+    const { type } = req.body; // 'builder' | 'tierlist'
+    if (!type || !['builder', 'tierlist'].includes(type)) {
+      return res.status(400).json({ error: 'type must be "builder" or "tierlist"' });
+    }
+
+    const stats = getExportStats();
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    if (!stats[today]) {
+      stats[today] = { builder: 0, tierlist: 0 };
+    }
+    stats[today][type as 'builder' | 'tierlist']++;
+
+    saveExportStats(stats);
+    res.json({ success: true, date: today, count: stats[today][type as 'builder' | 'tierlist'] });
+  } catch (e) {
+    console.error('POST /api/admin/exports/track error:', e);
+    res.status(500).json({ error: 'Failed to track export' });
+  }
+});
+
+// GET /api/admin/exports/stats — get export statistics
+router.get('/exports/stats', (req, res) => {
+  try {
+    const stats = getExportStats();
+    const days = parseInt(req.query.days as string) || 30;
+
+    // Generate last N days
+    const result: { date: string; builder: number; tierlist: number; total: number }[] = [];
+    let totalBuilder = 0;
+    let totalTierlist = 0;
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const day = stats[dateStr] || { builder: 0, tierlist: 0 };
+      totalBuilder += day.builder;
+      totalTierlist += day.tierlist;
+      result.push({
+        date: dateStr,
+        builder: day.builder,
+        tierlist: day.tierlist,
+        total: day.builder + day.tierlist,
+      });
+    }
+
+    res.json({
+      daily: result,
+      totals: { builder: totalBuilder, tierlist: totalTierlist, total: totalBuilder + totalTierlist },
+    });
+  } catch (e) {
+    console.error('GET /api/admin/exports/stats error:', e);
+    res.status(500).json({ error: 'Failed to get export stats' });
+  }
+});
+
 export default router;
