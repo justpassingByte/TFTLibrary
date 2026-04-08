@@ -1,7 +1,7 @@
 node_modules
 .next
 .git
-.env*
+# .env* (commented out to allow Next.js build to read public envs)
 npm-debug.log
 Dockerfile
 docker-compose.yml
