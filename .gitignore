@@ -20,7 +20,7 @@
 /backend/dist
 /backend/logs
 /backend/generated/*
-/backend/prisma/*
+# /backend/prisma/*
 # production
 /build
 

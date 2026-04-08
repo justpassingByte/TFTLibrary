@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Static Game Data ─────────────────────────────────────────────────
+
+model Champion {
+  id         String   @id
+  name       String
+  cost       Int
+  icon       String?
+  traits     String[]
+  set_prefix String   @default("TFT16")
+
+  champion_traits ChampionTrait[]
+
+  @@map("champions")
+}
+
+model Trait {
+  id          String  @id
+  name        String
+  description String?
+  icon        String?
+  set_prefix  String  @default("TFT16")
+
+  @@map("traits")
+}
+
+model ChampionTrait {
+  champion_id String
+  trait_name  String
+  champion    Champion @relation(fields: [champion_id], references: [id], onDelete: Cascade)
+
+  @@id([champion_id, trait_name])
+  @@map("champion_traits")
+}
+
+model Item {
+  id         String  @id
+  name       String
+  icon       String?
+  set_prefix String  @default("TFT16")
+
+  @@map("items")
+}
+
+model Augment {
+  id          String   @id
+  name        String
+  description String?
+  tier        String   @default("Gold")
+  tags        String[]
+  meta_tier   String?
+  icon        String?
+  set_prefix  String   @default("TFT16")
+  updated_at  DateTime @default(now())
+
+  @@map("augments")
+}
+
+// ── Curated Comps (Admin-managed) ────────────────────────────────────
+
+model CuratedComp {
+  id               String   @id @default(uuid())
+  name             String
+  tier             String   @default("A")
+  carry_id         String?
+  playstyle        String?
+  difficulty       String?
+  champions        Json     @default("[]")
+  active_traits    Json     @default("[]")
+  early_units      Json     @default("[]")
+  flex_units       Json     @default("[]")
+  item_priority    Json     @default("[]")
+  alt_builds       Json     @default("[]")
+  augments         Json     @default("[]")
+  augment_priority Json     @default("[]")
+  board_positions  Json     @default("[]")
+  tips             String?
+  stage_plans      Json     @default("[]")
+  parent_comp_id   String?
+  variant_label    String   @default("")
+  patch            String   @default("")
+  sort_order       Int      @default(0)
+  is_published     Boolean  @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now()) @updatedAt
+
+  @@map("curated_comps")
+}
+
+// ── Insights / Posts ─────────────────────────────────────────────────
+
+model Insight {
+  id          String   @id @default(uuid())
+  title       String
+  body        String
+  tags        String[]
+  patch       String?
+  status      String   @default("pending")
+  author_id   String?
+  reviewed_by String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  @@map("insights")
+}
+
+// ── Sync Jobs ────────────────────────────────────────────────────────
+
+model SyncJob {
+  id              String    @id @default(uuid())
+  job_type        String
+  status          String
+  set_prefix      String?
+  champion_count  Int?
+  trait_count     Int?
+  augment_count   Int?
+  item_count      Int?
+  ddragon_version String?
+  log_output      String?
+  started_at      DateTime  @default(now())
+  finished_at     DateTime?
+
+  @@map("sync_jobs")
+}
+
+// ── Match Data (Ingested from Riot API) ──────────────────────────────
+
+model Match {
+  match_id       String        @id
+  region         String
+  patch          String
+  queue_id       Int
+  tft_set_number Int
+  game_datetime  DateTime
+  game_length    Float
+  ingested_at    DateTime      @default(now())
+  players        PlayerMatch[]
+
+  @@map("matches")
+}
+
+model PlayerMatch {
+  id                 String         @id @default(uuid())
+  match_id           String
+  puuid              String
+  riot_id_name       String?
+  riot_id_tag        String?
+  placement          Int
+  level              Int
+  gold_left          Int
+  last_round         Int
+  total_damage       Int
+  time_eliminated    Float
+  players_eliminated Int
+  win                Boolean
+  patch              String
+  comp_signature     String?
+  match              Match          @relation(fields: [match_id], references: [match_id], onDelete: Cascade)
+  units              MatchUnit[]
+  traits             MatchTrait[]
+  augments           MatchAugment[]
+
+  @@unique([match_id, puuid])
+  @@map("player_matches")
+}
+
+model MatchUnit {
+  id              String      @id @default(uuid())
+  player_match_id String
+  character_id    String
+  tier            Int
+  rarity          Int?
+  item_names      String[]
+  player_match    PlayerMatch @relation(fields: [player_match_id], references: [id], onDelete: Cascade)
+
+  @@map("match_units")
+}
+
+model MatchTrait {
+  id              String      @id @default(uuid())
+  player_match_id String
+  trait_name      String
+  num_units       Int
+  tier_current    Int
+  style           Int
+  player_match    PlayerMatch @relation(fields: [player_match_id], references: [id], onDelete: Cascade)
+
+  @@map("match_traits")
+}
+
+model MatchAugment {
+  id              String      @id @default(uuid())
+  player_match_id String
+  augment_id      String
+  player_match    PlayerMatch @relation(fields: [player_match_id], references: [id], onDelete: Cascade)
+
+  @@map("match_augments")
+}
+
+// ── Aggregated Stats (Pre-computed) ──────────────────────────────────
+
+model CompStat {
+  id             String   @id @default(uuid())
+  comp_signature String?
+  patch          String
+  team           Json?
+  sample_count   Int      @default(0)
+  win_rate       Float    @default(0)
+  top4_rate      Float    @default(0)
+  avg_placement  Float    @default(0)
+
+  @@unique([comp_signature, patch])
+  @@map("comp_stats")
+}
+
+model AugmentStat {
+  id            String @id @default(uuid())
+  augment_id    String
+  patch         String
+  sample_count  Int    @default(0)
+  avg_placement Float  @default(0)
+  top4_rate     Float  @default(0)
+  win_rate      Float  @default(0)
+
+  @@unique([augment_id, patch])
+  @@map("augment_stats")
+}
+
+model ItemStat {
+  id            String @id @default(uuid())
+  item_name     String
+  patch         String
+  usage_count   Int    @default(0)
+  avg_placement Float  @default(0)
+  top4_rate     Float  @default(0)
+
+  @@unique([item_name, patch])
+  @@map("item_stats")
+}
+
+model TraitStat {
+  id            String @id @default(uuid())
+  trait_name    String
+  tier_current  Int
+  patch         String
+  sample_count  Int    @default(0)
+  avg_placement Float  @default(0)
+  top4_rate     Float  @default(0)
+
+  @@unique([trait_name, tier_current, patch])
+  @@map("trait_stats")
+}
+
+// ── Item Tier (Admin-assigned meta tiers per patch) ──────────────────
+
+model ItemTier {
+  id      String @id @default(uuid())
+  item_id String
+  tier    String
+  patch   String
+
+  @@unique([item_id, patch])
+  @@map("item_tiers")
+}
+
+// ── Champion Stats (Pre-computed per champion per patch) ─────────────
+
+model ChampionStat {
+  id            String @id @default(uuid())
+  champion_id   String
+  patch         String
+  games         Int    @default(0)
+  pick_rate     Float  @default(0)
+  avg_placement Float  @default(0)
+  top4_rate     Float  @default(0)
+  win_rate      Float  @default(0)
+  avg_star      Float  @default(1)
+
+  @@unique([champion_id, patch])
+  @@map("champion_stats")
+}
+
+// ── Item-Champion Synergy Stats (which items work best on which champ)
+
+model ItemChampionStat {
+  id            String @id @default(uuid())
+  item_name     String
+  champion_id   String
+  patch         String
+  games         Int    @default(0)
+  avg_placement Float  @default(0)
+  top4_rate     Float  @default(0)
+  win_rate      Float  @default(0)
+
+  @@unique([item_name, champion_id, patch])
+  @@map("item_champion_stats")
+}
+
+// ── Patch Notes (Crawled + Admin-tunable) ────────────────────────────
+
+model PatchChange {
+  id          String   @id @default(uuid())
+  patch       String
+  set_prefix  String   
+  entity      String
+  entity_type String
+  change_type String
+  stat        String
+  before_val  String?
+  after_val   String?
+  score       Float    @default(0)
+  tier        Int?
+  raw_text    String
+  created_at  DateTime @default(now())
+
+  @@unique([patch, set_prefix, entity, stat])
+  @@map("patch_changes")
+}
+
+model PatchMetaPrediction {
+  id              String   @id @default(uuid())
+  patch           String
+  set_prefix      String   @default("TFT16")
+  name            String
+  tier            String   @default("B")
+  score           Float    @default(0)
+  reason          String
+  key_units       String[]
+  buffed_entities String[]
+  nerfed_entities String[]
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
+
+  @@unique([patch, set_prefix, name])
+  @@map("patch_meta_predictions")
+}
