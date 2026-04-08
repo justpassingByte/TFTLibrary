@@ -38,14 +38,18 @@ export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props)
     .filter(i => {
       const hidden = i.isHidden || i.is_hidden || false
       if (hidden) return false
+      
+      const cs = currentSet?.toLowerCase() || ''
+      if (cs && !(i.set_prefix?.toLowerCase().includes(cs))) return false
 
       if (categoryFilter === 'Craftable' && i.category !== 'Completed') return false 
       if (categoryFilter === 'Artifact' && i.category !== 'Artifacts') return false
       if (categoryFilter === 'Radiant' && i.category !== 'Radiants') return false
-      if (categoryFilter === 'Support' && i.category !== 'Support') return false
+      if (categoryFilter === 'Emblems' && i.category !== 'Emblems') return false
+      if (categoryFilter === 'Special' && i.category !== 'Special') return false
 
       if (search && !i.name.toLowerCase().includes(search.toLowerCase())) return false
-      return ['Completed', 'Artifacts', 'Radiants', 'Support'].includes(i.category as string)
+      return ['Completed', 'Artifacts', 'Radiants', 'Emblems', 'Special'].includes(i.category as string)
     })
 
   function handleDragStart(e: React.DragEvent, itemId: string) {
@@ -104,9 +108,11 @@ export function ItemsTierlistClient({ itemTiers, itemStats, items = [] }: Props)
         
         <div className="ia-controls">
           <div className="ia-filters">
-            <div className="ia-cat-btn" style={{ fontWeight: 'bold', color: '#68B3C8', cursor: 'default' }}>{currentSet.replace('TFT', 'Set ')}</div>
+             <div className="ia-cat-btn" style={{ fontWeight: 'bold', color: '#68B3C8', cursor: 'default' }}>
+               {currentSet ? currentSet.replace('TFT', 'Set ') : 'No Set'}
+             </div>
             <div style={{ width: '1px', background: '#DDD', margin: '0 5px' }} />
-             {['Craftable', 'Artifact', 'Radiant', 'Support'].map(cat => (
+             {['Craftable', 'Artifact', 'Radiant', 'Emblems', 'Special'].map(cat => (
                 <button key={cat} className={`ia-cat-btn ${categoryFilter === cat ? 'active' : ''}`} onClick={() => setCategoryFilter(cat)}>
                   {cat}
                 </button>

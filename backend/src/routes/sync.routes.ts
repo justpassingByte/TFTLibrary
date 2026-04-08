@@ -112,6 +112,66 @@ router.post('/cdragon/trigger', async (req, res) => {
   }
 });
 
+// ── Unified Multi-Source Sync ─────────────────────────────────────────
+
+router.post('/sync/unified/trigger', async (req, res) => {
+  try {
+    const { set_prefix, ddragon_version, cdragon_source, sources } = req.body;
+    const prefix = set_prefix || 'TFT16';
+    const ddVer = ddragon_version || '16.7.1';
+    const cdSource = cdragon_source || 'latest';
+    const syncSources = sources || { champions: 'cdragon', traits: 'cdragon', augments: 'ddragon', items: 'ddragon' };
+
+    // Build a descriptive label
+    const srcLabel = `${syncSources.champions === 'cdragon' ? 'cd' : 'dd'}/${syncSources.traits === 'cdragon' ? 'cd' : 'dd'}/${syncSources.augments === 'cdragon' ? 'cd' : 'dd'}/${syncSources.items === 'cdragon' ? 'cd' : 'dd'}`;
+
+    const job = await prisma.syncJob.create({
+      data: {
+        job_type: 'unified',
+        status: 'running',
+        set_prefix: prefix,
+        ddragon_version: `unified-${srcLabel}`,
+      },
+    });
+
+    const scriptPath = path.resolve(__dirname, '../../scripts/sync-unified.mjs');
+    const child = spawn('node', [scriptPath], {
+      env: {
+        ...process.env,
+        TFT_SET_PREFIX: prefix,
+        DDRAGON_VERSION: ddVer,
+        CDRAGON_SOURCE: cdSource,
+        SYNC_SOURCES: JSON.stringify(syncSources),
+        SYNC_JOB_ID: job.id,
+      },
+      cwd: path.resolve(__dirname, '../..'),
+    });
+
+    activeProcesses.set(job.id, child);
+
+    let logOutput = '';
+    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
+    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+
+    child.on('close', async (code) => {
+      activeProcesses.delete(job.id);
+      await prisma.syncJob.update({
+        where: { id: job.id },
+        data: {
+          status: code === 0 ? 'completed' : 'error',
+          log_output: logOutput,
+          finished_at: new Date(),
+        },
+      });
+    });
+
+    res.json({ job_id: job.id });
+  } catch (error) {
+    console.error('POST /api/admin/sync/unified/trigger error:', error);
+    res.status(500).json({ error: 'Failed to start unified sync' });
+  }
+});
+
 router.get('/sync/stream', (req, res) => {
   const jobId = req.query.job_id as string;
   if (!jobId) return res.status(400).json({ error: 'job_id required' });
@@ -310,13 +370,13 @@ router.post('/pipeline/aggregate', async (req, res) => {
 
 router.post('/patch-notes/crawl', async (req, res) => {
   try {
-    const { url } = req.body; // optional override URL
+    const { url, set_prefix } = req.body; // optional override URL and set prefix
 
     const job = await prisma.syncJob.create({
       data: {
         job_type: 'patch_crawl',
         status: 'running',
-        set_prefix: 'patch-notes',
+        set_prefix: set_prefix || 'patch-notes',
       },
     });
 
@@ -325,6 +385,7 @@ router.post('/patch-notes/crawl', async (req, res) => {
       env: {
         ...process.env,
         SYNC_JOB_ID: job.id,
+        SET_PREFIX: set_prefix || 'patch-notes',
         ...(url ? { PATCH_NOTES_URL: url } : {}),
       },
       cwd: path.resolve(__dirname, '../..'),

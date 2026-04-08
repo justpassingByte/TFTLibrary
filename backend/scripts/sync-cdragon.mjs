@@ -42,9 +42,19 @@ async function syncCDragon() {
   console.log(`[cdragon] Starting CDragon sync — source=${CDRAGON_SOURCE}, prefix=${TFT_SET_PREFIX}`);
   console.log(`[cdragon] Fetching from ${url}...`);
   
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} fetching CDragon from ${url}`);
-  const data = await res.json();
+  const data = await new Promise((resolve, reject) => {
+    import('https').then(https => {
+      https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, res => {
+        if (res.statusCode < 200 || res.statusCode >= 300) return reject(new Error(`HTTP ${res.statusCode}`));
+        let body = '';
+        res.on('data', c => body += c);
+        res.on('end', () => {
+          try { resolve(JSON.parse(body)); } 
+          catch (e) { reject(e); }
+        });
+      }).on('error', reject);
+    });
+  });
 
   // CDragon has everything in sets[] or just top level maps
   const allSets = data.sets || {};
@@ -57,31 +67,40 @@ async function syncCDragon() {
   const existingMap = new Map((existingChamps || []).map(c => [c.id, c.icon]));
 
   // 1. Champions — pre-compute full HTTPS URL
-  const champions = currentSet.champions.map(c => {
-    // CDragon is inconsistent between sets:
-    // Set 16: squareIcon is the face (_Mobile.tex), tileIcon is the spell (_Spell.tex)
-    // Set 17: tileIcon is the face (_Square.tex), squareIcon is a splash crop (_splash_tile.tex)
-    const options = [c.squareIcon, c.tileIcon, c.icon].filter(Boolean);
-    const rawSquare = options.find(p => p.toLowerCase().includes('square') || p.toLowerCase().includes('mobile')) 
-                   || c.squareIcon || c.tileIcon || c.icon || '';
-    const fullUrl = buildCDragonUrl(rawSquare);
+  const champions = currentSet.champions
+    .filter(c => {
+      if (!c.name) return false;
+      if (c.cost === undefined || c.cost === 0) return false;
+      if (!c.traits || c.traits.length === 0) return false;
+      const api = c.apiName.toLowerCase();
+      if (api.includes('targetdummy') || api.includes('egg') || api.includes('anvil') || api.includes('loot')) return false;
+      return true;
+    })
+    .map(c => {
+      // CDragon is inconsistent between sets:
+      // Set 16: squareIcon is the face (_Mobile.tex), tileIcon is the spell (_Spell.tex)
+      // Set 17: tileIcon is the face (_Square.tex), squareIcon is a splash crop (_splash_tile.tex)
+      const options = [c.squareIcon, c.tileIcon, c.icon].filter(Boolean);
+      const rawSquare = options.find(p => p.toLowerCase().includes('square') || p.toLowerCase().includes('mobile')) 
+                     || c.squareIcon || c.tileIcon || c.icon || '';
+      const fullUrl = buildCDragonUrl(rawSquare);
 
-    // Preserve admin-cropped Supabase URL if it already exists
-    const existingIcon = existingMap.get(c.apiName);
-    const isSupabaseUrl = existingIcon && existingIcon.includes('supabase.co');
-    const finalIcon = isSupabaseUrl ? existingIcon : fullUrl;
+      // Preserve admin-cropped Supabase URL if it already exists
+      const existingIcon = existingMap.get(c.apiName);
+      const isSupabaseUrl = existingIcon && existingIcon.includes('supabase.co');
+      const finalIcon = isSupabaseUrl ? existingIcon : fullUrl;
 
-    return {
-      id: c.apiName,
-      name: c.name,
-      cost: c.cost,
-      icon: finalIcon,
-      set_prefix: TFT_SET_PREFIX
-    };
-  });
+      return {
+        id: c.apiName,
+        name: c.name,
+        cost: c.cost,
+        icon: finalIcon,
+        set_prefix: TFT_SET_PREFIX
+      };
+    });
 
-  // 2. Traits — also pre-compute full URL
-  const traits = currentSet.traits.map(t => {
+  // 2. Traits — deduplicate by name, keeping shortest ID (base trait)
+  const baseTraits = currentSet.traits.map(t => {
     let iconUrl = '';
     if (t.icon) {
       iconUrl = buildCDragonUrl(t.icon);
@@ -98,51 +117,75 @@ async function syncCDragon() {
     };
   });
 
+  const traitsMap = new Map();
+  for (const t of baseTraits) {
+    if (!t.name) continue;
+    const existing = traitsMap.get(t.name);
+    if (!existing || t.id.length < existing.id.length) {
+      traitsMap.set(t.name, t);
+    }
+  }
+  const traits = Array.from(traitsMap.values());
+
   // 3. Items & Augments
   const items = [];
   const augments = [];
 
   (data.items || []).forEach(i => {
-    // Drop items/augments from other past sets (e.g. TFT9_Augment, TFT12_Item)
     const apiName = i.apiName || '';
-    const match = apiName.match(/^TFT(\d+)_/i);
-    const isRadiantOrArtifact = apiName.includes('Radiant') || apiName.includes('Artifact');
-    if (match && match[1] !== setNumber && !isRadiantOrArtifact) {
-      return; // Skip explicitly assigned to other sets, EXCEPT Radiants/Artifacts which carry legacy IDs
-    }
 
-    // Skip tutorial or mostly dead base augments that cause noise
-    if (apiName.includes('Tutorial') || apiName.includes('Base') || (!i.desc && !i.name)) {
-      return;
-    }
+    // === Hard filters: skip junk entries ===
+    if (!i.name || !i.desc) return;
+    if (apiName.includes('Tutorial') || apiName.includes('Base')) return;
+    // Skip consumables, rewards, loot tokens, assist items, debug items, events, support items, double up specific, training/manual items
+    if (apiName.includes('Consumable') || apiName.includes('Reward') || apiName.includes('Loot') || apiName.includes('Assist') || apiName.includes('Debug') || apiName.toLowerCase().includes('event') || apiName.includes('Support') || apiName.toLowerCase().includes('doubleup') || apiName.includes('Training') || apiName.includes('Manual')) return;
 
-    // Augments in CDragon often have names like "TFT_Augment_..."
+    // === Classify: Augment vs Item ===
     const isAugment = apiName.includes('Augment') || i.icon?.toLowerCase().includes('augment');
-    
-    // Pre-compute full URL
+
+    // === Set ownership check ===
+    // Riot sometimes puts the set number as TFT14_... or ..._Set14_...
+    // This aggressive regex safely extracts ANY identifying Set number attached to the entity
+    const setMatch = apiName.match(/(?:TFT|Set)(\d+)/i);
+    const itemPrefixSet = setMatch ? setMatch[1] : null;
+    const belongsToOtherSet = itemPrefixSet && itemPrefixSet !== setNumber;
+
+    // Radiants and Artifacts often retain core base set numbers (4 or 5)
+    const isRadiantOrArtifact = apiName.includes('Radiant') || apiName.includes('Artifact');
+
+    // Actively drop ANY item or augment that explicitly belongs to an old/different set (e.g. TFT14_ or Set15)
+    if (belongsToOtherSet) {
+      if (!isRadiantOrArtifact) return; // Drop normal items AND augments from OTHER sets
+      
+      // If it IS a radiant/artifact but from another set, only allow the core base sets
+      // Set 4 (Base Artifacts), Set 5 (Base Radiants)
+      if (!['4', '5'].includes(itemPrefixSet)) {
+        return; 
+      }
+    }
+
     const icon = buildCDragonUrl(i.icon);
     
     const row = {
         id: i.apiName,
-        name: i.name || i.apiName,
+        name: i.name,
         icon: icon,
         set_prefix: TFT_SET_PREFIX,
     };
 
     if (isAugment) {
         let tier = 'Gold';
-        const apiName = i.apiName.toLowerCase();
-        if (apiName.includes('tier1') || apiName.endsWith('_i')) tier = 'Silver';
-        else if (apiName.includes('tier3') || apiName.endsWith('_iii')) tier = 'Prismatic';
+        const lowerApiName = i.apiName.toLowerCase();
+        if (lowerApiName.includes('tier1') || lowerApiName.endsWith('_i')) tier = 'Silver';
+        else if (lowerApiName.includes('tier3') || lowerApiName.endsWith('_iii')) tier = 'Prismatic';
         
-        augments.push({ ...row, description: i.desc || '', tier, set_prefix: TFT_SET_PREFIX });
+        augments.push({ ...row, description: i.desc, tier, set_prefix: TFT_SET_PREFIX });
     } else {
-        // Common items plus Set-specific items
+        // Keep: current set items OR generic items OR special items
         const isSetItem = apiName.startsWith(TFT_SET_PREFIX);
-        const isGenericItem = apiName.startsWith('TFT_Item_') || apiName.startsWith('TFT8_Item_'); // fallback for generic
-        const isArtifactOrRadiant = apiName.includes('Radiant') || apiName.includes('Artifact') || apiName.includes('Support');
-
-        if (isSetItem || isGenericItem || isArtifactOrRadiant) {
+        const isGenericItem = apiName.startsWith('TFT_Item_');
+        
+        if (isSetItem || isGenericItem || isRadiantOrArtifact) {
           items.push(row);
         }
     }
@@ -159,13 +202,25 @@ async function syncCDragon() {
     const { error } = await supabase.from('traits').upsert(traits, { onConflict: 'id' });
     if (error) console.error('Error upserting traits:', error);
   }
+  
   const mergeSetPrefixes = async (table, itemsArray) => {
     if (!itemsArray.length) return;
     const ids = itemsArray.map(r => r.id);
-    const { data: existing } = await supabase.from(table).select('id, set_prefix').in('id', ids);
+    
+    let existing = [];
+    const chunkSize = 150;
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunk = ids.slice(i, i + chunkSize);
+      const { data, error } = await supabase.from(table).select('id, set_prefix').in('id', chunk);
+      if (error) {
+        console.error(`[cdragon] Error fetching existing ${table} chunk:`, error);
+      } else if (data) {
+        existing = existing.concat(data);
+      }
+    }
     
     const existingMap = new Map();
-    if (existing) existing.forEach(r => existingMap.set(r.id, r.set_prefix));
+    if (existing.length) existing.forEach(r => existingMap.set(r.id, r.set_prefix));
     
     const mapped = itemsArray.map(row => {
       const oldPrefix = existingMap.get(row.id);
@@ -174,7 +229,7 @@ async function syncCDragon() {
         if (!oldPrefix.includes(TFT_SET_PREFIX)) {
           newPrefix = `${oldPrefix},${TFT_SET_PREFIX}`;
         } else {
-          newPrefix = oldPrefix;
+          newPrefix = oldPrefix; // keep existing if it already includes it
         }
       }
       return { ...row, set_prefix: newPrefix };
@@ -209,7 +264,7 @@ async function syncCDragon() {
   }
 
   console.log('[cdragon] Sync Done!');
-  process.exit(0);
+  setTimeout(() => process.exit(0), 100);
 }
 
 syncCDragon().catch(async (err) => {
@@ -218,11 +273,13 @@ syncCDragon().catch(async (err) => {
       if (SYNC_JOB_ID) {
         await supabase.from('sync_jobs').update({
           status: 'error',
+          errorMessage: err.message || 'unknown error',
           finished_at: new Date().toISOString()
         }).eq('id', SYNC_JOB_ID);
       }
     } catch (e) {
       console.error('[cdragon] Could not update job status to error:', e.message);
     }
-    process.exit(1);
+    // Give Node's libuv a brief moment to close network socket handles before forcefully exiting
+    setTimeout(() => process.exit(1), 100);
 });

@@ -34,7 +34,7 @@ interface ItemMeta {
   usage_count: number | null;
 }
 
-const CATEGORIES = ['Craftable', 'Artifact', 'Radiant', 'Support'];
+const CATEGORIES = ['Craftable', 'Artifact', 'Radiant', 'Emblems'];
 
 export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
   const [searchQuery, setSearchQuery] = useState('');

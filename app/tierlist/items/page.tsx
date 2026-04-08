@@ -41,7 +41,7 @@ export default async function ItemsTierlistPage() {
         if (catStr === 'Components' || catStr === 'Completed') catStr = 'Craftable';
         if (catStr === 'Artifacts') catStr = 'Artifact';
         if (catStr === 'Radiants') catStr = 'Radiant';
-        if (catStr === 'Emblems') catStr = 'Support'; // Or handle Emblems
+        if (catStr === 'Emblems') catStr = 'Emblems'; // Use Emblems directly
         
         return {
           id: item.id,

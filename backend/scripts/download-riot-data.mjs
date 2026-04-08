@@ -11,13 +11,14 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // ── Configuration (all from environment) ────────────────────────────────────
-const DDRAGON_VERSION  = process.env.DDRAGON_VERSION  || '16.7.1';
-const TFT_SET_PREFIX   = process.env.TFT_SET_PREFIX   || 'TFT16';
-const SUPABASE_URL     = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_KEY     = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SYNC_JOB_ID      = process.env.SYNC_JOB_ID; // passed by the API route
+const DDRAGON_VERSION = process.env.DDRAGON_VERSION || '16.7.1';
+const TFT_SET_PREFIX = process.env.TFT_SET_PREFIX || 'TFT16';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SYNC_JOB_ID = process.env.SYNC_JOB_ID; // passed by the API route
 
 const BASE_URL = `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}/data/en_US`;
+const DDRAGON_BASE_URL = `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VERSION}`;
 
 // Supabase client (service role — bypasses RLS)
 const supabase = SUPABASE_URL && SUPABASE_KEY
@@ -86,7 +87,7 @@ async function updateData() {
         name: (c.name || '').trim(),
         cost: c.tier || c.cost || 0,
         traits,
-        icon: c.image?.full || '',
+        icon: c.image?.full ? `${DDRAGON_BASE_URL}/img/tft-champion/${c.image.full}` : '',
         image: c.image || null,
       };
     });
@@ -98,7 +99,7 @@ async function updateData() {
   const traitTypesPath = '../lib/trait-types.json';
   const manualTraitTypes = readJsonFile(traitTypesPath);
 
-  const originsGuess = ['Bilgewater','Demacia','Freljord','Ionia','Ixtal','Noxus','Piltover','Shadow Isles','Shurima','Targon','Void','Yordle','Zaun','Darkin'];
+  const originsGuess = ['Bilgewater', 'Demacia', 'Freljord', 'Ionia', 'Ixtal', 'Noxus', 'Piltover', 'Shadow Isles', 'Shurima', 'Targon', 'Void', 'Yordle', 'Zaun', 'Darkin'];
 
   const traits = Object.values(traitsData)
     .filter(t => t.id && t.id.startsWith(`${TFT_SET_PREFIX}_`))
@@ -109,7 +110,7 @@ async function updateData() {
         type = originsGuess.includes(name) ? 'Origin' : 'Class';
         manualTraitTypes[t.id] = type;
       }
-      return { id: t.id, name, desc: t.description || t.desc || '', icon: t.image?.full || '', type };
+      return { id: t.id, name, desc: t.description || t.desc || '', icon: t.image?.full ? `${DDRAGON_BASE_URL}/img/tft-trait/${t.image.full}` : '', type };
     });
 
   fs.writeFileSync(traitTypesPath, JSON.stringify(manualTraitTypes, null, 2));
@@ -131,18 +132,18 @@ async function updateData() {
       let tier = manualTiers[a.id] || 'Unknown';
       if (tier === 'Unknown') {
         const name = (a.name || '').toLowerCase();
-        const id   = (a.id   || '').toLowerCase();
-        if      (name.includes('silver') || id.includes('silver') || id.endsWith('1') || id.endsWith('_i'))   tier = 'Silver';
+        const id = (a.id || '').toLowerCase();
+        if (name.includes('silver') || id.includes('silver') || id.endsWith('1') || id.endsWith('_i')) tier = 'Silver';
         else if (name.includes('prismatic') || id.includes('prismatic') || id.endsWith('3') || id.endsWith('_iii')) tier = 'Prismatic';
         else tier = 'Gold';
         manualTiers[a.id] = tier;
       }
-      return { 
-        id: a.id, 
-        name: (a.name || '').trim(), 
-        desc: a.description || a.desc || '', 
-        icon: a.image?.full ? `${DDRAGON_BASE_URL}/img/tft-item/${a.image.full}` : '', 
-        tier 
+      return {
+        id: a.id,
+        name: (a.name || '').trim(),
+        desc: a.description || a.desc || '',
+        icon: a.image?.full ? `${DDRAGON_BASE_URL}/img/tft-augment/${a.image.full}` : '',
+        tier
       };
     });
 
@@ -152,7 +153,7 @@ async function updateData() {
   // ── Items ──────────────────────────────────────────────────────────────────
   const items = Object.values(itemsData)
     .filter(i => i.id && (i.id.startsWith(`${TFT_SET_PREFIX}_`) || i.id.startsWith('TFT_') || i.id.includes('Radiant')))
-    .map(i => ({ id: i.id || '', name: (i.name || '').trim(), desc: i.description || i.desc || '', icon: i.image?.full || '', image: i.image || null }));
+    .map(i => ({ id: i.id || '', name: (i.name || '').trim(), desc: i.description || i.desc || '', icon: i.image?.full ? `${DDRAGON_BASE_URL}/img/tft-item/${i.image.full}` : '', image: i.image || null }));
 
   console.log(`[sync] Items: ${items.length}`);
 
@@ -163,6 +164,8 @@ async function updateData() {
     console.log('[sync] Upserting into Supabase...');
 
     // Champions
+    // [USER DEV OVERRIDE]: Do not overwrite Champions (Preserve CDragon URL avatars)
+    /*
     const champRows = champions.map(c => ({
       id: c.id,
       name: c.name,
@@ -190,8 +193,11 @@ async function updateData() {
       }
     }
     console.log('[sync] Champion traits seeded (skipped existing).');
+    */
 
     // Traits
+    // [USER DEV OVERRIDE]: Do not overwrite Traits
+    /*
     const traitRows = traits.map(t => ({
       id: t.id,
       name: t.name,
@@ -204,17 +210,28 @@ async function updateData() {
       .upsert(traitRows, { onConflict: 'id' });
     if (traitErr) console.error('[sync] traits upsert error:', traitErr.message);
     else console.log(`[sync] Upserted ${traitRows.length} traits.`);
+    */
 
     // Helper to merge set_prefix for shared items/augments
     const mergeSetPrefixes = async (table, itemsArray, existingDataMap = new Map()) => {
       if (!itemsArray.length) return;
-      
+
       const ids = itemsArray.map(r => r.id);
-      const { data: existing } = await supabase.from(table).select('id, set_prefix').in('id', ids);
-      
+      let existing = [];
+      const chunkSize = 150;
+      for (let i = 0; i < ids.length; i += chunkSize) {
+        const chunk = ids.slice(i, i + chunkSize);
+        const { data, error } = await supabase.from(table).select('id, set_prefix').in('id', chunk);
+        if (error) {
+          console.error(`[sync] Error fetching existing ${table} chunk:`, error);
+        } else if (data) {
+          existing = existing.concat(data);
+        }
+      }
+
       const existingMap = new Map();
-      if (existing) existing.forEach(r => existingMap.set(r.id, r.set_prefix));
-      
+      if (existing.length) existing.forEach(r => existingMap.set(r.id, r.set_prefix));
+
       const mapped = itemsArray.map(row => {
         const oldPrefix = existingMap.get(row.id);
         let newPrefix = TFT_SET_PREFIX;
@@ -225,7 +242,7 @@ async function updateData() {
             newPrefix = oldPrefix;
           }
         }
-        
+
         // Preserve tier/tags if available in existingDataMap (Augments only)
         const oldRow = existingDataMap.get(row.id);
         if (oldRow) {
@@ -242,7 +259,7 @@ async function updateData() {
     // Augments — preserve admin-set tier/tags
     const { data: existingAugs } = await supabase.from('augments').select('id, tier, tags');
     const existingMap = new Map((existingAugs || []).map(a => [a.id, a]));
-    
+
     const baseAugmentRows = augments.map(aug => ({
       id: aug.id,
       name: aug.name,

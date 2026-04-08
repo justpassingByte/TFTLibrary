@@ -18,6 +18,7 @@ interface AdminSetContextValue {
   publishLiveSet: () => Promise<void>
   isPublishing: boolean
   setCounts: Record<string, SetCounts>
+  setLabels: Record<string, string>
   refreshSets: () => void
 }
 
@@ -35,6 +36,7 @@ export function AdminSetProvider({ children }: { children: ReactNode }) {
   const [liveSet, setLiveSet] = useState<string>('TFT16')
   const [isPublishing, setIsPublishing] = useState(false)
   const [setCounts, setSetCounts] = useState<Record<string, SetCounts>>({})
+  const [setLabels, setSetLabels] = useState<Record<string, string>>({})
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -46,13 +48,23 @@ export function AdminSetProvider({ children }: { children: ReactNode }) {
 
   const fetchSets = useCallback(async () => {
     try {
-      const [setsRes, settingsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/meta/sets`),
-        fetch(`${apiUrl}/api/admin/settings`),
+      const [setsRes, settingsRes, adminSetsRes] = await Promise.all([
+        fetch(`${apiUrl}/api/meta/sets`).catch(e => { console.error('meta/sets error', e); return null; }),
+        fetch(`${apiUrl}/api/admin/settings`).catch(e => { console.error('admin/settings error', e); return null; }),
+        fetch(`${apiUrl}/api/admin/sets`).catch(e => { console.error('admin/sets error', e); return null; }),
       ])
       
-      if (setsRes.ok) {
-        const sets: string[] = await setsRes.json()
+      if (adminSetsRes && (adminSetsRes as any).ok) {
+        const data = await (adminSetsRes as any).json()
+        const labels: Record<string, string> = {}
+        if (data.sets) {
+          data.sets.forEach((s: any) => { labels[s.prefix] = s.label })
+        }
+        setSetLabels(labels)
+      }
+
+      if (setsRes && (setsRes as any).ok) {
+        let sets: string[] = await (setsRes as any).json()
         setAvailableSets(sets)
 
         // Restore from localStorage or default to last set
@@ -63,25 +75,29 @@ export function AdminSetProvider({ children }: { children: ReactNode }) {
           const defaultSet = sets[sets.length - 1] // Default to the latest set
           setCurrentSetState(defaultSet)
           try { localStorage.setItem('admin_current_set', defaultSet) } catch {}
+        } else {
+          setCurrentSetState('TFT16')
         }
 
         // Fetch per-set counts
         const countsMap: Record<string, SetCounts> = {}
         await Promise.all(sets.map(async (prefix) => {
           try {
-            const [champsRes, traitsRes, augRes] = await Promise.all([
+            const [champsRes, traitsRes, augRes, itemsRes] = await Promise.all([
               fetch(`${apiUrl}/api/meta/champions?set_prefix=${prefix}`),
               fetch(`${apiUrl}/api/meta/traits?set_prefix=${prefix}`),
               fetch(`${apiUrl}/api/meta/augments?set_prefix=${prefix}`),
+              fetch(`${apiUrl}/api/meta/items?set_prefix=${prefix}`),
             ])
             const champs = champsRes.ok ? await champsRes.json() : []
             const traits = traitsRes.ok ? await traitsRes.json() : []
             const augs = augRes.ok ? await augRes.json() : []
+            const items = itemsRes.ok ? await itemsRes.json() : []
             countsMap[prefix] = {
               champions: champs.length,
               traits: traits.length,
               augments: augs.length,
-              items: 0, // Items don't have set_prefix yet
+              items: items.length,
             }
           } catch {
             countsMap[prefix] = { champions: 0, traits: 0, augments: 0, items: 0 }
@@ -90,8 +106,8 @@ export function AdminSetProvider({ children }: { children: ReactNode }) {
         setSetCounts(countsMap)
       }
 
-      if (settingsRes.ok) {
-        const settings = await settingsRes.json()
+      if (settingsRes && (settingsRes as any).ok) {
+        const settings = await (settingsRes as any).json()
         if (settings?.active_set) setLiveSet(settings.active_set)
       }
     } catch (e) {
@@ -127,6 +143,7 @@ export function AdminSetProvider({ children }: { children: ReactNode }) {
       publishLiveSet,
       isPublishing,
       setCounts,
+      setLabels,
       refreshSets: fetchSets,
     }}>
       {children}

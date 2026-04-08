@@ -31,7 +31,7 @@ const RARITY_STYLES: Record<string, { border: string; bg: string; text: string }
   Prismatic: { border: '#c084fc', bg: 'rgba(192,132,252,0.08)', text: '#c084fc' },
 };
 
-type SortMode = 'Cost' | 'Name' | 'Origin' | 'Class';
+type SortMode = 'Cost' | 'Name' | 'Trait';
 
 /* eslint-disable react-hooks/globals */
 export function BuilderClient({ champions = [], dbAugments = [], items = [], traitsDb = [] }: { champions?: any[]; dbAugments?: any[]; items?: any[]; traitsDb?: any[]; }) {
@@ -50,7 +50,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
   const [augModalOpen, setAugModalOpen] = useState(false);
   const [selectedAugments, setSelectedAugments] = useState<string[]>([]);
   const [augSearch, setAugSearch] = useState('');
-  const [augRarity, setAugRarity] = useState<'All' | 'Silver' | 'Gold' | 'Prismatic'>('All');
+  const [augRarity, setAugRarity] = useState<'Silver' | 'Gold' | 'Prismatic'>('Silver');
 
   // Roster mode (bottom panel)
   const [itemTab, setItemTab] = useState<ItemCategory>('Components');
@@ -195,8 +195,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
     switch (sortMode) {
       case 'Cost': list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)); break;
       case 'Name': list.sort((a, b) => a.name.localeCompare(b.name)); break;
-      case 'Origin': list.sort((a, b) => getChampionOrigin(a, traitsDb).localeCompare(getChampionOrigin(b, traitsDb)) || a.cost - b.cost); break;
-      case 'Class': list.sort((a, b) => getChampionClass(a, traitsDb).localeCompare(getChampionClass(b, traitsDb)) || a.cost - b.cost); break;
+      case 'Trait': list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)); break;
     }
     return list;
   }, [searchQuery, sortMode]);
@@ -211,13 +210,10 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
   }, [itemTab, searchQuery, items]);
 
   const filteredAugments = useMemo(() => {
-    let list = [...dbAugments];
-    if (augRarity !== 'All') {
-      list = list.filter(a => a.tier === augRarity || a.tier === augRarity.toLowerCase());
-    }
+    let list = dbAugments.filter(a => a.tier === augRarity || a.tier === augRarity.toLowerCase());
     if (!augSearch) return list;
     return list.filter(a => a.name.toLowerCase().includes(augSearch.toLowerCase()));
-  }, [augSearch, augRarity]);
+  }, [augSearch, augRarity, dbAugments]);
 
   const pushHistory = useCallback(() => {
     setHistory(prev => [...prev.slice(-19), board.map(r => [...r])]);
@@ -621,7 +617,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
 
               {/* Champion sort modes */}
               <div className="flex gap-4">
-                {(['Cost', 'Name', 'Origin', 'Class'] as const).map(mode => (
+                {(['Cost', 'Name', 'Trait'] as const).map(mode => (
                   <button key={mode} onClick={() => setSortMode(mode)}
                     className={`transition-colors ${sortMode === mode ? 'text-[var(--color-pumpkin)] drop-shadow-md bg-[var(--color-pumpkin)]/10 px-3 py-1 rounded-full -ml-3' : 'text-gray-400 hover:text-white'}`}>
                     {mode}
@@ -633,10 +629,10 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
 
               {/* Item category tabs */}
               <div className="flex gap-4 pr-2">
-                {(['Components', 'Completed', 'Radiants', 'Support', 'Artifacts', 'Emblems'] as const).map(tab => {
+                {(['Components', 'Completed', 'Radiants', 'Artifacts', 'Emblems'] as const).map(tab => {
                   const label = tab === 'Completed' ? 'Craftables' : tab;
                   return (
-                    <button key={tab} onClick={() => setItemTab(tab)}
+                    <button key={tab} onClick={() => setItemTab(tab as ItemCategory)}
                       className={`transition-colors ${itemTab === tab ? 'text-[#ffb703] drop-shadow-md bg-[#ffb703]/10 px-3 py-1 rounded-full -mx-3' : 'text-gray-400 hover:text-white'}`}>
                       {label}
                     </button>
@@ -667,39 +663,32 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col gap-1.5">
-                  {Object.entries(
-                    filteredChampions.reduce((acc: any, champ: any) => {
-                      const groupTrait = sortMode === 'Origin' ? getChampionOrigin(champ, traitsDb) : getChampionClass(champ, traitsDb);
-                      const key = groupTrait || 'Unknown';
-                      if (!acc[key]) acc[key] = [];
-                      acc[key].push(champ);
-                      return acc;
-                    }, {} as Record<string, typeof filteredChampions>)
-                  ).sort(([a], [b]) => a.localeCompare(b)).map(([groupTrait, champs]: [string, any]) => (
-                    <div key={groupTrait} className="flex gap-3 items-center min-h-[58px]">
-                      {/* Trait Icon column */}
-                      <div className="w-10 flex shrink-0 items-center justify-center">
-                         <GameIcon type="trait" id={groupTrait} icon={traitsDb.find((t: any) => t.name === groupTrait)?.icon} className="w-8 h-8 opacity-[0.85] drop-shadow-md" alt={groupTrait} />
-                      </div>
-                      {/* Champions row */}
-                      <div className="flex flex-wrap gap-1 flex-1">
-                        {champs.map((champ: any) => (
-                          <div key={champ.id}
-                            draggable
-                            onDragStart={e => onDragStartChampion(e, champ)}
-                            className="relative flex flex-col items-center justify-center cursor-grab group hover:scale-105 transition-transform">
-                            <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-md">
-                              <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[46px] h-[50px] shadow-sm pointer-events-none" />
-                            </HexagonFrame>
-                            <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">
-                              {champ.name}
-                            </span>
+                <div className="flex flex-col gap-4">
+                  {Array.from(new Set(filteredChampions.flatMap(c => c.traits))).sort().map(traitName => {
+                    const traitChamps = filteredChampions.filter(c => c.traits.includes(traitName));
+                    if (traitChamps.length === 0) return null;
+                    const traitInfo = traitsDb.find((t: any) => t.name === traitName) || traitsDb.find((t: any) => t.id === traitName);
+                    return (
+                      <div key={traitName} className="flex gap-3 items-center bg-[#1c1c22]/50 p-2 rounded-xl border border-white/[0.04]">
+                        <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center gap-1.5 border-r border-[#2a2a35] pr-3 py-1">
+                          <div className="w-7 h-7 flex items-center justify-center opacity-80 filter drop-shadow-md">
+                             <GameIcon type="trait" id={traitName} icon={traitInfo?.icon} alt={traitName} className="w-full h-full" />
                           </div>
-                        ))}
+                          <span className="text-[9px] font-bold text-[var(--color-text-muted)] text-center break-words leading-tight w-full uppercase tracking-wider">{traitName}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 flex-1 pl-2">
+                          {traitChamps.map((champ: any) => (
+                             <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)} className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
+                                <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
+                                  <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
+                                </HexagonFrame>
+                                <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">{champ.name}</span>
+                             </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -745,7 +734,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                       className="w-full px-4 py-2 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none" />
                   </div>
                   <div className="flex items-center gap-1 bg-[#24242b] p-1 rounded-full border border-[#40404a]">
-                    {(['All', 'Silver', 'Gold', 'Prismatic'] as const).map(rarity => (
+                    {(['Silver', 'Gold', 'Prismatic'] as const).map(rarity => (
                       <button
                         key={rarity}
                         onClick={() => setAugRarity(rarity)}

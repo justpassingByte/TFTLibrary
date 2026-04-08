@@ -34,7 +34,7 @@ export interface PlacedUnit {
 
 export type BoardCell = PlacedUnit | null;
 
-export type TierNode = 
+export type TierNode =
   | { type: 'champion'; id: string; data: BuilderChampion }
   | { type: 'item'; id: string; data: ItemDef }
   | { type: 'augment'; id: string; data: BuilderAugment };
@@ -45,7 +45,7 @@ export interface TierRow {
   nodes: TierNode[];
 }
 
-export type ItemCategory = 'Components' | 'Completed' | 'Radiants' | 'Support' | 'Artifacts' | 'Emblems';
+export type ItemCategory = 'Components' | 'Completed' | 'Radiants' | 'Support' | 'Artifacts' | 'Emblems' | 'Special';
 
 export interface ItemDef {
   id: string;
@@ -132,8 +132,8 @@ export function categorizeItem(id: string): ItemCategory | null {
   if (SUPPORT_IDS.has(id) || id === 'TFT_Item_RadiantVirtue') return 'Support';
   if (id.includes('Radiant')) return 'Radiants';
   if (id.includes('Artifact_') || id.includes('Darkin')) return 'Artifacts';
-  if (id.includes('EmblemItem')) return 'Emblems';
-  return null; // not a real equippable item → exclude
+  if (id.includes('Emblem') || id.includes('Crown')) return 'Emblems';
+  return 'Special'; // Any unrecognized items are thrown into Special
 }
 
 

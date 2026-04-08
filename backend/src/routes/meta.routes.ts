@@ -85,14 +85,7 @@ router.get('/items', async (req, res) => {
     const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
     const where = targetPrefix === 'all' 
        ? {} 
-       : { 
-           OR: [
-             { set_prefix: { contains: targetPrefix } }, 
-             { id: { startsWith: 'TFT_Item_' } },
-             { id: { contains: 'Radiant' } },
-             { id: { contains: 'Artifact' } }
-           ] 
-         };
+       : { set_prefix: { contains: targetPrefix } };
     const data = await prisma.item.findMany({ where, orderBy: { name: 'asc' } });
     res.json(data);
   } catch (error) {
@@ -170,7 +163,16 @@ router.get('/sets', async (req, res) => {
       distinct: ['set_prefix'],
       orderBy: { set_prefix: 'asc' },
     });
+    
+    // Chỉ lấy set_prefix thực tế từ list Tướng – đây là cách chính xác nhất để biết Set nào thực sự có data.
     const sets = data.map(d => d.set_prefix).filter(Boolean);
+
+    // Nếu list Tướng chưa được sync (rỗng), ta phải trả về một Set mặc định (ví dụ TFT16)
+    // để UI không bị "trắng trắng" cái Dropdown ở Sidebar. 
+    if (sets.length === 0) {
+      sets.push(getActiveSet() || 'TFT16');
+    }
+
     res.json(sets);
   } catch (error) {
     console.error('GET /api/meta/sets error:', error);
@@ -268,7 +270,7 @@ router.get('/stats/augments', async (req, res) => {
     const { patch, set_prefix } = req.query;
     const where: any = patch ? { patch: String(patch) } : {};
     if (set_prefix && set_prefix !== 'all') {
-      where.augment_name = { startsWith: String(set_prefix) };
+      where.augment_id = { startsWith: String(set_prefix) };
     }
     const data = await prisma.augmentStat.findMany({
       where,
@@ -377,7 +379,7 @@ router.get('/patch-notes', async (req, res) => {
     // Allow set_prefix filtering for accurate icons
     const isUndef = !set_prefix || set_prefix === 'undefined' || set_prefix === 'null';
     const targetPrefix = isUndef ? getActiveSet() : String(set_prefix);
-    const metaWhere = { set_prefix: targetPrefix };
+    const metaWhere = { set_prefix: { contains: targetPrefix } };
 
     const [changes, predictions, champIcons, traitIcons, augmentIcons, itemIcons] = await Promise.all([
       prisma.patchChange.findMany({
@@ -392,7 +394,7 @@ router.get('/patch-notes', async (req, res) => {
       prisma.trait.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
       prisma.augment.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
       // @ts-ignore
-      prisma.item?.findMany ? prisma.item.findMany({ select: { id: true, name: true, icon: true } }) : Promise.resolve([])
+      prisma.item?.findMany ? prisma.item.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }) : Promise.resolve([])
     ]);
 
     const iconMap = new Map<string, string>();
@@ -400,11 +402,12 @@ router.get('/patch-notes', async (req, res) => {
     const champNames = new Set<string>();
     const traitNames = new Set<string>();
     const augmentNames = new Set<string>();
+    const itemNames = new Set<string>();
 
     champIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); champNames.add(n); } });
     traitIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); traitNames.add(n); } });
     augmentIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); augmentNames.add(n); } });
-    itemIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); } });
+    itemIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); itemNames.add(n); } });
 
     const getIconUrl = (iconPath: string) => {
       if (!iconPath) return '';
@@ -414,27 +417,35 @@ router.get('/patch-notes', async (req, res) => {
       return `https://raw.communitydragon.org/latest/game/${iconPath}`;
     };
 
+    const finalChanges: any[] = [];
+    changes.forEach(c => {
+      const entNorm = c.entity.toLowerCase().trim();
+      const hasMapping = champNames.has(entNorm) || traitNames.has(entNorm) || augmentNames.has(entNorm) || itemNames.has(entNorm) || iconMap.has(entNorm);
+      
+      // Strict Set Filter: If entity doesn't match our current set dictionary, and isn't a system change, drop it!
+      if (!hasMapping && c.entity_type !== 'system') return;
+
+      let actualType = c.entity_type;
+      // Fix misidentified entities
+      if (champNames.has(entNorm)) actualType = 'unit';
+      else if (traitNames.has(entNorm)) actualType = 'trait';
+      else if (augmentNames.has(entNorm)) actualType = 'augment';
+
+      finalChanges.push({
+        entity: c.entity,
+        entity_id: idMap.get(entNorm) || '',
+        type: actualType,
+        changeType: c.change_type,
+        stat: c.before_val && c.after_val ? `${c.stat}: ${c.before_val} → ${c.after_val}` : (c.stat || c.raw_text),
+        score: c.score,
+        tier: c.tier,
+        iconUrl: getIconUrl(iconMap.get(entNorm) || '')
+      });
+    });
+
     res.json({
       version: targetPatch,
-      changes: changes.map(c => {
-        const entNorm = c.entity.toLowerCase().trim();
-        let actualType = c.entity_type;
-        // Fix misidentified entities
-        if (champNames.has(entNorm)) actualType = 'unit';
-        else if (traitNames.has(entNorm)) actualType = 'trait';
-        else if (augmentNames.has(entNorm)) actualType = 'augment';
-
-        return {
-          entity: c.entity,
-          entity_id: idMap.get(entNorm) || '',
-          type: actualType,
-          changeType: c.change_type,
-          stat: c.before_val && c.after_val ? `${c.stat}: ${c.before_val} → ${c.after_val}` : (c.stat || c.raw_text),
-          score: c.score,
-          tier: c.tier,
-          iconUrl: getIconUrl(iconMap.get(entNorm) || '')
-        };
-      }),
+      changes: finalChanges,
       predictions: predictions.map(p => ({
         name: p.name,
         tier: p.tier,

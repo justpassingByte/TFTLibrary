@@ -32,7 +32,7 @@ const TIER_COLORS: Record<string, string> = { S: '#ff2244', A: '#FF7A00', B: '#f
 interface DragPayload { type: 'champion' | 'item' | 'board-champion'; championId?: string; itemId?: string; fromRow?: number; fromCol?: number }
 let currentDrag: DragPayload | null = null
 
-type SortMode = 'Cost' | 'Name' | 'Origin' | 'Class'
+type SortMode = 'Cost' | 'Name' | 'Trait'
 
 const RARITY_STYLES: Record<string, { border: string; bg: string; text: string }> = {
   Silver: { border: '#9ca3af', bg: 'rgba(156,163,175,0.08)', text: '#d1d5db' },
@@ -61,17 +61,12 @@ export function CompBuilderClient({ comps, champions: allChampions = [], dbAugme
   const dbAugments = useMemo(() => allAugments.filter(a => !currentSet || a.set_prefix?.includes(currentSet)), [allAugments, currentSet])
   const traitsDb = useMemo(() => allTraits.filter((t: any) => !currentSet || t.set_prefix === currentSet), [allTraits, currentSet])
   
-  // Items don't have set_prefix in DB, but set-specific items (emblems, etc.) 
-  // have the set prefix baked into their ID (e.g. TFT16_Item_VoidEmblemItem).
-  // Generic items (TFT_Item_*) are shared across all sets.
+  // Items are assigned set_prefix in the DB by the CDragon sync script.
+  // We only show items that have explicitly been verified as active in the current set.
   const filteredItemsBySet = useMemo(() => {
     if (!currentSet) return items
-    return items.filter((item: any) => 
-      item.set_prefix?.includes(currentSet) || 
-      item.id.startsWith('TFT_Item_') || 
-      item.id.includes('Radiant') || 
-      item.id.includes('Artifact')
-    )
+    const cs = currentSet.toLowerCase()
+    return items.filter((item: any) => item.set_prefix?.toLowerCase().includes(cs))
   }, [items, currentSet])
   
   const [editing, setEditing] = useState<CuratedCompData & { id?: string } | null>(null)
@@ -134,8 +129,7 @@ export function CompBuilderClient({ comps, champions: allChampions = [], dbAugme
     switch (sortMode) {
       case 'Cost': list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)); break
       case 'Name': list.sort((a, b) => a.name.localeCompare(b.name)); break
-      case 'Origin': list.sort((a, b) => getChampionOrigin(a, traitsDb).localeCompare(getChampionOrigin(b, traitsDb)) || a.cost - b.cost); break
-      case 'Class': list.sort((a, b) => getChampionClass(a, traitsDb).localeCompare(getChampionClass(b, traitsDb)) || a.cost - b.cost); break
+      case 'Trait': list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)); break
     }
     return list
   }, [searchQuery, sortMode, traitsDb])
@@ -587,15 +581,15 @@ export function CompBuilderClient({ comps, champions: allChampions = [], dbAugme
                 className="w-full px-4 py-2 rounded-full bg-[#1c1c22] border border-[#2a2a35] text-sm text-[var(--color-text-primary)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--color-pumpkin)] transition-colors" />
             </div>
             <div className="flex gap-4">
-              {(['Cost', 'Name', 'Origin', 'Class'] as const).map(mode => (
+              {(['Cost', 'Name', 'Trait'] as const).map(mode => (
                 <button key={mode} onClick={() => setSortMode(mode)}
                   className={`transition-colors ${sortMode === mode ? 'text-[var(--color-pumpkin)] drop-shadow-md bg-[var(--color-pumpkin)]/10 px-3 py-1 rounded-full' : 'text-gray-400 hover:text-white'}`}>{mode}</button>
               ))}
             </div>
             <div className="flex-1" />
             <div className="flex gap-4 pr-2">
-              {(['Components', 'Completed', 'Radiants', 'Support', 'Artifacts', 'Emblems'] as const).map(tab => (
-                <button key={tab} onClick={() => setItemTab(tab)}
+              {(['Components', 'Completed', 'Radiants', 'Artifacts', 'Emblems'] as const).map(tab => (
+                <button key={tab} onClick={() => setItemTab(tab as ItemCategory)}
                   className={`transition-colors ${itemTab === tab ? 'text-[#ffb703] drop-shadow-md bg-[#ffb703]/10 px-3 py-1 rounded-full' : 'text-gray-400 hover:text-white'}`}>
                   {tab === 'Completed' ? 'Craftables' : tab}
                 </button>
@@ -605,17 +599,47 @@ export function CompBuilderClient({ comps, champions: allChampions = [], dbAugme
         </div>
         <div className="flex bg-[#111116] min-h-[350px]">
           <div className="flex-1 max-h-[450px] overflow-y-auto show-scrollbar p-4 pr-2">
-            <div className="flex flex-wrap gap-1">
-              {filteredChampions.map(champ => (
-                <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
-                  className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
-                  <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
-                    <ChampionAvatar name={champ.name} icon={champ.icon} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
-                  </HexagonFrame>
-                  <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">{champ.name}</span>
-                </div>
-              ))}
-            </div>
+            {sortMode === 'Trait' ? (
+              <div className="flex flex-col gap-4">
+                {Array.from(new Set(filteredChampions.flatMap(c => c.traits))).sort().map(traitName => {
+                  const traitChamps = filteredChampions.filter(c => c.traits.includes(traitName));
+                  if (traitChamps.length === 0) return null;
+                  const traitInfo = traitsDb.find((t: any) => t.name === traitName) || traitsDb.find((t: any) => t.id === traitName);
+                  return (
+                    <div key={traitName} className="flex gap-3 items-center bg-[#1c1c22]/50 p-2 rounded-xl border border-white/[0.04]">
+                      <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center gap-1.5 border-r border-[#2a2a35] pr-3 py-1">
+                        <div className="w-7 h-7 flex items-center justify-center opacity-80 filter drop-shadow-md">
+                           <GameIcon type="trait" id={traitName} icon={traitInfo?.icon} alt={traitName} className="w-full h-full" />
+                        </div>
+                        <span className="text-[9px] font-bold text-[var(--color-text-muted)] text-center break-words leading-tight w-full uppercase tracking-wider">{traitName}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5 flex-1 pl-2">
+                        {traitChamps.map(champ => (
+                           <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)} className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
+                              <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
+                                <ChampionAvatar name={champ.name} icon={champ.icon} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
+                              </HexagonFrame>
+                              <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">{champ.name}</span>
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {filteredChampions.map(champ => (
+                  <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
+                    className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
+                    <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
+                      <ChampionAvatar name={champ.name} icon={champ.icon} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
+                    </HexagonFrame>
+                    <span className="text-[8px] text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)] transition-colors max-w-[50px] truncate text-center mt-0.5">{champ.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="w-[1px] bg-[#2a2a35] opacity-50 shrink-0 my-4" />
           <div className="w-[400px] shrink-0 max-h-[450px] overflow-y-auto show-scrollbar p-4 pl-3">

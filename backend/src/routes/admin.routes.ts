@@ -29,7 +29,7 @@ router.post('/settings', (req, res) => {
     const { active_set } = req.body;
     const current = fs.existsSync(SETTINGS_FILE) ? JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')) : {};
     current.active_set = active_set || 'TFT16';
-    
+
     if (!fs.existsSync(path.dirname(SETTINGS_FILE))) {
       fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
     }
@@ -38,6 +38,211 @@ router.post('/settings', (req, res) => {
   } catch (e) {
     console.error('POST /api/admin/settings error:', e);
     res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// ── Set Management ───────────────────────────────────────────────────
+
+// Helper: read/write managed sets from settings.json
+function getManagedSets(): { prefix: string; label: string; env: string; created_at: string }[] {
+  try {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+      return data.managed_sets || [];
+    }
+  } catch (e) { }
+  return [];
+}
+
+function saveManagedSets(sets: { prefix: string; label: string; env: string; created_at: string }[]) {
+  const current = fs.existsSync(SETTINGS_FILE) ? JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')) : {};
+  current.managed_sets = sets;
+  if (!fs.existsSync(path.dirname(SETTINGS_FILE))) {
+    fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
+  }
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(current, null, 2));
+}
+
+// GET /api/admin/sets — list all sets (managed + discovered from DB)
+router.get('/sets', async (req, res) => {
+  try {
+    const managedSets = getManagedSets();
+
+    // Discover sets from champion data
+    const dbSets = await prisma.champion.findMany({
+      select: { set_prefix: true },
+      distinct: ['set_prefix'],
+      orderBy: { set_prefix: 'asc' },
+    });
+    const dbPrefixes = dbSets.map(d => d.set_prefix).filter(Boolean);
+
+    // Count entities per set
+    const setCounts: Record<string, { champions: number; traits: number; augments: number; items: number }> = {};
+    for (const prefix of dbPrefixes) {
+      const [champCount, traitCount, augCount, itemCount] = await Promise.all([
+        prisma.champion.count({ where: { set_prefix: prefix } }),
+        prisma.trait.count({ where: { set_prefix: prefix } }),
+        prisma.augment.count({ where: { set_prefix: { contains: prefix } } }),
+        prisma.item.count({ where: { set_prefix: { contains: prefix } } }),
+      ]);
+      setCounts[prefix] = { champions: champCount, traits: traitCount, augments: augCount, items: itemCount };
+    }
+
+    // Read active set
+    let activeSet = 'TFT16';
+    try {
+      if (fs.existsSync(SETTINGS_FILE)) {
+        activeSet = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')).active_set || 'TFT16';
+      }
+    } catch (e) { }
+
+    // Merge: managed + discovered (avoid duplicates)
+    const allPrefixes = new Set<string>();
+    const result: any[] = [];
+
+    // Add managed sets first
+    managedSets.forEach(s => {
+      allPrefixes.add(s.prefix);
+      result.push({
+        ...s,
+        is_active: s.prefix === activeSet,
+        has_data: dbPrefixes.includes(s.prefix),
+        counts: setCounts[s.prefix] || { champions: 0, traits: 0, augments: 0, items: 0 },
+        source: 'managed',
+      });
+    });
+
+    // Add discovered (DB-only) sets
+    dbPrefixes.forEach(prefix => {
+      if (!allPrefixes.has(prefix)) {
+        allPrefixes.add(prefix);
+        result.push({
+          prefix,
+          label: prefix.replace('TFT', 'Set '),
+          env: 'live',
+          created_at: new Date().toISOString(),
+          is_active: prefix === activeSet,
+          has_data: true,
+          counts: setCounts[prefix] || { champions: 0, traits: 0, augments: 0, items: 0 },
+          source: 'discovered',
+        });
+      }
+    });
+
+    res.json({ sets: result, active_set: activeSet });
+  } catch (error) {
+    console.error('GET /api/admin/sets error:', error);
+    res.status(500).json({ error: 'Failed to list sets' });
+  }
+});
+
+// POST /api/admin/sets — add a new managed set
+router.post('/sets', (req, res) => {
+  try {
+    const { prefix, label, env } = req.body;
+    if (!prefix) return res.status(400).json({ error: 'prefix is required' });
+
+    const normalizedPrefix = prefix.toUpperCase().trim();
+    const sets = getManagedSets();
+
+    // Check for duplicate
+    if (sets.find(s => s.prefix === normalizedPrefix)) {
+      return res.status(409).json({ error: `Set "${normalizedPrefix}" already exists` });
+    }
+
+    const newSet = {
+      prefix: normalizedPrefix,
+      label: label || normalizedPrefix.replace('TFT', 'Set '),
+      env: env || 'pbe',
+      created_at: new Date().toISOString(),
+    };
+
+    sets.push(newSet);
+    saveManagedSets(sets);
+
+    res.json({ success: true, set: newSet });
+  } catch (error) {
+    console.error('POST /api/admin/sets error:', error);
+    res.status(500).json({ error: 'Failed to add set' });
+  }
+});
+
+// DELETE /api/admin/sets/:prefix — remove a managed set (does NOT delete DB data)
+router.delete('/sets/:prefix', (req, res) => {
+  try {
+    const { prefix } = req.params;
+    const sets = getManagedSets();
+    const filtered = sets.filter(s => s.prefix !== prefix.toUpperCase());
+    saveManagedSets(filtered);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('DELETE /api/admin/sets/:prefix error:', error);
+    res.status(500).json({ error: 'Failed to delete set' });
+  }
+});
+
+// POST /api/admin/sets/:prefix/activate — set as active
+router.post('/sets/:prefix/activate', (req, res) => {
+  try {
+    const { prefix } = req.params;
+    const current = fs.existsSync(SETTINGS_FILE) ? JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')) : {};
+    current.active_set = prefix.toUpperCase();
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(current, null, 2));
+    res.json({ success: true, active_set: current.active_set });
+  } catch (error) {
+    console.error('POST /api/admin/sets/:prefix/activate error:', error);
+    res.status(500).json({ error: 'Failed to activate set' });
+  }
+});
+
+// POST /api/admin/sets/:prefix/purge — delete all DB data for a set
+router.post('/sets/:prefix/purge', async (req, res) => {
+  try {
+    const prefix = req.params.prefix.toUpperCase();
+
+    // Helper to safely purge entities with comma-separated prefixes
+    const purgeShared = async (modelName: 'champion' | 'trait' | 'augment' | 'item') => {
+      const model = prisma[modelName] as any;
+      let deletedCount = 0;
+
+      // 1. Exact match -> just delete
+      const exactDel = await model.deleteMany({ where: { set_prefix: prefix } });
+      deletedCount += exactDel.count;
+
+      // 2. Contains match -> remove prefix from string, update or delete if empty
+      const shared = await model.findMany({ where: { set_prefix: { contains: prefix } } });
+      for (const entity of shared) {
+        if (!entity.set_prefix) continue;
+        const prefixes = entity.set_prefix.split(',').map((p: string) => p.trim()).filter((p: string) => p && p !== prefix);
+        if (prefixes.length === 0) {
+          await model.delete({ where: { id: entity.id } });
+          deletedCount++;
+        } else {
+          await model.update({ where: { id: entity.id }, data: { set_prefix: prefixes.join(',') } });
+        }
+      }
+      return deletedCount;
+    };
+
+    const [champDel, traitDel, augDel, itemDel] = await Promise.all([
+      purgeShared('champion'),
+      purgeShared('trait'),
+      purgeShared('augment'),
+      purgeShared('item'),
+    ]);
+
+    res.json({
+      success: true,
+      deleted: {
+        champions: champDel,
+        traits: traitDel,
+        augments: augDel,
+        items: itemDel,
+      },
+    });
+  } catch (error) {
+    console.error('POST /api/admin/sets/:prefix/purge error:', error);
+    res.status(500).json({ error: 'Failed to purge set data' });
   }
 });
 
@@ -84,9 +289,9 @@ router.post('/augments/bulk', async (req, res) => {
       if (p.tier !== undefined) {
         data.tier = p.tier == 3 ? 'Prismatic' : p.tier == 2 ? 'Gold' : 'Silver';
       }
-      
+
       if (Object.keys(data).length === 0) continue;
-      
+
       try {
         await prisma.augment.update({ where: { id: p.id }, data });
         updatedCount++;
@@ -351,42 +556,30 @@ router.patch('/insights/:id', async (req, res) => {
 // Get all changes + predictions for a patch
 router.get('/patch-notes', async (req, res) => {
   try {
-    const { patch } = req.query;
-
-    // If no patch specified, find the latest
-    let targetPatch = patch as string;
-    if (!targetPatch) {
-      const latest = await prisma.patchChange.findFirst({
-        orderBy: { created_at: 'desc' },
-        select: { patch: true },
-      });
-      targetPatch = latest?.patch || '';
+    function getActiveSet() {
+      try {
+        if (fs.existsSync(SETTINGS_FILE)) {
+          return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')).active_set || 'TFT16';
+        }
+      } catch (e) { }
+      return 'TFT16';
     }
 
-    if (!targetPatch) return res.json({ patch: '', changes: [], predictions: [], available_patches: [] });
+    const { patch, set_prefix } = req.query;
 
-    const [changes, predictions, patchList] = await Promise.all([
-      prisma.patchChange.findMany({
-        where: { patch: targetPatch },
-        orderBy: [{ entity_type: 'asc' }, { score: 'desc' }],
-      }),
-      prisma.patchMetaPrediction.findMany({
-        where: { patch: targetPatch },
-        orderBy: { sort_order: 'asc' },
-      }),
-      prisma.patchChange.findMany({
-        distinct: ['patch'],
-        select: { patch: true },
-        orderBy: { created_at: 'desc' },
-      }),
-    ]);
+    // Safely evaluate set_prefix
+    const sp = set_prefix as string;
+    const isUndef = !sp || sp === 'undefined' || sp === 'null';
+    const targetPrefix = isUndef ? getActiveSet() : sp;
+    const metaWhere = { set_prefix: { contains: targetPrefix } };
 
+    // Fetch Target Set Entity Names FIRST
     const [champIcons, traitIcons, augmentIcons, itemIcons] = await Promise.all([
-      prisma.champion.findMany({ select: { id: true, name: true, icon: true } }),
-      prisma.trait.findMany({ select: { id: true, name: true, icon: true } }),
-      prisma.augment.findMany({ select: { id: true, name: true, icon: true } }),
+      prisma.champion.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
+      prisma.trait.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
+      prisma.augment.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }),
       // @ts-ignore
-      prisma.item?.findMany ? prisma.item.findMany({ select: { id: true, name: true, icon: true } }) : Promise.resolve([])
+      prisma.item?.findMany ? prisma.item.findMany({ where: metaWhere, select: { id: true, name: true, icon: true } }) : Promise.resolve([])
     ]);
 
     const iconMap = new Map<string, string>();
@@ -394,38 +587,112 @@ router.get('/patch-notes', async (req, res) => {
     const champNames = new Set<string>();
     const traitNames = new Set<string>();
     const augmentNames = new Set<string>();
+    const itemNames = new Set<string>();
 
-    champIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); champNames.add(n); } });
-    traitIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); traitNames.add(n); } });
-    augmentIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); augmentNames.add(n); } });
-    itemIcons.forEach(x => { if(x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); } });
+    champIcons.forEach(x => { if (x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); champNames.add(n); } });
+    traitIcons.forEach(x => { if (x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); traitNames.add(n); } });
+    augmentIcons.forEach(x => { if (x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); augmentNames.add(n); } });
+    itemIcons.forEach(x => { if (x.name) { const n = x.name.toLowerCase().trim(); iconMap.set(n, x.icon || ''); idMap.set(n, x.id || ''); itemNames.add(n); } });
+
+    // 2. Fetch available patches natively
+    const patchList = await prisma.patchChange.findMany({
+      where: metaWhere,
+      distinct: ['patch'],
+      select: { patch: true },
+      orderBy: { patch: 'desc' }
+    });
+    const available_patches = patchList.map(p => p.patch);
+
+    // 3. Resolve targetPatch
+    let targetPatch = patch as string;
+    if (!targetPatch && available_patches.length > 0) {
+      targetPatch = available_patches[0]; // Default to most recent patch FOR THIS SET
+    }
+
+    if (!targetPatch) return res.json({ patch: '', changes: [], predictions: [], available_patches: [] });
+
+    // 4. Fetch the changes and predictions for targetPatch natively
+    const [changesRaw, predictions] = await Promise.all([
+      prisma.patchChange.findMany({
+        where: { patch: targetPatch, ...metaWhere },
+        orderBy: [{ entity_type: 'asc' }, { score: 'desc' }],
+      }),
+      prisma.patchMetaPrediction.findMany({
+        where: { patch: targetPatch, ...metaWhere },
+        orderBy: { sort_order: 'asc' },
+      }),
+    ]);
 
     const getIconUrl = (iconPath: string) => {
       if (!iconPath) return '';
-      // DB now stores full HTTPS URLs — pass through directly
       if (iconPath.startsWith('http')) return iconPath;
-      // Fallback for any legacy relative paths
       return `https://raw.communitydragon.org/latest/game/${iconPath}`;
     };
 
-    res.json({
-      patch: targetPatch,
-      changes: changes.map(c => {
-        const entNorm = c.entity.toLowerCase().trim();
-        let actualType = c.entity_type;
-        if (champNames.has(entNorm)) actualType = 'unit';
-        else if (traitNames.has(entNorm)) actualType = 'trait';
-        else if (augmentNames.has(entNorm)) actualType = 'augment';
+    const groupedChangesMap = new Map<string, any>();
+    const changes: any[] = [];
 
-        return {
+    changesRaw.forEach(c => {
+      const entNorm = c.entity.toLowerCase().trim();
+      const hasMapping = champNames.has(entNorm) || traitNames.has(entNorm) || augmentNames.has(entNorm) || itemNames.has(entNorm) || iconMap.has(entNorm);
+
+      // Strict Set Filter: If entity doesn't match our current set dictionary, and isn't a system change, drop it!
+      if (!hasMapping && c.entity_type !== 'system') return;
+
+      let actualType = c.entity_type;
+      if (champNames.has(entNorm)) actualType = 'unit';
+      else if (traitNames.has(entNorm)) actualType = 'trait';
+      else if (augmentNames.has(entNorm)) actualType = 'augment';
+      else if (itemNames.has(entNorm)) actualType = 'item';
+
+      const statLine = c.before_val && c.after_val ? `${c.stat}: ${c.before_val} → ${c.after_val}` : (c.stat || c.raw_text);
+
+      if (groupedChangesMap.has(entNorm)) {
+        const existing = groupedChangesMap.get(entNorm);
+        existing.stat += `\n• ${statLine}`;
+      } else {
+        const newChange = {
           ...c,
           entity_type: actualType,
           entity_id: idMap.get(entNorm) || '',
-          iconUrl: getIconUrl(iconMap.get(entNorm) || '')
+          iconUrl: getIconUrl(iconMap.get(entNorm) || ''),
+          stat: `• ${statLine}`
         };
-      }),
-      predictions,
-      available_patches: patchList.map(p => p.patch),
+        groupedChangesMap.set(entNorm, newChange);
+        changes.push(newChange);
+      }
+    });
+
+    // Sắp xếp name dài lên trước để ưu tiên match (VD: "Twisted Fate" trước "Fate" nếu có)
+    const sortedChamps = Array.from(champNames).sort((a, b) => b.length - a.length);
+
+    // Enrich predictions với icon map cho key_units
+    const enrichedPredictions = predictions.map(p => {
+      const keyUnitsIcons: Record<string, string> = {};
+      (p.key_units || []).forEach((unitName: string) => {
+        const n = unitName.toLowerCase().trim();
+        let iconUrl = getIconUrl(iconMap.get(n) || '');
+
+        if (!iconUrl) {
+          // Thử fuzzy match (phòng trường hợp AI gen ra "Milio Primary" thay vì "Milio")
+          const match = sortedChamps.find(cName => {
+            const escaped = cName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return new RegExp('\\b' + escaped + '\\b').test(n);
+          });
+          if (match) {
+            iconUrl = getIconUrl(iconMap.get(match) || '');
+          }
+        }
+        keyUnitsIcons[unitName] = iconUrl;
+      });
+      return { ...p, key_units_icons: keyUnitsIcons };
+    });
+
+    res.json({
+      patch: targetPatch,
+      changes,
+      predictions: enrichedPredictions,
+      available_patches: available_patches,
     });
   } catch (error) {
     console.error('GET /api/admin/patch-notes error:', error);

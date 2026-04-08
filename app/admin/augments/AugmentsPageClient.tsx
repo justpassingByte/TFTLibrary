@@ -40,7 +40,8 @@ export function AugmentsPageClient({ augments }: Props) {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<number>(1)
   const [saved, setSaved] = useState(false)
-  const [draggedItem, setDraggedItem] = useState<string | null>(null)
+  const [draggedItems, setDraggedItems] = useState<string[]>([])
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
 
   const displayAugments = augments.filter(a => {
     // Filter by set
@@ -51,8 +52,23 @@ export function AugmentsPageClient({ augments }: Props) {
     return true
   })
 
+  function handleToggleSelect(e: React.MouseEvent, id: string) {
+    if (e.button !== 0) return; // Only process left clicks
+    setSelectedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
   function handleDragStart(e: React.DragEvent, id: string) {
-    setDraggedItem(id)
+    if (selectedItems.has(id)) {
+      setDraggedItems(Array.from(selectedItems))
+    } else {
+      setDraggedItems([id])
+      setSelectedItems(new Set([id]))
+    }
     e.dataTransfer.effectAllowed = 'move'
   }
 
@@ -63,33 +79,50 @@ export function AugmentsPageClient({ augments }: Props) {
 
   function handleDrop(e: React.DragEvent, tier: string | null) {
     e.preventDefault()
-    if (!draggedItem) return
+    if (draggedItems.length === 0) return
     setTiers(prev => {
       const next = { ...prev }
-      if (tier) {
-         next[draggedItem] = tier
-      } else {
-         delete next[draggedItem]
-      }
+      draggedItems.forEach(itemId => {
+        if (tier) {
+           next[itemId] = tier
+        } else {
+           delete next[itemId]
+        }
+      })
       return next
     })
-    setDraggedItem(null)
+    setDraggedItems([])
+    setSelectedItems(new Set())
   }
 
   function handleDropBaseTier(e: React.DragEvent, tierId: number) {
     e.preventDefault()
-    if (!draggedItem) return
-    setBaseTiers(prev => ({ ...prev, [draggedItem]: tierId }))
-    setDraggedItem(null)
+    if (draggedItems.length === 0) return
+    setBaseTiers(prev => {
+      const next = { ...prev }
+      draggedItems.forEach(itemId => {
+         next[itemId] = tierId
+      })
+      return next
+    })
+    setDraggedItems([])
+    setSelectedItems(new Set())
   }
 
   function handleUntier(e: React.MouseEvent, id: string) {
     e.preventDefault()
     setTiers(prev => {
       const next = { ...prev }
-      delete next[id]
+      if (selectedItems.has(id)) {
+        selectedItems.forEach(itemId => {
+          delete next[itemId]
+        })
+      } else {
+        delete next[id]
+      }
       return next
     })
+    setSelectedItems(new Set())
   }
 
   function saveChanges() {
@@ -136,7 +169,11 @@ export function AugmentsPageClient({ augments }: Props) {
       <div className="ia-header">
         <div>
           <h2 className="pd-title">Augment Tierlist</h2>
-          <p className="ia-sub">Drag and drop to rank augments, then press save.</p>
+          <p className="ia-sub" style={{ lineHeight: '1.6' }}>
+            <b>1. Rank Meta Tier:</b> Drag augments into S, A, B, C, D rows below.<br/>
+            <b>2. Change Base Tier:</b> Drag augments onto the 'Silver', 'Gold', or 'Prismatic' tabs above.<br/>
+            <b>3. Multi-Select:</b> Click augments to select them and drag them together. Right click to untier.
+          </p>
         </div>
         
         <div className="ia-controls">
@@ -186,10 +223,11 @@ export function AugmentsPageClient({ augments }: Props) {
                     return (
                     <div 
                       key={aug.id} 
-                      className={`ia-item-card drag-item cost-${tierClass}`}
+                      className={`ia-item-card drag-item cost-${tierClass} ${selectedItems.has(aug.id) ? 'selected' : ''}`}
                       draggable
                       onDragStart={(e) => handleDragStart(e, aug.id)}
                       onContextMenu={(e) => handleUntier(e, aug.id)}
+                      onClick={(e) => handleToggleSelect(e, aug.id)}
                       title={aug.name + ' (Right click to remove)'}
                     >
                       {aug.icon && (
@@ -220,10 +258,12 @@ export function AugmentsPageClient({ augments }: Props) {
                  return (
                  <div 
                    key={aug.id} 
-                   className={`ia-item-card drag-item cost-${tierClass}`}
+                   className={`ia-item-card drag-item cost-${tierClass} ${selectedItems.has(aug.id) ? 'selected' : ''}`}
                    draggable
                    onDragStart={(e) => handleDragStart(e, aug.id)}
-                   title={aug.name}
+                   onContextMenu={(e) => handleUntier(e, aug.id)}
+                   onClick={(e) => handleToggleSelect(e, aug.id)}
+                   title={aug.name + ' (Right click to remove)'}
                  >
                    {aug.icon && (
                      <GameIcon type="augment" id={aug.id} icon={aug.icon} alt={aug.name} className="ia-item-icon" />
@@ -351,6 +391,17 @@ export function AugmentsPageClient({ augments }: Props) {
            width: 44px; height: 44px;
            background: transparent; border: none; border-radius: 4px; transition: 0.2s;
            user-select: none;
+           position: relative;
+        }
+
+        .ia-item-card.selected::after {
+           content: '';
+           position: absolute;
+           top: -2px; left: -2px; right: -2px; bottom: -2px;
+           border: 2px solid #EB5E28;
+           border-radius: 6px;
+           pointer-events: none;
+           z-index: 10;
         }
 
         /* Color coordination for augments to distinguish costs using drop shadow on the image instead of boxes */

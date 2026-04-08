@@ -11,8 +11,8 @@ import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar';
 import { getItemImageUrl } from '@/lib/riot-cdn';
 import { GameIcon } from '@/components/ui/game-icon';
 
-type SortMode = 'Cost' | 'Name' | 'Origin' | 'Class';
-type ToolboxTab = 'Champions' | 'Traits' | 'Augments' | 'Items';
+type SortMode = 'Cost' | 'Name' | 'Trait';
+type ToolboxTab = 'Champions' | 'Augments' | 'Items';
 
 const RARITY_COLORS: Record<string, string> = {
   Silver: '#9ca3af', Gold: '#fbbf24', Prismatic: '#c084fc',
@@ -79,8 +79,7 @@ export function TierlistClient({
     switch (sortMode) {
       case 'Cost': list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)); break;
       case 'Name': list.sort((a, b) => a.name.localeCompare(b.name)); break;
-      case 'Origin': list.sort((a, b) => getChampionOrigin(a, traitsDb).localeCompare(getChampionOrigin(b, traitsDb)) || a.cost - b.cost); break;
-      case 'Class': list.sort((a, b) => getChampionClass(a, traitsDb).localeCompare(getChampionClass(b, traitsDb)) || a.cost - b.cost); break;
+      case 'Trait': list.sort((a, b) => a.cost - b.cost || a.name.localeCompare(b.name)); break;
     }
     return list;
   }, [searchQuery, sortMode, champions, traitsDb]);
@@ -360,7 +359,7 @@ export function TierlistClient({
 
                 {/* Tabs */}
                 <div className="flex gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-1">
-                  {(['Champions', 'Traits', 'Augments', 'Items'] as const).map(tab => (
+                  {(['Champions', 'Augments', 'Items'] as const).map(tab => (
                     <button key={tab} onClick={() => setToolboxTab(tab)}
                       className={`flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-colors ${toolboxTab === tab ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-white/[0.05]'}`}>
                       {tab}
@@ -377,7 +376,7 @@ export function TierlistClient({
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] text-[var(--color-text-muted)] bg-[var(--color-grimoire-lighter)] px-1.5 py-0.5 rounded">Ctrl K</span>
                     </div>
                     <div className="flex gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
-                      {(['Cost', 'Name', 'Origin', 'Class'] as const).map(m => (
+                      {(['Cost', 'Name', 'Trait'] as const).map(m => (
                         <button key={m} onClick={() => setSortMode(m)}
                           className={`flex-1 px-1 py-1 text-[9px] font-bold uppercase rounded-md transition-colors ${sortMode === m ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
                           {m}
@@ -401,69 +400,43 @@ export function TierlistClient({
                           })}
                         </div>
                       ) : (
-                        <div className="space-y-3">
-                          {Object.entries(
-                            filteredChampions.reduce((acc: any, champ: any) => {
-                              const groupTrait = sortMode === 'Origin' ? getChampionOrigin(champ, traitsDb) : getChampionClass(champ, traitsDb);
-                              const key = groupTrait || 'Unknown';
-                              if (!acc[key]) acc[key] = [];
-                              acc[key].push(champ);
-                              return acc;
-                            }, {} as Record<string, typeof filteredChampions>)
-                          ).sort(([a], [b]) => a.localeCompare(b)).map(([groupTrait, champs]: [string, any]) => (
-                            <div key={groupTrait}>
-                              <div className="flex items-center gap-1.5 mb-2 bg-[var(--color-grimoire-light)] p-1 rounded-md border border-[var(--color-border)]">
-                                <GameIcon type="trait" id={groupTrait} icon={traitsDb.find((t: any) => t.name === groupTrait)?.icon} className="w-4 h-4 opacity-80 drop-shadow-md" alt={groupTrait} />
-                                <span className="text-[10px] font-bold text-[var(--color-text-primary)] uppercase tracking-wide">{groupTrait}</span>
+                        <div className="flex flex-col gap-4">
+                          {Array.from(new Set(filteredChampions.flatMap(c => c.traits))).sort().map(traitName => {
+                            const traitChamps = filteredChampions.filter(c => c.traits.includes(traitName as string));
+                            if (traitChamps.length === 0) return null;
+                            const traitInfo = traitsDb.find((t: any) => t.name === traitName) || traitsDb.find((t: any) => t.id === traitName);
+                            return (
+                              <div key={traitName as string} className="flex gap-3 items-center bg-[#1c1c22]/50 p-2 rounded-xl border border-white/[0.04]">
+                                <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center gap-1.5 border-r border-[#2a2a35] pr-3 py-1">
+                                  <div className="w-7 h-7 flex items-center justify-center opacity-80 filter drop-shadow-md">
+                                     <GameIcon type="trait" id={traitName as string} icon={traitInfo?.icon} alt={traitName as string} className="w-full h-full" />
+                                  </div>
+                                  <span className="text-[9px] font-bold text-[var(--color-text-muted)] text-center break-words leading-tight w-full uppercase tracking-wider">{traitName as string}</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5 flex-1 pl-2">
+                                  {traitChamps.map((champ: any) => {
+                                    const used = placedIds.has(champ.id);
+                                    return (
+                                      <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
+                                        className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
+                                        <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
+                                          <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
+                                        </HexagonFrame>
+                                        <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                               </div>
-                              <div className="grid grid-cols-6 sm:grid-cols-7 gap-1.5">
-                                {champs.map((champ: any) => {
-                                  const used = placedIds.has(champ.id);
-                                  return (
-                                    <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)}
-                                      className={`relative flex flex-col items-center cursor-grab group transition-all ${used ? 'opacity-35' : 'hover:scale-105'}`}>
-                                      <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={48} padding={2} className="shadow-md">
-                                        <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[40px] h-[44px] pointer-events-none" />
-                                      </HexagonFrame>
-                                      <span className="text-[7px] text-[var(--color-text-muted)] mt-1 truncate max-w-[44px] text-center group-hover:text-[var(--color-text-secondary)]">{champ.name}</span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
                   </>
                 )}
 
-                {toolboxTab === 'Traits' && (
-                  <div className="space-y-1 max-h-[55vh] overflow-y-auto show-scrollbar pr-1">
-                    {allTraits.map(trait => {
-                      const champs = champions.filter(c => c.traits?.includes(trait));
-                      return (
-                        <div key={trait} className="px-2 py-1.5 rounded-lg hover:bg-white/[0.02] transition-colors">
-                          <div className="flex items-center gap-2 mb-1">
-                            <GameIcon type="trait" id={trait} icon={traitsDb.find((t: any) => t.name === trait)?.icon} className="w-4 h-4 opacity-70 drop-shadow" alt={trait} />
-                            <span className="text-xs font-medium text-[var(--color-text-primary)]">{trait}</span>
-                          </div>
-                          <div className="flex gap-1 flex-wrap">
-                            {champs.map(c => (
-                              <div key={c.id} draggable onDragStart={e => onDragStartChampion(e, c)}
-                                className="cursor-grab hover:scale-110 transition-transform shadow-md"
-                                title={c.name}>
-                                <HexagonFrame color={COST_COLORS[c.cost]} bg={COST_BG[c.cost]} size={32} padding={1.5}>
-                                  <ChampionAvatar id={c.id} name={c.name} icon={c.icon || undefined} shape="hexagon" className="w-[28px] h-[28px] pointer-events-none" />
-                                </HexagonFrame>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+
 
                 {toolboxTab === 'Augments' && (
                   <>
@@ -506,8 +479,8 @@ export function TierlistClient({
                 {toolboxTab === 'Items' && (
                   <>
                     <div className="flex flex-wrap gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
-                      {(['Components', 'Completed', 'Radiants', 'Support', 'Artifacts', 'Emblems'] as const).map(tab => (
-                        <button key={tab} onClick={() => setItemTab(tab)}
+                      {(['Components', 'Completed', 'Radiants', 'Artifacts', 'Emblems'] as const).map(tab => (
+                        <button key={tab} onClick={() => setItemTab(tab as ItemCategory)}
                           className={`flex-1 px-1 py-1.5 text-[9px] font-bold uppercase rounded-md transition-colors truncate ${itemTab === tab ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
                           {tab === 'Completed' ? 'Craftables' : tab}
                         </button>

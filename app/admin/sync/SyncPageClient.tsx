@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { ActionCard } from '@/components/admin/ActionCard'
 import { SyncConsole } from '@/components/admin/SyncConsole'
+import { useAdminSet } from '@/components/admin/AdminSetContext'
 
 interface SyncJob {
   id: string
@@ -18,20 +19,55 @@ interface SyncJob {
   finished_at: string | null
 }
 
+interface ManagedSet {
+  prefix: string
+  label: string
+  env: string
+  created_at: string
+  is_active: boolean
+  has_data: boolean
+  counts: { champions: number; traits: number; augments: number; items: number }
+  source: 'managed' | 'discovered'
+}
+
 interface Props {
   recentJobs: SyncJob[]
 }
 
-const SEMVER_RE = /^\d+\.\d+(\.\d+)?$/
+type Source = 'cdragon' | 'ddragon'
+type CDragonEnv = 'latest' | 'pbe'
+
+interface SourceConfig {
+  champions: Source
+  traits: Source
+  augments: Source
+  items: Source
+}
+
+const ENTITY_TYPES = ['champions', 'traits', 'augments', 'items'] as const
+const ENTITY_LABELS: Record<string, string> = {
+  champions: '🎯 Champions',
+  traits: '🏷️ Traits',
+  augments: '⚡ Augments',
+  items: '🗡️ Items',
+}
 
 export function SyncPageClient({ recentJobs: initialJobs }: Props) {
   const [setPrefix, setSetPrefix] = useState('TFT16')
   const [ddVersion, setDdVersion] = useState('')
-  const [versionError, setVersionError] = useState('')
+  const [cdragonSource, setCdragonSource] = useState<CDragonEnv>('latest')
+  const [sources, setSources] = useState<SourceConfig>({
+    champions: 'cdragon',
+    traits: 'cdragon',
+    augments: 'ddragon',
+    items: 'ddragon',
+  })
+  const [availableSets, setAvailableSets] = useState<string[]>([])
 
-  const [running, setRunning] = useState(false)
-  const [currentJobId, setCurrentJobId] = useState<string | null>(null)
-  const [lastStatus, setLastStatus] = useState<'completed' | 'error' | null>(null)
+  const [unifiedRunning, setUnifiedRunning] = useState(false)
+  const [unifiedJobId, setUnifiedJobId] = useState<string | null>(null)
+  const [unifiedStatus, setUnifiedStatus] = useState<'completed' | 'error' | null>(null)
+
   const [jobs, setJobs] = useState<SyncJob[]>(initialJobs)
 
   // Pipeline state
@@ -46,114 +82,215 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
   // Aggregation state
   const [aggRunning, setAggRunning] = useState(false)
 
-  // CDragon state
-  const [cdragonRunning, setCdragonRunning] = useState(false)
-  const [cdragonJobId, setCdragonJobId] = useState<string | null>(null)
-  const [cdragonStatus, setCdragonStatus] = useState<'completed' | 'error' | null>(null)
-  const [cdragonSource, setCdragonSource] = useState<'latest' | 'pbe'>('latest')
-
   // Patch Crawler State
   const [crawlRunning, setCrawlRunning] = useState(false)
   const [crawlJobId, setCrawlJobId] = useState<string | null>(null)
   const [crawlStatus, setCrawlStatus] = useState<'completed' | 'error' | null>(null)
   const [crawlUrl, setCrawlUrl] = useState('')
 
-  // Next Set Prep
-  const [nextSetPrefix, setNextSetPrefix] = useState('TFT17')
-
   // Log Viewer
   const [viewingLog, setViewingLog] = useState<{ id: string, content: string | null } | null>(null)
   const [loadingLog, setLoadingLog] = useState(false)
 
-  // Auto-detect the latest patch from Match History (our database) instead of DDragon
+  // ── Set Manager State ──────────────────────────────────────────────
+  const [managedSets, setManagedSets] = useState<ManagedSet[]>([])
+  const [activeSetPrefix, setActiveSetPrefix] = useState('TFT16')
+  const [setsLoading, setSetsLoading] = useState(true)
+  const [showAddSet, setShowAddSet] = useState(false)
+  const [newSetPrefix, setNewSetPrefix] = useState('')
+  const [newSetLabel, setNewSetLabel] = useState('')
+  const [newSetEnv, setNewSetEnv] = useState<'pbe' | 'live'>('pbe')
+  const [addingSet, setAddingSet] = useState(false)
+  const [confirmPurge, setConfirmPurge] = useState<string | null>(null)
+
+  const { refreshSets: adminRefreshSets } = useAdminSet()
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
+  // ── Fetch Sets ──────────────────────────────────────────────────────
+  const fetchSets = useCallback(async () => {
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/sets`)
+      const data = await res.json()
+      if (data.sets) setManagedSets(data.sets)
+      if (data.active_set) setActiveSetPrefix(data.active_set)
+      adminRefreshSets()
+    } catch (err) {
+      console.error('Failed to fetch sets:', err)
+    } finally {
+      setSetsLoading(false)
+    }
+  }, [apiUrl])
+
+  // Auto-detect patch + available sets
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    // Fetch managed sets
+    fetchSets()
+
+    // Fetch available sets (legacy)
+    fetch(`${apiUrl}/api/meta/sets`)
+      .then(r => r.json())
+      .then((sets: string[]) => {
+        if (sets?.length) setAvailableSets(sets)
+      })
+      .catch(() => {})
+
+    // Auto-detect latest patch
     fetch(`${apiUrl}/api/meta/stats/patches`)
       .then(r => r.json())
       .then((patches: string[]) => {
         if (patches && patches.length > 0) {
-          const latestPatch = patches[0]; // e.g., '16.8' or '16.7'
-          // Automatically append .1 for DDragon version since DDragon versions always have 3 segments
-          setDdVersion(`${latestPatch}.1`);
-          
-          // Extract the major version for set prefix
-          const major = parseInt(latestPatch.split('.')[0]);
+          const latestPatch = patches[0]
+          setDdVersion(`${latestPatch}.1`)
+          const major = parseInt(latestPatch.split('.')[0])
           if (major) {
-            setPipelineSetNumber(major.toString());
-            setSetPrefix(`TFT${major}`);
-            setNextSetPrefix(`TFT${major + 1}`);
+            setPipelineSetNumber(major.toString())
+            setSetPrefix(`TFT${major}`)
           }
         }
       })
-      .catch(err => console.error('Failed to auto-detect patch from match history:', err));
-  }, []);
+      .catch(err => console.error('Failed to auto-detect patch:', err))
+  }, [apiUrl, fetchSets])
 
-  function validateVersion(v: string) {
-    if (!SEMVER_RE.test(v)) {
-      setVersionError('Must be a valid version like 17.1.1')
-      return false
-    }
-    setVersionError('')
-    return true
-  }
-
-  async function handleSync() {
-    if (!validateVersion(ddVersion)) return
-    setRunning(true)
-    setLastStatus(null)
-    setCurrentJobId(null)
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-
+  // ── Set Manager Actions ────────────────────────────────────────────
+  async function handleAddSet() {
+    if (!newSetPrefix.trim()) return
+    setAddingSet(true)
     try {
-      const res = await fetch(`${apiUrl}/api/admin/sync/trigger`, {
+      const res = await fetch(`${apiUrl}/api/admin/sets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ set_prefix: setPrefix, ddragon_version: ddVersion }),
+        body: JSON.stringify({
+          prefix: newSetPrefix.toUpperCase().trim(),
+          label: newSetLabel.trim() || undefined,
+          env: newSetEnv,
+        }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to start sync')
-      setCurrentJobId(data.job_id)
+      if (!res.ok) throw new Error(data.error || 'Failed to add set')
+      setNewSetPrefix('')
+      setNewSetLabel('')
+      setNewSetEnv('pbe')
+      setShowAddSet(false)
+      fetchSets()
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error'
-      alert(`Could not start sync: ${msg}`)
-      setRunning(false)
+      alert(err instanceof Error ? err.message : 'Failed to add set')
+    } finally {
+      setAddingSet(false)
     }
   }
 
-  const handleDone = useCallback((status: 'completed' | 'error') => {
-    setRunning(false)
-    setLastStatus(status)
+  async function handleActivateSet(prefix: string) {
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/sets/${prefix}/activate`, { method: 'POST' })
+      if (!res.ok) throw new Error('Failed to activate')
+      fetchSets()
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to activate set')
+    }
+  }
+
+  async function handleDeleteSet(prefix: string) {
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/sets/${prefix}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Failed to delete')
+      fetchSets()
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to delete set')
+    }
+  }
+
+  async function handlePurgeSet(prefix: string) {
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/sets/${prefix}/purge`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to purge')
+      alert(`✅ Purged ${prefix}: ${data.deleted.champions} champions, ${data.deleted.traits} traits, ${data.deleted.augments} augments, ${data.deleted.items} items`)
+      setConfirmPurge(null)
+      fetchSets()
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to purge set data')
+    }
+  }
+
+  function handleSelectSetForSync(prefix: string) {
+    setSetPrefix(prefix)
+    const num = prefix.replace(/\D/g, '')
+    if (num) setPipelineSetNumber(num)
+  }
+
+  function updateSource(entity: keyof SourceConfig, value: Source) {
+    setSources(prev => ({ ...prev, [entity]: value }))
+  }
+
+  // ── Unified Sync ────────────────────────────────────────────────────
+  async function handleUnifiedSync() {
+    setUnifiedRunning(true)
+    setUnifiedStatus(null)
+    setUnifiedJobId(null)
+
+    try {
+      const res = await fetch(`${apiUrl}/api/admin/sync/unified/trigger`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          set_prefix: setPrefix,
+          ddragon_version: ddVersion,
+          cdragon_source: cdragonSource,
+          sources,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to start unified sync')
+      setUnifiedJobId(data.job_id)
+    } catch (err: unknown) {
+      alert(`Could not start sync: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      setUnifiedRunning(false)
+    }
+  }
+
+  const handleUnifiedDone = useCallback((status: 'completed' | 'error') => {
+    setUnifiedRunning(false)
+    setUnifiedStatus(status)
     setJobs(prev => {
-      const existing = prev.find(j => j.id === currentJobId)
+      const existing = prev.find(j => j.id === unifiedJobId)
+      const srcLabel = `${sources.champions === 'cdragon' ? 'cd' : 'dd'}/${sources.traits === 'cdragon' ? 'cd' : 'dd'}/${sources.augments === 'cdragon' ? 'cd' : 'dd'}/${sources.items === 'cdragon' ? 'cd' : 'dd'}`
       const newJob: SyncJob = {
-        id: currentJobId!,
-        job_type: 'ddragon',
+        id: unifiedJobId!,
+        job_type: 'unified',
         set_prefix: setPrefix,
-        ddragon_version: ddVersion,
+        ddragon_version: `unified-${srcLabel}`,
         status,
         champion_count: null, trait_count: null, augment_count: null, item_count: null,
         started_at: existing ? existing.started_at : new Date().toISOString(),
         finished_at: new Date().toISOString(),
       }
-      return existing ? prev.map(j => j.id === currentJobId ? newJob : j) : [newJob, ...prev].slice(0, 10)
+      return existing ? prev.map(j => j.id === unifiedJobId ? newJob : j) : [newJob, ...prev].slice(0, 10)
     })
-  }, [currentJobId, setPrefix, ddVersion])
 
+    // Refresh available sets after sync
+    if (status === 'completed') {
+      fetchSets()
+      fetch(`${apiUrl}/api/meta/sets`)
+        .then(r => r.json())
+        .then((sets: string[]) => { if (sets?.length) setAvailableSets(sets) })
+        .catch(() => {})
+    }
+  }, [unifiedJobId, setPrefix, sources, apiUrl, fetchSets])
+
+  // ── Pipeline ────────────────────────────────────────────────────────
   async function handlePipeline() {
     setPipelineRunning(true)
     setPipelineStatus(null)
     setPipelineJobId(null)
-    
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-    
+
     try {
       const res = await fetch(`${apiUrl}/api/admin/pipeline/trigger`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           regions: pipelineRegions,
-          queue_ids: [1100], // Only Ranked
+          queue_ids: [1100],
           max_matches: parseInt(pipelineMaxMatches, 10),
           max_players: parseInt(pipelineMaxPlayers, 10),
           tft_set_number: parseInt(pipelineSetNumber, 10),
@@ -163,8 +300,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
       if (!res.ok) throw new Error(data.error || 'Failed to start pipeline')
       setPipelineJobId(data.job_id)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error'
-      alert(`Could not start pipeline: ${msg}`)
+      alert(`Could not start pipeline: ${err instanceof Error ? err.message : 'Unknown error'}`)
       setPipelineRunning(false)
     }
   }
@@ -196,7 +332,6 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
 
   async function handleAggregate() {
     setAggRunning(true)
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     try {
       const res = await fetch(`${apiUrl}/api/admin/pipeline/aggregate`, { method: 'POST' })
       const data = await res.json()
@@ -209,60 +344,20 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
     }
   }
 
-  async function handleCDragonSync(overridePrefix?: string, overrideSource?: 'latest' | 'pbe') {
-    const targetPrefix = overridePrefix || setPrefix
-    const targetSource = overrideSource || cdragonSource
-    
-    setCdragonRunning(true)
-    setCdragonStatus(null)
-    setCdragonJobId(null)
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-    try {
-      const res = await fetch(`${apiUrl}/api/admin/cdragon/trigger`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ set_prefix: targetPrefix, cdragon_source: targetSource }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to start CDragon sync')
-      setCdragonJobId(data.job_id)
-    } catch (err: unknown) {
-      alert(`Could not start CDragon sync: ${err instanceof Error ? err.message : 'Unknown error'}`)
-      setCdragonRunning(false)
-    }
-  }
-
-  const handleCDragonDone = useCallback((status: 'completed' | 'error') => {
-    setCdragonRunning(false)
-    setCdragonStatus(status)
-    setJobs(prev => {
-      const existing = prev.find(j => j.id === cdragonJobId)
-      const newJob: SyncJob = {
-        id: cdragonJobId!,
-        job_type: 'cdragon',
-        set_prefix: setPrefix,
-        ddragon_version: `cdragon-${cdragonSource}`,
-        status,
-        champion_count: null, trait_count: null, augment_count: null, item_count: null,
-        started_at: existing ? existing.started_at : new Date().toISOString(),
-        finished_at: new Date().toISOString(),
-      }
-      return existing ? prev.map(j => j.id === cdragonJobId ? newJob : j) : [newJob, ...prev].slice(0, 10)
-    })
-  }, [cdragonJobId, setPrefix, cdragonSource])
-
+  // ── Patch Crawler ──────────────────────────────────────────────────
   async function handleCrawl() {
     setCrawlRunning(true)
     setCrawlJobId(null)
     setCrawlStatus(null)
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     try {
       const res = await fetch(`${apiUrl}/api/admin/patch-notes/crawl`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(crawlUrl ? { url: crawlUrl } : {}),
+        body: JSON.stringify({
+           ...(crawlUrl ? { url: crawlUrl } : {}),
+           set_prefix: setPrefix
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to start crawl')
@@ -295,8 +390,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
   async function fetchAndShowLog(jobId: string) {
     setViewingLog({ id: jobId, content: null })
     setLoadingLog(true)
-    
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+
     try {
       const res = await fetch(`${apiUrl}/api/admin/sync/logs/${jobId}`)
       const data = await res.json()
@@ -307,85 +401,304 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
     setLoadingLog(false)
   }
 
+  // Check if any entity uses a specific source
+  const usesSource = (s: Source) => Object.values(sources).some(v => v === s)
+
   return (
     <div className="sync-page">
       <div className="sync-header">
         <h2 className="sync-heading">Data Sync</h2>
-        <p className="sync-sub">Sync static TFT entities (champs, traits, items) from the best source.</p>
+        <p className="sync-sub">Manage sets, configure data sources, then sync.</p>
+      </div>
+
+      {/* ── Set Manager Card ─────────────────────────────────────── */}
+      <div className="set-manager-card" id="set-manager-card">
+        <div className="sm-header">
+          <div className="sm-header-left">
+            <h3 className="sm-title">🗂️ Set Manager</h3>
+            <span className="sm-active-badge">Active: {activeSetPrefix}</span>
+          </div>
+          <button
+            className="sm-add-btn"
+            onClick={() => setShowAddSet(!showAddSet)}
+          >
+            {showAddSet ? '✕ Cancel' : '+ Add New Set'}
+          </button>
+        </div>
+
+        <p className="sm-desc">Register TFT sets before syncing data. Sets discovered from existing DB data are shown automatically.</p>
+
+        {/* Add New Set Form */}
+        {showAddSet && (
+          <div className="sm-add-form">
+            <div className="sm-form-row">
+              <div className="config-field">
+                <label className="config-label">Set Prefix *</label>
+                <input
+                  className="config-input"
+                  value={newSetPrefix}
+                  onChange={e => setNewSetPrefix(e.target.value.toUpperCase())}
+                  placeholder="TFT17"
+                  disabled={addingSet}
+                />
+              </div>
+              <div className="config-field">
+                <label className="config-label">Display Label</label>
+                <input
+                  className="config-input"
+                  value={newSetLabel}
+                  onChange={e => setNewSetLabel(e.target.value)}
+                  placeholder="Set 17 — Godfrey"
+                  disabled={addingSet}
+                />
+              </div>
+              <div className="config-field">
+                <label className="config-label">Environment</label>
+                <div className="env-toggle">
+                  <button
+                    className={`env-btn ${newSetEnv === 'pbe' ? 'active pbe' : ''}`}
+                    onClick={() => setNewSetEnv('pbe')}
+                    disabled={addingSet}
+                  >🟡 PBE</button>
+                  <button
+                    className={`env-btn ${newSetEnv === 'live' ? 'active live' : ''}`}
+                    onClick={() => setNewSetEnv('live')}
+                    disabled={addingSet}
+                  >🟢 Live</button>
+                </div>
+              </div>
+              <div className="config-field" style={{ justifyContent: 'flex-end' }}>
+                <button
+                  className="sm-submit-btn"
+                  onClick={handleAddSet}
+                  disabled={addingSet || !newSetPrefix.trim()}
+                >
+                  {addingSet ? '⏳ Adding...' : '✅ Add Set'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sets List */}
+        {setsLoading ? (
+          <div className="sm-loading">Loading sets...</div>
+        ) : managedSets.length === 0 ? (
+          <div className="sm-empty">No sets registered yet. Click &quot;+ Add New Set&quot; to get started.</div>
+        ) : (
+          <div className="sm-sets-grid">
+            {managedSets.map(set => (
+              <div
+                key={set.prefix}
+                className={`sm-set-card ${set.is_active ? 'active' : ''} ${set.has_data ? 'has-data' : 'no-data'}`}
+              >
+                <div className="sm-set-top">
+                  <div className="sm-set-info">
+                    <span className="sm-set-prefix">{set.prefix}</span>
+                    <span className="sm-set-label">{set.label}</span>
+                  </div>
+                  <div className="sm-set-badges">
+                    <span className={`sm-env-tag ${set.env}`}>
+                      {set.env === 'pbe' ? '🟡 PBE' : '🟢 Live'}
+                    </span>
+                    {set.is_active && <span className="sm-active-tag">⭐ Active</span>}
+                    {set.source === 'discovered' && <span className="sm-discovered-tag">🔍 Auto</span>}
+                  </div>
+                </div>
+
+                {/* Entity Counts */}
+                <div className="sm-set-counts">
+                  <div className="sm-count-item">
+                    <span className="sm-count-num">{set.counts.champions}</span>
+                    <span className="sm-count-label">Champions</span>
+                  </div>
+                  <div className="sm-count-item">
+                    <span className="sm-count-num">{set.counts.traits}</span>
+                    <span className="sm-count-label">Traits</span>
+                  </div>
+                  <div className="sm-count-item">
+                    <span className="sm-count-num">{set.counts.augments}</span>
+                    <span className="sm-count-label">Augments</span>
+                  </div>
+                  <div className="sm-count-item">
+                    <span className="sm-count-num">{set.counts.items}</span>
+                    <span className="sm-count-label">Items</span>
+                  </div>
+                </div>
+
+                {/* Set Actions */}
+                <div className="sm-set-actions">
+                  <button
+                    className="sm-action-btn sync-btn"
+                    onClick={() => handleSelectSetForSync(set.prefix)}
+                    title="Select this set for sync"
+                  >
+                    🚀 Sync This
+                  </button>
+                  {!set.is_active && (
+                    <button
+                      className="sm-action-btn activate-btn"
+                      onClick={() => handleActivateSet(set.prefix)}
+                      title="Set as active (public-facing)"
+                    >
+                      ⭐ Activate
+                    </button>
+                  )}
+                  {set.source === 'managed' && (
+                    <button
+                      className="sm-action-btn delete-btn"
+                      onClick={() => handleDeleteSet(set.prefix)}
+                      title="Remove from registry (keeps DB data)"
+                    >
+                      🗑️
+                    </button>
+                  )}
+                  {set.has_data && (
+                    confirmPurge === set.prefix ? (
+                      <div className="sm-purge-confirm">
+                        <span className="purge-warning">Delete ALL data?</span>
+                        <button className="sm-action-btn purge-yes" onClick={() => handlePurgeSet(set.prefix)}>Yes, Purge</button>
+                        <button className="sm-action-btn purge-no" onClick={() => setConfirmPurge(null)}>Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        className="sm-action-btn purge-btn"
+                        onClick={() => setConfirmPurge(set.prefix)}
+                        title="Delete all DB data for this set"
+                      >
+                        💀 Purge
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="sync-actions">
-        {/* Live Set Sync Card (CDragon + DDragon Fallback) */}
-        <ActionCard
-          id="live-set-sync-card"
-          title={`Live Set Sync (${setPrefix})`}
-          description="Sync data for the current live set. CommunityDragon is usually faster, while DDragon is the official Riot source."
-          badge={cdragonRunning && cdragonSource === 'latest' ? 'Running CDragon' : running ? 'Running DDragon' : 'STABLE'}
-          badgeColor={cdragonRunning || running ? '#fbbf24' : '#10b981'}
-          actionLabel="Fast Sync (CDragon)"
-          actionLoading={cdragonRunning && cdragonSource === 'latest'}
-          onAction={() => { setCdragonSource('latest'); handleCDragonSync(setPrefix, 'latest'); }}
-          secondaryActionLabel="Official (DDragon)"
-          secondaryActionLoading={running}
-          onSecondaryAction={handleSync}
-        >
-          <div className="card-inline-config">
-            <div className="config-field">
-              <label htmlFor="set-prefix-input" className="config-label">Set Prefix</label>
-              <input
-                id="set-prefix-input"
-                className="config-input"
-                value={setPrefix}
-                onChange={e => setSetPrefix(e.target.value.toUpperCase().trim())}
-                placeholder="TFT16"
-                disabled={running || cdragonRunning}
-              />
+        {/* ── Unified Data Sync Card ─────────────────────────────── */}
+        <div className="action-card unified-card" id="unified-sync-card">
+          <div className="ac-body">
+            <div className="ac-header">
+              <h3 className="ac-title">📦 Data Sync</h3>
+              <span className={`ac-badge ${unifiedRunning ? 'badge-running' : ''}`}>
+                {unifiedRunning ? '⏳ Syncing...' : 'READY'}
+              </span>
             </div>
-            <div className="config-field">
-              <label htmlFor="dd-version-input" className="config-label">DDragon Ver.</label>
-              <input
-                id="dd-version-input"
-                className="config-input"
-                value={ddVersion}
-                onChange={e => setDdVersion(e.target.value)}
-                placeholder="16.7.1"
-                disabled={running || cdragonRunning}
-              />
+            <p className="ac-desc">Mix & match data sources per entity type for optimal results.</p>
+
+            {/* Set Prefix */}
+            <div className="unified-config-row">
+              <div className="config-field">
+                <label htmlFor="set-prefix-input" className="config-label">Set Prefix</label>
+                <div className="set-prefix-combo">
+                  <input
+                    id="set-prefix-input"
+                    className="config-input"
+                    value={setPrefix}
+                    onChange={e => setSetPrefix(e.target.value.toUpperCase().trim())}
+                    placeholder="TFT16"
+                    list="available-sets-list"
+                    disabled={unifiedRunning}
+                  />
+                  <datalist id="available-sets-list">
+                    {availableSets.map(s => <option key={s} value={s} />)}
+                  </datalist>
+                </div>
+              </div>
+            </div>
+
+            {/* Source Config Table */}
+            <div className="source-table-wrap">
+              <table className="source-table">
+                <thead>
+                  <tr>
+                    <th>Entity</th>
+                    <th>Source</th>
+                    <th>Config</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ENTITY_TYPES.map(entity => (
+                    <tr key={entity}>
+                      <td className="entity-name">{ENTITY_LABELS[entity]}</td>
+                      <td>
+                        <div className="source-toggle">
+                          <button
+                            className={`src-btn ${sources[entity] === 'cdragon' ? 'active cdragon' : ''}`}
+                            onClick={() => updateSource(entity, 'cdragon')}
+                            disabled={unifiedRunning}
+                          >
+                            CDragon
+                          </button>
+                          <button
+                            className={`src-btn ${sources[entity] === 'ddragon' ? 'active ddragon' : ''}`}
+                            onClick={() => updateSource(entity, 'ddragon')}
+                            disabled={unifiedRunning}
+                          >
+                            DDragon
+                          </button>
+                        </div>
+                      </td>
+                      <td className="config-cell">
+                        {sources[entity] === 'cdragon' ? (
+                          <select
+                            className="config-select"
+                            value={cdragonSource}
+                            onChange={e => setCdragonSource(e.target.value as CDragonEnv)}
+                            disabled={unifiedRunning}
+                          >
+                            <option value="latest">🟢 Latest (Live)</option>
+                            <option value="pbe">🟡 PBE (Preview)</option>
+                          </select>
+                        ) : (
+                          <input
+                            className="config-input config-ver"
+                            value={ddVersion}
+                            onChange={e => setDdVersion(e.target.value)}
+                            placeholder="16.7.1"
+                            disabled={unifiedRunning}
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Source summary */}
+            <div className="source-summary">
+              {usesSource('cdragon') && (
+                <span className="summary-tag cdragon">🐉 CDragon: {cdragonSource.toUpperCase()}</span>
+              )}
+              {usesSource('ddragon') && (
+                <span className="summary-tag ddragon">📦 DDragon: v{ddVersion}</span>
+              )}
+            </div>
+
+            {/* Sync Button */}
+            <div className="ac-actions">
+              <button
+                id="unified-sync-btn"
+                className="ac-btn sync-main-btn"
+                onClick={handleUnifiedSync}
+                disabled={unifiedRunning || !setPrefix}
+              >
+                {unifiedRunning ? (
+                  <>
+                    <span className="ac-spinner" />
+                    Syncing...
+                  </>
+                ) : '🚀 Sync Now'}
+              </button>
             </div>
           </div>
-        </ActionCard>
+        </div>
 
-        {/* PBE Next Set Sync Card */}
-        <ActionCard
-          id="pbe-next-set-card"
-          title="Next Set PBE Sync (Early Access)"
-          description={`Proactively sync data for the UPCOMING set (${nextSetPrefix}) from CDragon PBE server.`}
-          badge={cdragonRunning && cdragonSource === 'pbe' ? 'Running' : 'PRE-RELEASE'}
-          badgeColor={cdragonRunning && cdragonSource === 'pbe' ? '#fbbf24' : '#f59e0b'}
-          actionLabel={`Sync ${nextSetPrefix} (PBE)`}
-          actionLoading={cdragonRunning && cdragonSource === 'pbe'}
-          onAction={() => { 
-            setCdragonSource('pbe');
-            setSetPrefix(nextSetPrefix);
-            handleCDragonSync(nextSetPrefix, 'pbe'); 
-          }}
-        >
-          <div className="card-inline-config">
-            <div className="config-field">
-              <label htmlFor="next-set-input" className="config-label">Target Next Set</label>
-              <input
-                id="next-set-input"
-                className="config-input"
-                value={nextSetPrefix}
-                onChange={e => setNextSetPrefix(e.target.value.toUpperCase().trim())}
-                placeholder="TFT17"
-                disabled={cdragonRunning}
-              />
-            </div>
-          </div>
-        </ActionCard>
-
-        {/* Riot Match Pipeline Card */}
+        {/* ── Pipeline Card ─────────────────────────────────────── */}
         <ActionCard
           id="pipeline-card"
           title="Ingest Match Data"
@@ -453,7 +766,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
           </div>
         </ActionCard>
 
-        {/* Patch Notes Crawler Card */}
+        {/* ── Patch Notes Crawler Card ──────────────────────────── */}
         <ActionCard
           id="patch-crawl-card"
           title="Patch Notes AI Crawler"
@@ -481,18 +794,19 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         </ActionCard>
       </div>
 
-      {/* SSE Consoles */}
-      {currentJobId && (
+      {/* ── SSE Consoles ──────────────────────────────────────────── */}
+      {unifiedJobId && (
         <div className="sync-console-wrap">
           <SyncConsole
-            jobId={currentJobId}
+            jobId={unifiedJobId}
             setPrefix={setPrefix}
-            ddVersion={ddVersion}
-            onDone={handleDone}
+            ddVersion="unified"
+            streamUrl={`/api/admin/sync/stream?job_id=${unifiedJobId}`}
+            onDone={handleUnifiedDone}
           />
         </div>
       )}
-      
+
       {pipelineJobId && (
         <div className="sync-console-wrap">
           <SyncConsole
@@ -501,18 +815,6 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
             ddVersion="live"
             streamUrl={`/api/admin/pipeline/stream?job_id=${pipelineJobId}&regions=${pipelineRegions.join(',')}&tft_set_number=${pipelineSetNumber}&max_matches=${pipelineMaxMatches}`}
             onDone={handlePipelineDone}
-          />
-        </div>
-      )}
-
-      {cdragonJobId && (
-        <div className="sync-console-wrap">
-          <SyncConsole
-            jobId={cdragonJobId}
-            setPrefix={setPrefix}
-            ddVersion={`cdragon-${cdragonSource}`}
-            streamUrl={`/api/admin/sync/stream?job_id=${cdragonJobId}`}
-            onDone={handleCDragonDone}
           />
         </div>
       )}
@@ -529,11 +831,11 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         </div>
       )}
 
-      {/* Done Banners */}
-      {!running && lastStatus && (
-        <div className={`sync-banner ${lastStatus}`}>
-          {lastStatus === 'completed'
-            ? '✅ Sync completed successfully! Data has been written to the Postgres Database.'
+      {/* ── Done Banners ──────────────────────────────────────────── */}
+      {!unifiedRunning && unifiedStatus && (
+        <div className={`sync-banner ${unifiedStatus}`}>
+          {unifiedStatus === 'completed'
+            ? '✅ Sync completed! Data has been written to the database.'
             : '❌ Sync failed. Check the log above for details.'}
         </div>
       )}
@@ -546,14 +848,6 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         </div>
       )}
 
-      {!cdragonRunning && cdragonStatus && (
-        <div className={`sync-banner ${cdragonStatus}`}>
-          {cdragonStatus === 'completed'
-            ? '✅ CDragon Sync complete! New data is ready in the database.'
-            : '❌ CDragon Sync failed. Check the log above.'}
-        </div>
-      )}
-
       {!crawlRunning && crawlStatus && (
         <div className={`sync-banner ${crawlStatus}`}>
           {crawlStatus === 'completed'
@@ -562,7 +856,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         </div>
       )}
 
-      {/* Recent jobs table */}
+      {/* ── Recent Jobs Table ─────────────────────────────────────── */}
       <div className="sync-history">
         <h3 className="history-heading">Recent Sync Jobs</h3>
         {jobs.length === 0 ? (
@@ -584,6 +878,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
                 {jobs.map(job => {
                   const isPipeline = job.job_type === 'pipeline'
                   const isCDragon = job.job_type === 'cdragon'
+                  const isUnified = job.job_type === 'unified'
                   const duration = job.finished_at && job.started_at
                     ? (() => {
                         const ms = new Date(job.finished_at!).getTime() - new Date(job.started_at).getTime()
@@ -594,17 +889,31 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
                         return `${min}m ${remSec}s`
                       })()
                     : job.status === 'running' ? '⏳' : '—'
+
+                  const typeLabel = isPipeline ? '🔄 Pipeline' : isUnified ? '🔀 Unified' : isCDragon ? '🐉 CDragon' : '📦 DDragon'
+                  const typeClass = isPipeline ? 'pipeline' : isUnified ? 'unified' : isCDragon ? 'cdragon' : 'ddragon'
+
                   return (
-                    <tr key={job.id} id={`job-${job.id}`} className={isPipeline ? 'row-pipeline' : isCDragon ? 'row-cdragon' : 'row-ddragon'}>
+                    <tr key={job.id} id={`job-${job.id}`} className={`row-${typeClass}`}>
                       <td>
-                        <span className={`job-type-badge ${isPipeline ? 'pipeline' : isCDragon ? 'cdragon' : 'ddragon'}`}>
-                          {isPipeline ? '🔄 Pipeline' : isCDragon ? '🐉 CDragon' : '📦 DDragon'}
+                        <span className={`job-type-badge ${typeClass}`}>
+                          {typeLabel}
                         </span>
                       </td>
                       <td className="mono">{job.set_prefix || '—'}</td>
                       <td className="details-cell">
                         {isPipeline ? (
                           <span className="detail-tag">Match Ingestion</span>
+                        ) : isUnified ? (
+                          <span className="detail-tag">
+                            {job.ddragon_version?.replace('unified-', '').split('/').map((s, i) => {
+                              const labels = ['C', 'T', 'A', 'I']
+                              return <span key={i} className={`src-indicator ${s}`} title={`${['Champions','Traits','Augments','Items'][i]}: ${s === 'cd' ? 'CDragon' : 'DDragon'}`}>{labels[i]}:{s.toUpperCase()}</span>
+                            })}
+                            {job.champion_count != null && <span className="detail-count"> · {job.champion_count} champs</span>}
+                            {job.augment_count != null && <span className="detail-count"> · {job.augment_count} augs</span>}
+                            {job.item_count != null && <span className="detail-count"> · {job.item_count} items</span>}
+                          </span>
                         ) : isCDragon ? (
                           <span className="detail-tag">
                             Source: {job.ddragon_version?.replace('cdragon-', '').toUpperCase()}
@@ -639,7 +948,7 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         )}
       </div>
 
-      {/* Log Modal */}
+      {/* ── Log Modal ─────────────────────────────────────────── */}
       {viewingLog && (
         <div className="log-modal-overlay" onClick={() => setViewingLog(null)}>
           <div className="log-modal" onClick={e => e.stopPropagation()}>
@@ -676,13 +985,248 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
           background: #FFF; border: 1px solid #EEE; border-radius: 8px; padding: 10px 12px;
           color: #222; font-size: 13px; font-family: inherit; font-weight: 500; outline: none; transition: 0.2s;
         }
-        .config-input:focus { border-color: #EB5E28; }
-        .config-input.error { border-color: #EB5E28; }
+        .config-input:focus { border-color: #4A90E2; }
         .config-input:disabled { opacity: 0.5; background: #F8F8F8; }
-        .config-error { font-size: 10px; color: #EB5E28; }
 
         .sync-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; margin-bottom: 2rem; }
 
+        /* ═══ Set Manager Card ═══ */
+        .set-manager-card {
+          background: #FFFFFF;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+          border: 1px solid #E8E5DF;
+          margin-bottom: 2rem;
+          transition: 0.2s;
+        }
+        .set-manager-card:hover { border-color: #D8D4CE; }
+
+        .sm-header {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-bottom: 8px;
+        }
+        .sm-header-left { display: flex; align-items: center; gap: 14px; }
+        .sm-title {
+          font-family: 'Courier New', Courier, serif;
+          font-size: 22px; font-weight: 800; color: #222; margin: 0;
+        }
+        .sm-active-badge {
+          font-size: 11px; font-weight: bold; padding: 5px 12px; border-radius: 20px;
+          background: linear-gradient(135deg, #FFF7EB, #FEF3C7); color: #D97706;
+          border: 1px solid #FDE68A;
+        }
+        .sm-desc { font-size: 13px; color: #888; margin: 0 0 20px; line-height: 1.5; }
+
+        .sm-add-btn {
+          padding: 9px 18px; border-radius: 10px; font-size: 12px; font-weight: bold;
+          border: 1.5px dashed #C4B5FD; background: #FAFAFE; color: #7C3AED;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .sm-add-btn:hover { background: #EDE9FE; border-color: #7C3AED; transform: translateY(-1px); }
+
+        /* Add Set Form */
+        .sm-add-form {
+          background: linear-gradient(135deg, #F8F7FF, #FFF7F7);
+          border: 1px solid #E8E5EF;
+          border-radius: 14px; padding: 20px; margin-bottom: 20px;
+          animation: slideDown 0.2s ease-out;
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .sm-form-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+        .sm-form-row .config-field { min-width: 140px; }
+
+        .env-toggle { display: flex; gap: 4px; }
+        .env-btn {
+          padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: bold;
+          border: 1px solid #E8E8E8; background: #FFF; color: #999; cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .env-btn:hover:not(:disabled) { border-color: #CCC; }
+        .env-btn.active.pbe { background: #FFF7EB; color: #D97706; border-color: #FDE68A; }
+        .env-btn.active.live { background: #ECFDF5; color: #059669; border-color: #A7F3D0; }
+
+        .sm-submit-btn {
+          padding: 10px 22px; border-radius: 10px; font-size: 12px; font-weight: bold;
+          border: none; background: #7C3AED; color: #FFF; cursor: pointer;
+          transition: all 0.2s; white-space: nowrap;
+        }
+        .sm-submit-btn:hover:not(:disabled) { background: #6D28D9; transform: translateY(-1px); }
+        .sm-submit-btn:disabled { background: #D4D4D4; cursor: not-allowed; }
+
+        .sm-loading { padding: 30px; text-align: center; color: #9A9A9A; font-size: 13px; }
+        .sm-empty { padding: 30px; text-align: center; color: #B0B0B0; font-size: 13px; border: 1.5px dashed #E8E8E8; border-radius: 12px; }
+
+        /* Sets Grid */
+        .sm-sets-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 16px;
+        }
+
+        .sm-set-card {
+          background: #FAFAFA; border-radius: 14px; padding: 18px;
+          border: 1.5px solid #EEEEEE; transition: all 0.2s;
+          position: relative; overflow: hidden;
+        }
+        .sm-set-card::before {
+          content: '';
+          position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+          background: #D4D4D4; transition: 0.2s;
+        }
+        .sm-set-card:hover { border-color: #DDD; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
+        .sm-set-card.active::before { background: linear-gradient(180deg, #F59E0B, #D97706); }
+        .sm-set-card.active { border-color: #FDE68A; background: #FFFDF7; }
+        .sm-set-card.has-data::before { background: linear-gradient(180deg, #10B981, #059669); }
+        .sm-set-card.has-data.active::before { background: linear-gradient(180deg, #F59E0B, #D97706); }
+        .sm-set-card.no-data::before { background: linear-gradient(180deg, #94A3B8, #64748B); }
+
+        .sm-set-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .sm-set-info { display: flex; flex-direction: column; gap: 2px; }
+        .sm-set-prefix { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 800; color: #222; }
+        .sm-set-label { font-size: 12px; color: #888; }
+
+        .sm-set-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .sm-env-tag {
+          font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 6px;
+        }
+        .sm-env-tag.pbe { background: #FFF7EB; color: #D97706; }
+        .sm-env-tag.live { background: #ECFDF5; color: #059669; }
+        .sm-active-tag {
+          font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 6px;
+          background: linear-gradient(135deg, #FFF7EB, #FEF3C7); color: #D97706;
+        }
+        .sm-discovered-tag {
+          font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 6px;
+          background: #F0F9FF; color: #0284C7;
+        }
+
+        /* Entity Counts */
+        .sm-set-counts {
+          display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+          background: #FFF; border-radius: 10px; padding: 12px;
+          border: 1px solid #F0F0F0; margin-bottom: 14px;
+        }
+        .sm-count-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .sm-count-num { font-family: 'Courier New', monospace; font-size: 18px; font-weight: 800; color: #222; }
+        .sm-count-label { font-size: 9px; color: #9A9A9A; text-transform: uppercase; font-weight: bold; }
+
+        /* Set Actions */
+        .sm-set-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+        .sm-action-btn {
+          padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold;
+          border: 1px solid #E8E8E8; background: #FFF; cursor: pointer; transition: all 0.15s;
+          white-space: nowrap;
+        }
+        .sm-action-btn:hover { transform: translateY(-1px); }
+        .sm-action-btn.sync-btn { color: #2563EB; border-color: #BFDBFE; }
+        .sm-action-btn.sync-btn:hover { background: #EFF6FF; }
+        .sm-action-btn.activate-btn { color: #D97706; border-color: #FDE68A; }
+        .sm-action-btn.activate-btn:hover { background: #FFFBEB; }
+        .sm-action-btn.delete-btn { color: #9A9A9A; border-color: #E8E8E8; }
+        .sm-action-btn.delete-btn:hover { color: #EF4444; background: #FEF2F2; border-color: #FECACA; }
+        .sm-action-btn.purge-btn { color: #DC2626; border-color: #FCA5A5; }
+        .sm-action-btn.purge-btn:hover { background: #FEF2F2; }
+
+        .sm-purge-confirm { display: flex; align-items: center; gap: 6px; }
+        .purge-warning { font-size: 11px; font-weight: bold; color: #DC2626; }
+        .sm-action-btn.purge-yes { background: #DC2626; color: #FFF; border-color: #DC2626; }
+        .sm-action-btn.purge-yes:hover { background: #B91C1C; }
+        .sm-action-btn.purge-no { color: #666; }
+
+        /* ═══ Unified Card ═══ */
+        .unified-card {
+          background: #FFFFFF;
+          border-radius: 16px;
+          padding: 25px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+          border: 1px solid transparent;
+          transition: 0.2s;
+          grid-column: 1 / -1;
+        }
+        .unified-card:hover { border-color: #EEE8E0; }
+        .unified-card .ac-body { width: 100%; }
+        .unified-card .ac-header { display: flex; align-items: center; gap: 15px; margin-bottom: 8px; }
+        .unified-card .ac-title { font-family: 'Courier New', Courier, serif; font-size: 20px; font-weight: 800; color: #222; margin: 0; }
+        .unified-card .ac-desc { font-size: 13px; color: #666; margin: 0 0 20px; line-height: 1.5; }
+        .unified-card .ac-badge {
+          font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 6px;
+          text-transform: uppercase; background: #E8F7F3; color: #10b981;
+        }
+        .unified-card .ac-badge.badge-running { background: #FFF7EB; color: #F5A623; }
+
+        .unified-config-row { display: flex; gap: 15px; margin-bottom: 20px; }
+
+        .set-prefix-combo { position: relative; }
+        .set-prefix-combo .config-input { width: 140px; font-weight: bold; font-size: 14px; }
+
+        /* ═══ Source Config Table ═══ */
+        .source-table-wrap {
+          background: #FAFAFA; border-radius: 12px; padding: 4px; margin-bottom: 16px;
+          overflow: hidden;
+        }
+        .source-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .source-table th {
+          color: #9A9A9A; font-weight: bold; font-size: 10px; text-transform: uppercase;
+          padding: 12px 16px; text-align: left; border-bottom: 1px solid #EEE;
+        }
+        .source-table td { padding: 10px 16px; border-bottom: 1px solid #F0F0F0; }
+        .source-table tr:last-child td { border-bottom: none; }
+        .source-table tr:hover td { background: #F5F5F5; }
+
+        .entity-name { font-weight: 600; font-size: 13px; white-space: nowrap; }
+
+        .source-toggle { display: flex; gap: 4px; }
+        .src-btn {
+          padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: bold;
+          border: 1px solid #E8E8E8; background: #FFF; color: #999; cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .src-btn:hover:not(:disabled) { border-color: #CCC; color: #666; }
+        .src-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .src-btn.active.cdragon { background: #FCE7F3; color: #DB2777; border-color: #F9A8D4; }
+        .src-btn.active.ddragon { background: #EDE9FE; color: #7C3AED; border-color: #C4B5FD; }
+
+        .config-cell { min-width: 160px; }
+        .config-select {
+          background: #FFF; border: 1px solid #EEE; border-radius: 8px; padding: 8px 12px;
+          color: #222; font-size: 12px; font-weight: 500; outline: none; cursor: pointer;
+          width: 100%; transition: 0.2s;
+        }
+        .config-select:focus { border-color: #4A90E2; }
+        .config-select:disabled { opacity: 0.5; }
+        .config-ver { width: 100px; padding: 8px 12px; font-size: 12px; }
+
+        .source-summary {
+          display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+        }
+        .summary-tag {
+          font-size: 11px; font-weight: bold; padding: 6px 12px; border-radius: 20px;
+        }
+        .summary-tag.cdragon { background: #FCE7F3; color: #DB2777; }
+        .summary-tag.ddragon { background: #EDE9FE; color: #7C3AED; }
+
+        .ac-actions { display: flex; gap: 15px; align-items: center; }
+        .ac-btn {
+          padding: 10px 20px; background: #4A90E2; border: none; border-radius: 8px;
+          color: #fff; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s;
+          display: inline-flex; align-items: center; gap: 8px; min-width: 120px; justify-content: center;
+        }
+        .ac-btn:hover:not(:disabled) { background: #357ABD; transform: translateY(-1px); }
+        .ac-btn:disabled { background: #E8E8E8; color: #A9A9A9; cursor: not-allowed; transform: none; }
+
+        .sync-main-btn { padding: 12px 32px; font-size: 14px; min-width: 160px; }
+
+        .ac-spinner {
+          width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
+          border-top-color: #fff; border-radius: 50%; animation: ac-spin 0.6s linear infinite; flex-shrink: 0;
+        }
+        @keyframes ac-spin { to { transform: rotate(360deg); } }
+
+        /* ═══ Job History ═══ */
         .sync-banner { padding: 15px 20px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 2rem; }
         .sync-banner.completed { background: #E8F7F3; color: #50E3C2; }
         .sync-banner.error { background: #FDECEA; color: #EB5E28; }
@@ -717,20 +1261,18 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
         .job-type-badge.ddragon { background: #EDE9FE; color: #7C3AED; }
         .job-type-badge.pipeline { background: #DBEAFE; color: #2563EB; }
         .job-type-badge.cdragon { background: #FCE7F3; color: #DB2777; }
+        .job-type-badge.unified { background: #F0FDF4; color: #16a34a; }
 
-        .on.cdragon { background: #DB2777; color: #FFF; }
-        .on.pbe-btn { background: #F59E0B; color: #FFF; }
+        .src-indicator {
+          display: inline-block; font-size: 10px; font-weight: bold; padding: 2px 6px;
+          border-radius: 4px; margin-right: 4px;
+        }
+        .src-indicator.cd { background: #FCE7F3; color: #DB2777; }
+        .src-indicator.dd { background: #EDE9FE; color: #7C3AED; }
 
         .details-cell { min-width: 140px; }
         .detail-tag { font-size: 12px; font-weight: 500; color: #555; }
         .detail-count { font-size: 11px; color: #9A9A9A; }
-
-        .pipeline-section { margin-top: 40px; }
-
-        .section-divider {
-          display: flex; align-items: center; gap: 15px; margin-bottom: 25px;
-          color: #222; font-size: 18px; font-family: 'Courier New', Courier, serif; font-weight: 800;
-        }
 
         .region-toggles { display: flex; gap: 10px; flex-wrap: wrap; }
         .region-btn {
@@ -767,3 +1309,4 @@ export function SyncPageClient({ recentJobs: initialJobs }: Props) {
     </div>
   )
 }
+

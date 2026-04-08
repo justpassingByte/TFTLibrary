@@ -466,32 +466,32 @@ async function generatePredictions(changes, patchVersion) {
 async function saveToDb(changes, predictions, patchVersion) {
   log('💾 Saving to database...');
   
-  // Clear existing data for this patch
-  await query('DELETE FROM patch_changes WHERE patch = $1', [patchVersion]);
-  await query('DELETE FROM patch_meta_predictions WHERE patch = $1', [patchVersion]);
+  // Clear existing data for this patch and set prefix
+  await query('DELETE FROM patch_changes WHERE patch = $1 AND set_prefix = $2', [patchVersion, process.env.SET_PREFIX || 'TFT16']);
+  await query('DELETE FROM patch_meta_predictions WHERE patch = $1 AND set_prefix = $2', [patchVersion, process.env.SET_PREFIX || 'TFT16']);
   
   // Insert changes
   for (const c of changes) {
     await query(`
-      INSERT INTO patch_changes (id, patch, entity, entity_type, change_type, stat, before_val, after_val, score, tier, raw_text)
-      VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      ON CONFLICT (patch, entity, stat) DO UPDATE SET
+      INSERT INTO patch_changes (id, patch, set_prefix, entity, entity_type, change_type, stat, before_val, after_val, score, tier, raw_text)
+      VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      ON CONFLICT (patch, set_prefix, entity, stat) DO UPDATE SET
         change_type = EXCLUDED.change_type,
         before_val = EXCLUDED.before_val,
         after_val = EXCLUDED.after_val,
         score = EXCLUDED.score,
         tier = EXCLUDED.tier,
         raw_text = EXCLUDED.raw_text
-    `, [c.patch, c.entity, c.entity_type, c.change_type, c.stat, c.before_val, c.after_val, c.score, c.tier, c.raw_text]);
+    `, [c.patch, process.env.SET_PREFIX || 'TFT16', c.entity, c.entity_type, c.change_type, c.stat, c.before_val, c.after_val, c.score, c.tier, c.raw_text]);
   }
   log(`  Saved ${changes.length} changes`);
   
   // Insert predictions
   for (const p of predictions) {
     await query(`
-      INSERT INTO patch_meta_predictions (id, patch, name, tier, score, reason, key_units, buffed_entities, nerfed_entities, sort_order)
-      VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9)
-      ON CONFLICT (patch, name) DO UPDATE SET
+      INSERT INTO patch_meta_predictions (id, patch, set_prefix, name, tier, score, reason, key_units, buffed_entities, nerfed_entities, sort_order)
+      VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      ON CONFLICT (patch, set_prefix, name) DO UPDATE SET
         tier = EXCLUDED.tier,
         score = EXCLUDED.score,
         reason = EXCLUDED.reason,
@@ -499,7 +499,7 @@ async function saveToDb(changes, predictions, patchVersion) {
         buffed_entities = EXCLUDED.buffed_entities,
         nerfed_entities = EXCLUDED.nerfed_entities,
         sort_order = EXCLUDED.sort_order
-    `, [p.patch, p.name, p.tier, p.score, p.reason, p.key_units, p.buffed_entities, p.nerfed_entities, p.sort_order]);
+    `, [p.patch, process.env.SET_PREFIX || 'TFT16', p.name, p.tier, p.score, p.reason, p.key_units, p.buffed_entities, p.nerfed_entities, p.sort_order]);
   }
   log(`  Saved ${predictions.length} predictions`);
 }

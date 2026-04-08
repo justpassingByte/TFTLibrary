@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChampionAvatar } from '@/components/ui/champion-avatar';
+import { useAdminSet } from '@/components/admin/AdminSetContext';
 
 interface PatchChange {
   id: string;
@@ -27,6 +28,7 @@ interface PatchPrediction {
   score: number;
   reason: string;
   key_units: string[];
+  key_units_icons?: Record<string, string>;
   buffed_entities: string[];
   nerfed_entities: string[];
   sort_order: number;
@@ -40,19 +42,20 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 const CHANGE_COLORS: Record<string, { color: string; bg: string; icon: string }> = {
-  buff: { color: '#39FF14', bg: 'rgba(57,255,20,0.08)', icon: '▲' },
-  nerf: { color: '#ff2244', bg: 'rgba(255,34,68,0.08)', icon: '▼' },
-  adjust: { color: '#fbbf24', bg: 'rgba(251,191,36,0.08)', icon: '~' },
+  buff: { color: '#16a34a', bg: 'rgba(22,163,74,0.08)', icon: '▲' },
+  nerf: { color: '#dc2626', bg: 'rgba(220,38,38,0.08)', icon: '▼' },
+  adjust: { color: '#d97706', bg: 'rgba(217,119,6,0.08)', icon: '~' },
 };
 
 export default function PatchNotesTuningClient() {
+  const { currentSet } = useAdminSet();
   const [changes, setChanges] = useState<PatchChange[]>([]);
   const [predictions, setPredictions] = useState<PatchPrediction[]>([]);
   const [availablePatches, setAvailablePatches] = useState<string[]>([]);
   const [selectedPatch, setSelectedPatch] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'buff' | 'nerf' | 'adjust'>('buff');
+  const [activeTier, setActiveTier] = useState<string>('1');
   const [dirty, setDirty] = useState(false);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -60,7 +63,11 @@ export default function PatchNotesTuningClient() {
   const fetchData = useCallback(async (patch?: string) => {
     setLoading(true);
     try {
-      const url = patch ? `${apiUrl}/api/admin/patch-notes?patch=${patch}` : `${apiUrl}/api/admin/patch-notes`;
+      const qs = new URLSearchParams()
+      if (patch) qs.set('patch', patch)
+      if (currentSet) qs.set('set_prefix', currentSet)
+      
+      const url = `${apiUrl}/api/admin/patch-notes?${qs.toString()}`
       const res = await fetch(url);
       const data = await res.json();
       setChanges(data.changes || []);
@@ -71,7 +78,7 @@ export default function PatchNotesTuningClient() {
       console.error('Failed to fetch patch data:', err);
     }
     setLoading(false);
-  }, [apiUrl]);
+  }, [apiUrl, currentSet]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -151,27 +158,18 @@ export default function PatchNotesTuningClient() {
     }
   }
 
-  const filteredChanges = changes.filter(c => c.change_type === activeTab);
-  const buffCount = changes.filter(c => c.change_type === 'buff').length;
-  const nerfCount = changes.filter(c => c.change_type === 'nerf').length;
-  const adjCount = changes.filter(c => c.change_type === 'adjust').length;
-
-  if (loading) {
-    return <div className="pn-loading">Loading patch data...</div>;
-  }
-
-  if (!selectedPatch) {
-    return (
-      <div className="pn-empty">
-        <h2>No Patch Data</h2>
-        <p>Crawl patch notes from the <a href="/admin/sync">Sync Data</a> page first.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="pn-page">
-      {/* Header */}
+      {loading ? (
+        <div className="pn-loading">Loading patch data...</div>
+      ) : !selectedPatch ? (
+        <div className="pn-empty">
+          <h2>No Patch Data</h2>
+          <p>Crawl patch notes from the <a href="/admin/sync">Sync Data</a> page first.</p>
+        </div>
+      ) : (
+        <>
+          {/* Header */}
       <div className="pn-header">
         <div>
           <h2 className="pn-heading">Patch Notes Tuning</h2>
@@ -202,11 +200,10 @@ export default function PatchNotesTuningClient() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
               <h4 style={{ margin: 0, fontSize: '18px', color: '#333' }}>⚔️ Champions</h4>
               <select 
-                value={activeTab} 
-                onChange={e => setActiveTab(e.target.value as any)}
-                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                value={activeTier} 
+                onChange={e => setActiveTier(e.target.value)}
+                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', color: '#222' }}
               >
-                <option value="buff">All Tiers</option>
                 <option value="1">Tier 1</option>
                 <option value="2">Tier 2</option>
                 <option value="3">Tier 3</option>
@@ -216,7 +213,7 @@ export default function PatchNotesTuningClient() {
             </div>
             
             <div className="pn-changes-list">
-              {changes.filter(c => c.entity_type === 'unit' && (activeTab === 'buff' || c.tier === parseInt(activeTab))).map(change => (
+              {changes.filter(c => c.entity_type === 'unit' && c.tier === parseInt(activeTier)).map(change => (
                 <ChangeEditRow key={change.id} change={change} updateChange={updateChange} />
               ))}
             </div>
@@ -289,7 +286,7 @@ export default function PatchNotesTuningClient() {
                     step="0.5"
                     value={pred.score}
                     onChange={e => updatePrediction(pred.id, 'score', parseFloat(e.target.value))}
-                    style={{ color: pred.score > 0 ? '#39FF14' : pred.score < 0 ? '#ff2244' : '#fbbf24' }}
+                    style={{ color: pred.score > 0 ? '#16a34a' : pred.score < 0 ? '#dc2626' : '#d97706' }}
                   />
                 </div>
 
@@ -302,7 +299,12 @@ export default function PatchNotesTuningClient() {
                 {/* Key Units */}
                 <div className="pn-pred-units">
                   {pred.key_units.map(u => (
-                    <ChampionAvatar key={u} name={u} className="pn-pred-avatar" />
+                    <ChampionAvatar
+                      key={u}
+                      name={u}
+                      icon={pred.key_units_icons?.[u] || pred.key_units_icons?.[u.toLowerCase().trim()] || ''}
+                      className="pn-pred-avatar"
+                    />
                   ))}
                 </div>
 
@@ -328,6 +330,8 @@ export default function PatchNotesTuningClient() {
           })}
         </div>
       </div>
+      </>
+      )}
 
       <style>{`
         .pn-page { max-width: 1100px; margin: 0 auto; }
@@ -352,6 +356,16 @@ export default function PatchNotesTuningClient() {
         .pn-save-btn:hover:not(:disabled) { background: #357ABD; }
         .pn-save-btn:disabled { background: #E8E8E8; color: #A9A9A9; cursor: default; }
 
+        .pn-empty {
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          height: 60vh; text-align: center; background: #FFF; border-radius: 16px; border: 1px dashed #CCC;
+          margin: 20px;
+        }
+        .pn-empty h2 { font-family: 'Courier New', Courier, serif; font-size: 28px; color: #333; margin-bottom: 10px; }
+        .pn-empty p { font-size: 14px; color: #777; }
+        .pn-empty a { color: #EB5E28; font-weight: bold; text-decoration: none; padding: 4px 10px; background: #FEF2E8; border-radius: 6px; margin: 0 4px; }
+        .pn-empty a:hover { background: #EB5E28; color: #FFF; }
+
         .pn-section { background: #FFF; border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); }
         .pn-section-title { font-family: 'Courier New', Courier, serif; font-size: 22px; font-weight: 800; color: #222; margin: 0 0 15px; }
         .pn-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -362,9 +376,9 @@ export default function PatchNotesTuningClient() {
           font-size: 12px; font-weight: bold; cursor: pointer; background: #FFF; color: #777; transition: 0.2s;
         }
         .pn-tab:hover { border-color: #CCC; }
-        .pn-tab.active.buff { background: rgba(57,255,20,0.08); color: #39FF14; border-color: rgba(57,255,20,0.3); }
-        .pn-tab.active.nerf { background: rgba(255,34,68,0.08); color: #ff2244; border-color: rgba(255,34,68,0.3); }
-        .pn-tab.active.adjust { background: rgba(251,191,36,0.08); color: #fbbf24; border-color: rgba(251,191,36,0.3); }
+        .pn-tab.active.buff { background: rgba(22,163,74,0.08); color: #16a34a; border-color: rgba(22,163,74,0.3); }
+        .pn-tab.active.nerf { background: rgba(220,38,38,0.08); color: #dc2626; border-color: rgba(220,38,38,0.3); }
+        .pn-tab.active.adjust { background: rgba(217,119,6,0.08); color: #d97706; border-color: rgba(217,119,6,0.3); }
 
         .pn-changes-list { display: flex; flex-direction: column; gap: 8px; }
         .pn-change-row {
@@ -384,8 +398,8 @@ export default function PatchNotesTuningClient() {
 
         .pn-entity-info { display: flex; flex-direction: column; min-width: 0; }
         .pn-entity-name { font-size: 13px; font-weight: 700; color: #222; }
-        .pn-entity-stat { font-size: 11px; color: #9A9A9A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .pn-tier-tag { font-size: 9px; font-weight: bold; color: #999; text-transform: uppercase; }
+        .pn-entity-stat { font-size: 11px; color: #9A9A9A; white-space: pre-wrap; line-height: 1.4; margin-top: 4px; }
+        .pn-tier-tag { font-size: 9px; font-weight: bold; color: #999; text-transform: uppercase; margin-top: 4px; }
 
         .pn-change-controls { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
         .pn-type-select { padding: 4px 8px; border-radius: 6px; border: 1px solid #EEE; font-size: 11px; font-weight: 600; color: #555; background: #FFF; }
@@ -435,8 +449,8 @@ export default function PatchNotesTuningClient() {
 
         .pn-pred-tags { display: flex; flex-wrap: wrap; gap: 6px; }
         .pn-tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
-        .pn-tag.buff { background: rgba(57,255,20,0.1); color: #39FF14; }
-        .pn-tag.nerf { background: rgba(255,34,68,0.1); color: #ff2244; }
+        .pn-tag.buff { background: rgba(22,163,74,0.1); color: #16a34a; }
+        .pn-tag.nerf { background: rgba(220,38,38,0.1); color: #dc2626; }
 
         .pn-delete-btn {
           padding: 5px 10px; border-radius: 6px; border: 1px solid #EEE;
@@ -452,28 +466,26 @@ export default function PatchNotesTuningClient() {
 function ChangeEditRow({ change, updateChange }: { change: PatchChange, updateChange: (id: string, field: string, val: any) => void }) {
   const ct = CHANGE_COLORS[change.change_type] || CHANGE_COLORS.adjust;
   return (
-    <div className="pn-change-row" style={{ borderLeftColor: ct.color }}>
+    <div className="pn-change-row" style={{ borderLeftColor: ct.color, alignItems: 'flex-start' }}>
       <div className="pn-change-entity">
         {change.entity_type === 'unit' ? (
-          <ChampionAvatar id={change.entity_id} name={change.entity} icon={change.iconUrl} className="pn-avatar" />
+          <ChampionAvatar id={change.entity_id} name={change.entity} icon={change.iconUrl} className="pn-avatar mt-1" />
         ) : change.iconUrl ? (
-          <div className="pn-avatar-wrapper" style={{ width: 32, height: 32, borderRadius: 6, overflow: 'hidden', background: '#1e1e24', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div className="pn-avatar-wrapper mt-1" style={{ width: 32, height: 32, borderRadius: 6, overflow: 'hidden', background: '#1e1e24', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <img src={change.iconUrl} alt={change.entity} style={{ width: 24, height: 24, objectFit: 'contain' }} onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
               (e.target as HTMLImageElement).parentElement!.innerText = change.entity.substring(0, 2).toUpperCase();
             }} />
           </div>
         ) : (
-          <div className="pn-type-badge" style={{ borderColor: ct.color + '60' }}>
+          <div className="pn-type-badge mt-1" style={{ borderColor: ct.color + '60' }}>
             {change.entity_type === 'trait' ? 'T' : change.entity_type === 'augment' ? 'A' : 'S'}
           </div>
         )}
         <div className="pn-entity-info">
           <span className="pn-entity-name">{change.entity}</span>
           <span className="pn-entity-stat" title={change.stat}>
-            {change.before_val && change.after_val
-              ? `${change.stat}: ${change.before_val} → ${change.after_val}`
-              : change.stat}
+            {change.stat}
           </span>
           {change.tier && <span className="pn-tier-tag">Tier {change.tier}</span>}
         </div>
@@ -499,7 +511,7 @@ function ChangeEditRow({ change, updateChange }: { change: PatchChange, updateCh
             className="pn-slider"
           />
           <span className="pn-score-value" style={{
-            color: change.score > 0 ? '#39FF14' : change.score < 0 ? '#ff2244' : '#fbbf24'
+            color: change.score > 0 ? '#16a34a' : change.score < 0 ? '#dc2626' : '#d97706'
           }}>
             {change.score > 0 ? '+' : ''}{change.score}
           </span>

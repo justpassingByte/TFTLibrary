@@ -3,6 +3,7 @@
 import { useAdminSet } from '@/components/admin/AdminSetContext'
 import { DashboardCharts } from './DashboardCharts'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface SyncJob {
   id: string
@@ -13,44 +14,74 @@ interface SyncJob {
   finished_at: string | null
 }
 
+interface Insight {
+  id: string
+  title: string
+  status: string
+  created_at: string
+  author_id: string | null
+}
+
 export function DashboardClient() {
   const {
     currentSet, availableSets, setCurrentSet,
-    liveSet, setLiveSet, publishLiveSet, isPublishing,
-    setCounts,
+    liveSet, refreshSets, setLabels
   } = useAdminSet()
 
   const [recentJobs, setRecentJobs] = useState<SyncJob[]>([])
-  const [syncingCDragon, setSyncingCDragon] = useState(false)
+  const [recentInsights, setRecentInsights] = useState<Insight[]>([])
+  const [recentPatches, setRecentPatches] = useState<string[]>([])
+  const [isPublishingSet, setIsPublishingSet] = useState<string | null>(null)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
   useEffect(() => {
+    refreshSets()
+    // Fetch Sync Jobs
     fetch(`${apiUrl}/api/admin/sync/jobs?limit=5`, { cache: 'no-store' })
       .then(r => r.ok ? r.json() : [])
       .then(data => setRecentJobs(Array.isArray(data) ? data.slice(0, 5) : []))
       .catch(() => {})
-  }, [apiUrl])
 
-  async function handleQuickSync(source: 'latest' | 'pbe') {
-    setSyncingCDragon(true)
+    // Fetch Insights
+    fetch(`${apiUrl}/api/admin/insights`, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setRecentInsights(Array.isArray(data) ? data.slice(0, 5) : []))
+      .catch(() => {})
+  }, [apiUrl, refreshSets])
+
+  useEffect(() => {
+    // Fetch Patch Notes
+    const qs = new URLSearchParams()
+    if (currentSet) qs.set('set_prefix', currentSet)
+    
+    fetch(`${apiUrl}/api/admin/patch-notes?${qs.toString()}`, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : {})
+      .then((data: any) => setRecentPatches(data.available_patches?.slice(0, 5) || []))
+      .catch(() => {})
+  }, [apiUrl, currentSet])
+
+  const handlePublishClick = async (e: React.MouseEvent, prefix: string) => {
+    e.stopPropagation()
+    if (isPublishingSet) return
+
+    setIsPublishingSet(prefix)
     try {
-      const prefix = source === 'pbe'
-        ? availableSets[availableSets.length - 1] || currentSet
-        : currentSet
-      const res = await fetch(`${apiUrl}/api/admin/cdragon/trigger`, {
+      const res = await fetch(`${apiUrl}/api/admin/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ set_prefix: prefix, cdragon_source: source }),
+        body: JSON.stringify({ active_set: prefix }),
       })
       if (res.ok) {
-        alert(`✅ CDragon ${source.toUpperCase()} sync started for ${prefix}! Check Sync page for progress.`)
+        refreshSets()
       } else {
-        const err = await res.json()
-        alert(`❌ Failed: ${err.error || 'Unknown error'}`)
+        alert('Failed to publish live set')
       }
-    } catch { alert('❌ Network error') }
-    finally { setSyncingCDragon(false) }
+    } catch (err: any) {
+      alert(`Error publishing set: ${err.message}`)
+    } finally {
+      setIsPublishingSet(null)
+    }
   }
 
   return (
@@ -59,16 +90,17 @@ export function DashboardClient() {
       <div className="dc-header">
         <div>
           <h1 className="dc-title">Command Center</h1>
-          <p className="dc-sub">Manage TFT sets, sync data, and publish changes</p>
+          <p className="dc-sub">Manage TFT sets, sync data, and view recent activity.</p>
         </div>
       </div>
 
       {/* ── Set Status Cards ── */}
       <div className="dc-set-grid">
-        {availableSets.map(prefix => {
-          const counts = setCounts[prefix] || { champions: 0, traits: 0, augments: 0, items: 0 }
+        {availableSets.slice(-3).map(prefix => {
           const isLive = prefix === liveSet
           const isViewing = prefix === currentSet
+          const isPublishing = isPublishingSet === prefix
+
           return (
             <div
               key={prefix}
@@ -76,396 +108,221 @@ export function DashboardClient() {
               onClick={() => setCurrentSet(prefix)}
             >
               <div className="dc-set-top">
-                <span className="dc-set-name">{prefix.replace('TFT', 'Set ')}</span>
+                <span className="dc-set-name">{prefix ? (setLabels[prefix] || prefix.replace('TFT', 'Set ')) : 'Unknown'}</span>
                 <div className="dc-set-badges">
-                  {isLive && <span className="dc-badge dc-badge-live">LIVE</span>}
-                  {isViewing && <span className="dc-badge dc-badge-viewing">VIEWING</span>}
+                  {isViewing && <span className="dc-badge dc-badge-viewing">VIEWING DATA</span>}
                 </div>
               </div>
-              <div className="dc-set-counts">
-                <div className="dc-count-item">
-                  <span className="dc-count-val">{counts.champions}</span>
-                  <span className="dc-count-label">Champions</span>
-                </div>
-                <div className="dc-count-item">
-                  <span className="dc-count-val">{counts.traits}</span>
-                  <span className="dc-count-label">Traits</span>
-                </div>
-                <div className="dc-count-item">
-                  <span className="dc-count-val">{counts.augments}</span>
-                  <span className="dc-count-label">Augments</span>
-                </div>
+              
+              {/* Info + Publish Action Row */}
+              <div className="dc-set-footer-action">
+                {isLive ? (
+                   <div className="dc-live-status-container">
+                      <span className="dc-live-dot"></span>
+                      <span className="dc-live-text">CURRENTLY LIVE</span>
+                   </div>
+                ) : (
+                   <button 
+                      className="dc-btn-card-publish" 
+                      onClick={(e) => handlePublishClick(e, prefix)}
+                      disabled={isPublishingSet !== null}
+                   >
+                     {isPublishing ? 'Publishing...' : '🚀 Publish to Live'}
+                   </button>
+                )}
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* ── Middle Row: Live Set Publisher + Quick Sync ── */}
-      <div className="dc-mid-grid">
-        {/* Publish Live Set */}
-        <div className="dc-publish-card">
-          <div className="dc-card-header">
-            <span className="dc-card-icon">🌐</span>
-            <h3 className="dc-card-title">Publish Live Set</h3>
-          </div>
-          <p className="dc-card-desc">
-            Change which set is visible on the <strong>public client</strong> (Tierlist, Builder, Patch Notes).
-          </p>
-          <div className="dc-publish-row">
-            <select
-              className="dc-publish-select"
-              value={liveSet}
-              onChange={e => setLiveSet(e.target.value)}
-              disabled={isPublishing}
-            >
-              {availableSets.map(s => (
-                <option key={s} value={s}>{s.replace('TFT', 'Set ')}</option>
-              ))}
-            </select>
-            <button
-              className="dc-btn dc-btn-publish"
-              onClick={publishLiveSet}
-              disabled={isPublishing}
-            >
-              {isPublishing ? 'Publishing...' : 'Publish'}
-            </button>
-          </div>
-          <div className="dc-publish-current">
-            Current: <strong>{liveSet.replace('TFT', 'Set ')}</strong>
-          </div>
-        </div>
-
-        {/* Quick Sync Actions */}
-        <div className="dc-sync-card">
-          <div className="dc-card-header">
-            <span className="dc-card-icon">⚡</span>
-            <h3 className="dc-card-title">Quick Sync</h3>
-          </div>
-          <p className="dc-card-desc">
-            Trigger CDragon sync without navigating to the Sync page.
-          </p>
-          <div className="dc-sync-actions">
-            <button
-              className="dc-btn dc-btn-sync"
-              onClick={() => handleQuickSync('latest')}
-              disabled={syncingCDragon}
-            >
-              🐉 Sync Live ({currentSet})
-            </button>
-            <button
-              className="dc-btn dc-btn-pbe"
-              onClick={() => handleQuickSync('pbe')}
-              disabled={syncingCDragon}
-            >
-              🧪 Sync PBE (Next Set)
-            </button>
-          </div>
-        </div>
+      {/* ── Activity Chart ── */}
+      <div className="dc-activity-card" style={{ marginBottom: '30px' }}>
+        <h3 className="dc-section-title">Overview Activity</h3>
+        <DashboardCharts />
       </div>
 
-      {/* ── Activity & Recent Jobs ── */}
+      {/* ── Bottom Grid (3 Columns) ── */}
       <div className="dc-bottom-grid">
-        <div className="dc-activity-card">
-          <h3 className="dc-section-title">Activity</h3>
-          <DashboardCharts />
-        </div>
-
+        
+        {/* Recent Jobs */}
         <div className="dc-jobs-card">
-          <h3 className="dc-section-title">Recent Jobs</h3>
+          <div className="dc-card-top-row">
+             <h3 className="dc-section-title-sm">🔄 Recent Syncs</h3>
+             <Link href="/admin/sync" className="dc-view-all">View All</Link>
+          </div>
           {recentJobs.length === 0 ? (
-            <p className="dc-empty">No sync jobs yet. Use the Sync page to get started.</p>
+            <p className="dc-empty">No sync jobs yet.</p>
           ) : (
             <div className="dc-jobs-list">
-              {recentJobs.map(job => {
-                const dur = job.finished_at && job.started_at
-                  ? (() => {
-                    const ms = new Date(job.finished_at!).getTime() - new Date(job.started_at).getTime()
-                    const s = Math.floor(ms / 1000)
-                    return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`
-                  })()
-                  : job.status === 'running' ? '⏳' : '—'
-                return (
-                  <div key={job.id} className="dc-job-row">
-                    <span className={`dc-job-type ${job.job_type}`}>
-                      {job.job_type === 'pipeline' ? '🔄' : job.job_type === 'cdragon' ? '🐉' : '📦'}
-                    </span>
-                    <div className="dc-job-info">
-                      <span className="dc-job-name">{job.job_type} · {job.set_prefix}</span>
-                      <span className="dc-job-time">
-                        {new Date(job.started_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <span className={`dc-job-status ${job.status}`}>
-                      {job.status === 'completed' ? '✅' : job.status === 'error' ? '❌' : '⏳'} {dur}
+              {recentJobs.map(job => (
+                <div key={job.id} className="dc-job-row">
+                  <span className={`dc-job-type ${job.job_type}`}>
+                    {job.job_type === 'pipeline' ? '🔄' : job.job_type === 'cdragon' ? '🐉' : '📦'}
+                  </span>
+                  <div className="dc-job-info">
+                    <span className="dc-job-name">{job.job_type} · {job.set_prefix}</span>
+                    <span className="dc-job-time">
+                      {new Date(job.started_at).toLocaleDateString()}
                     </span>
                   </div>
-                )
-              })}
+                  <span className={`dc-job-status ${job.status}`}>
+                    {job.status === 'completed' ? '✅' : job.status === 'error' ? '❌' : '⏳'}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
-          <a href="/admin/sync" className="dc-view-all">View All Jobs →</a>
         </div>
+
+        {/* Recent Patch Notes */}
+        <div className="dc-jobs-card">
+          <div className="dc-card-top-row">
+             <h3 className="dc-section-title-sm">📜 Patch Notes</h3>
+             <Link href="/admin/patch-notes" className="dc-view-all">View All</Link>
+          </div>
+          {recentPatches.length === 0 ? (
+            <p className="dc-empty">No patch data for {currentSet}.</p>
+          ) : (
+            <div className="dc-jobs-list">
+              {recentPatches.map(patch => (
+                <div key={patch} className="dc-job-row">
+                  <span className="dc-job-type">📝</span>
+                  <div className="dc-job-info">
+                    <span className="dc-job-name">Patch {patch}</span>
+                    <span className="dc-job-time">Set {currentSet?.replace('TFT', '')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Insights */}
+        <div className="dc-jobs-card">
+          <div className="dc-card-top-row">
+             <h3 className="dc-section-title-sm">💡 Insights</h3>
+             <Link href="/admin/insights" className="dc-view-all">View All</Link>
+          </div>
+          {recentInsights.length === 0 ? (
+            <p className="dc-empty">No insights yet.</p>
+          ) : (
+            <div className="dc-jobs-list">
+              {recentInsights.map(ins => (
+                <div key={ins.id} className="dc-job-row">
+                  <span className="dc-job-type">
+                     {ins.status === 'published' ? '✨' : ins.status === 'pending' ? '⏳' : '🚫'}
+                  </span>
+                  <div className="dc-job-info">
+                    <span className="dc-job-name">{ins.title}</span>
+                    <span className="dc-job-time">
+                      {new Date(ins.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
 
       <style>{`
         .dc-page {
-          max-width: 1100px;
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 10px 0;
-          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          padding: 10px 0 50px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
           color: #222;
         }
 
-        .dc-header {
-          margin-bottom: 35px;
-        }
-        .dc-title {
-          font-family: 'Courier New', Courier, serif;
-          font-size: 36px;
-          font-weight: 800;
-          margin: 0 0 6px;
-          color: #222;
-        }
+        .dc-header { margin-bottom: 35px; }
+        .dc-title { font-family: 'Courier New', Courier, serif; font-size: 36px; font-weight: 800; margin: 0 0 6px; color: #222; }
         .dc-sub { font-size: 14px; color: #9A9A9A; margin: 0; }
 
         /* ── Set Status Cards ── */
-        .dc-set-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
+        .dc-set-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        @media (max-width: 900px) { .dc-set-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .dc-set-grid { grid-template-columns: 1fr; } }
 
         .dc-set-card {
-          background: #FFF;
-          border: 2px solid #F0EDEA;
-          border-radius: 16px;
-          padding: 22px;
-          cursor: pointer;
-          transition: all 0.25s ease;
-          position: relative;
+          background: #FFF; border: 2px solid #F0EDEA; border-radius: 16px; padding: 22px;
+          cursor: pointer; transition: all 0.25s ease; position: relative;
+          display: flex; flex-direction: column; gap: 15px;
         }
         .dc-set-card:hover { border-color: #DDD; box-shadow: 0 8px 25px rgba(0,0,0,0.04); transform: translateY(-2px); }
         .dc-set-card.viewing { border-color: #EB5E28; box-shadow: 0 0 0 3px rgba(235,94,40,0.1); }
-        .dc-set-card.live::before {
-          content: '';
-          position: absolute;
-          top: -1px; right: 20px;
-          width: 8px; height: 8px;
-          background: #10B981;
-          border-radius: 50%;
-          box-shadow: 0 0 6px rgba(16,185,129,0.5);
-          animation: dc-pulse 2s infinite;
-        }
-        @keyframes dc-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.3); }
-        }
-
-        .dc-set-top {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 18px;
-        }
-        .dc-set-name {
-          font-family: 'Courier New', Courier, serif;
-          font-size: 22px;
-          font-weight: 800;
-        }
+        .dc-set-card.live { border-color: #10B981; }
+        
+        .dc-set-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .dc-set-name { font-family: 'Courier New', Courier, serif; font-size: 24px; font-weight: 800; }
         .dc-set-badges { display: flex; gap: 6px; }
-        .dc-badge {
-          font-size: 9px;
-          font-weight: 800;
-          padding: 3px 8px;
-          border-radius: 10px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .dc-badge-live { background: #ECFDF5; color: #059669; }
+        .dc-badge { font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
         .dc-badge-viewing { background: #FEF2E8; color: #EB5E28; }
 
-        .dc-set-counts {
-          display: flex;
-          gap: 20px;
-        }
-        .dc-count-item {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .dc-count-val {
-          font-family: 'Courier New', Courier, serif;
-          font-size: 24px;
-          font-weight: 700;
-        }
-        .dc-count-label {
-          font-size: 11px;
-          color: #9A9A9A;
-          font-weight: 500;
+        .dc-set-footer-action {
+           margin-top: auto; padding-top: 15px; border-top: 1px dashed #E8E4DE;
+           display: flex; justify-content: flex-end; align-items: center; min-height: 40px;
         }
 
-        /* ── Middle Row ── */
-        .dc-mid-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
-          margin-bottom: 30px;
+        .dc-live-status-container {
+           display: flex; align-items: center; gap: 6px; padding: 6px 12px;
+           background: #ECFDF5; border-radius: 8px; color: #059669; font-weight: 700; font-size: 11px;
+           border: 1px solid #A7F3D0;
+        }
+        .dc-live-dot {
+           width: 8px; height: 8px; background: #10B981; border-radius: 50%;
+           box-shadow: 0 0 6px rgba(16,185,129,0.5); animation: dc-pulse 2s infinite;
+        }
+        @keyframes dc-pulse {
+           0%, 100% { opacity: 1; transform: scale(1); }
+           50% { opacity: 0.5; transform: scale(1.3); }
         }
 
-        .dc-publish-card, .dc-sync-card {
-          background: #FFF;
-          border: 1px solid #F0EDEA;
-          border-radius: 16px;
-          padding: 24px;
+        .dc-btn-card-publish {
+           background: #F8F4EE; color: #EB5E28; border: 1px solid #E8E4DE;
+           font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px;
+           cursor: pointer; transition: all 0.2s; width: 100%; text-align: center;
         }
+        .dc-btn-card-publish:hover { background: #EB5E28; color: #FFF; border-color: #EB5E28; }
+        .dc-btn-card-publish:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .dc-card-header {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 8px;
-        }
-        .dc-card-icon { font-size: 20px; }
-        .dc-card-title {
-          font-family: 'Courier New', Courier, serif;
-          font-size: 18px;
-          font-weight: 700;
-          margin: 0;
-        }
-        .dc-card-desc {
-          font-size: 13px;
-          color: #9A9A9A;
-          margin: 0 0 18px;
-          line-height: 1.5;
-        }
-
-        .dc-publish-row {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 12px;
-        }
-        .dc-publish-select {
-          flex: 1;
-          background: #FAFAFA;
-          border: 1px solid #EEE;
-          border-radius: 8px;
-          padding: 10px 14px;
-          font-size: 14px;
-          font-weight: 600;
-          color: #222;
-          outline: none;
-          cursor: pointer;
-        }
-        .dc-publish-select:focus { border-color: #EB5E28; }
-        .dc-publish-current {
-          font-size: 12px;
-          color: #9A9A9A;
-        }
-
-        .dc-btn {
-          border: none;
-          border-radius: 8px;
-          padding: 10px 20px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.2s;
-          white-space: nowrap;
-        }
-        .dc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .dc-btn-publish {
-          background: #EB5E28;
-          color: #FFF;
-          box-shadow: 0 4px 12px rgba(235,94,40,0.25);
-        }
-        .dc-btn-publish:hover:not(:disabled) { background: #d44f1e; }
-
-        .dc-sync-actions {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .dc-btn-sync {
-          background: #F0FBF8;
-          color: #059669;
-          border: 1px solid #D1FAE5;
-        }
-        .dc-btn-sync:hover:not(:disabled) { background: #D1FAE5; }
-        .dc-btn-pbe {
-          background: #FFF7ED;
-          color: #D97706;
-          border: 1px solid #FDE68A;
-        }
-        .dc-btn-pbe:hover:not(:disabled) { background: #FDE68A; }
-
-        /* ── Bottom Row ── */
+        /* ── Bottom Grid ── */
         .dc-bottom-grid {
-          display: grid;
-          grid-template-columns: 1.5fr 1fr;
-          gap: 20px;
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
         }
 
         .dc-activity-card, .dc-jobs-card {
-          background: #FFF;
-          border: 1px solid #F0EDEA;
-          border-radius: 16px;
-          padding: 24px;
+          background: #FFF; border: 1px solid #F0EDEA; border-radius: 16px; padding: 24px;
         }
-        .dc-section-title {
-          font-family: 'Courier New', Courier, serif;
-          font-size: 20px;
-          font-weight: 700;
-          margin: 0 0 20px;
-        }
+        .dc-section-title { font-family: 'Courier New', Courier, serif; font-size: 20px; font-weight: 700; margin: 0 0 20px; }
+        .dc-section-title-sm { font-family: 'Courier New', Courier, serif; font-size: 16px; font-weight: 700; margin: 0; color: #333; }
+        
+        .dc-card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px dashed #E8E4DE; }
 
-        .dc-jobs-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0;
-        }
+        .dc-jobs-list { display: flex; flex-direction: column; gap: 0; }
         .dc-job-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px 0;
-          border-bottom: 1px solid #F8F4EE;
+          display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F8F4EE;
         }
         .dc-job-row:last-child { border-bottom: none; }
-        .dc-job-type { font-size: 18px; flex-shrink: 0; }
-        .dc-job-info {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          min-width: 0;
-        }
-        .dc-job-name { font-size: 13px; font-weight: 600; color: #222; text-transform: capitalize; }
+        .dc-job-type { font-size: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #F8F4EE; border-radius: 8px; }
+        .dc-job-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .dc-job-name { font-size: 13px; font-weight: 600; color: #222; text-transform: capitalize; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dc-job-time { font-size: 11px; color: #9A9A9A; }
-        .dc-job-status {
-          font-size: 12px;
-          font-weight: 600;
-          font-family: 'Courier New', Courier, monospace;
-          white-space: nowrap;
-        }
-        .dc-job-status.completed { color: #10B981; }
-        .dc-job-status.error { color: #EF4444; }
-        .dc-job-status.running { color: #F59E0B; }
-        .dc-empty { font-size: 13px; color: #9A9A9A; margin: 20px 0; }
+        .dc-job-status { font-size: 12px; font-weight: 600; }
+        
+        .dc-empty { font-size: 13px; color: #9A9A9A; margin: 20px 0; text-align: center; }
         .dc-view-all {
-          display: inline-block;
-          margin-top: 15px;
-          font-size: 13px;
-          font-weight: 600;
-          color: #EB5E28;
-          text-decoration: none;
+          font-size: 12px; font-weight: 600; color: #EB5E28; text-decoration: none; padding: 4px 10px; background: #FEF2E8; border-radius: 6px;
         }
-        .dc-view-all:hover { text-decoration: underline; }
+        .dc-view-all:hover { background: #EB5E28; color: #FFF; }
+
+        @media (max-width: 1024px) {
+          .dc-bottom-grid { grid-template-columns: repeat(2, 1fr); }
+        }
 
         @media (max-width: 768px) {
-          .dc-mid-grid, .dc-bottom-grid { grid-template-columns: 1fr; }
+          .dc-bottom-grid { grid-template-columns: 1fr; }
         }
       `}</style>
     </div>
