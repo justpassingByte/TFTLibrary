@@ -410,7 +410,7 @@ router.post('/match/validate', async (req, res) => {
     // Configurable allowed queue IDs (default: 1090 = TFT Ranked)
     let allowedQueueIds: number[] = [1090];
     try {
-      const setting = await prisma.platformSetting.findUnique({ where: { key: 'tft_allowed_queue_ids' } });
+      const setting = await (prisma as any).platformSetting?.findUnique({ where: { key: 'tft_allowed_queue_ids' } });
       if (setting?.value) {
         allowedQueueIds = setting.value.split(',').map((s: string) => parseInt(s.trim(), 10)).filter(Boolean);
       }
