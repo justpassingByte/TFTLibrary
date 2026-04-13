@@ -123,13 +123,33 @@ router.post('/match/fetch-latest', async (req, res) => {
       }
 
       const pollingPuuid = puuids[0]; 
+
+      // Skip API call for dummy PUUIDs created during dev seeding
+      if (pollingPuuid.includes('_mt_') || pollingPuuid.includes('_tour_') || pollingPuuid.includes('_ft_')) {
+        return res.json({
+          success: true,
+          match: null,
+          message: 'Skipped match polling for dev-seeded fake PUUID',
+        });
+      }
+
       let matchIdsUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/by-puuid/${pollingPuuid}/ids?count=${count}`;
       if (startTime) matchIdsUrl += `&startTime=${startTime}`;
       if (endTime) matchIdsUrl += `&endTime=${endTime}`;
 
       console.log(`[internal] Fetching match IDs for ${pollingPuuid.substring(0, 12)}... from ${routerRegion}`);
-      matchIds = await riotFetch(matchIdsUrl, routerRegion);
-
+      try {
+        matchIds = await riotFetch(matchIdsUrl, routerRegion);
+      } catch (riotErr: any) {
+        // Riot 400 = invalid/encrypted PUUID (e.g. mutated by dev seed scripts)
+        // Return gracefully so the frontend doesn't see a 500 crash loop
+        console.warn(`[internal] Riot API rejected PUUID — likely invalid or mutated: ${riotErr.message}`);
+        return res.json({
+          success: true,
+          match: null,
+          message: 'PUUID invalid or not found in Riot API. If this is a dev environment, run Sync or re-seed with a valid player.',
+        });
+      }
       if (!matchIds || matchIds.length === 0) {
         return res.json({ success: true, match: null, message: 'No matches found for this PUUID' });
       }
@@ -318,9 +338,13 @@ router.post('/summoner/puuid', async (req, res) => {
 
     // Default to 'sea' if region maps to undefined
     const routerRegion = REGION_ROUTER[region.toLowerCase()] || 'sea';
+    
+    // Riot Account-V1 APIs ONLY support 'americas', 'asia', and 'europe'.
+    // If a match region maps to 'sea' (e.g. vn2, sg2), we MUST use 'asia' to query the account.
+    const accountRegion = routerRegion === 'sea' ? 'asia' : routerRegion;
 
     const cleanedTagLine = tagLine.startsWith('#') ? tagLine.substring(1) : tagLine;
-    const url = `https://${routerRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(cleanedTagLine)}`;
+    const url = `https://${accountRegion}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${encodeURIComponent(gameName)}/${encodeURIComponent(cleanedTagLine)}`;
 
     const response = await riotFetch(url, routerRegion);
 
@@ -440,6 +464,11 @@ router.post('/match/validate', async (req, res) => {
     } else {
       // Poll recent match IDs for puuids[0]
       const pollingPuuid = puuids[0];
+
+      if (pollingPuuid.includes('_mt_') || pollingPuuid.includes('_tour_') || pollingPuuid.includes('_ft_')) {
+        return res.json({ status: 'pending', reason: 'Skipped match polling for dev-seeded fake PUUID' });
+      }
+
       const matchIdsUrl = `https://${routerRegion}.api.riotgames.com/tft/match/v1/matches/by-puuid/${pollingPuuid}/ids?count=10&startTime=${Math.floor(lobbyStartTime)}`;
 
       let matchIds: string[] = [];
