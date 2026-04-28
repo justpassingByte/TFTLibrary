@@ -62,7 +62,7 @@ function AnalyticsContent() {
 
   const [patchList, setPatchList] = useState<string[]>([])
   const [selectedPatch, setSelectedPatch] = useState<string>('')
-  const [statsSetPrefix, setStatsSetPrefix] = useState<string>('all')
+  const [statsSetPrefix, setStatsSetPrefix] = useState<string>('')
   const [patchSelectorLoading, setPatchSelectorLoading] = useState(false)
 
   // 1. Fetch Master Metadata & Available Patches based on Current Set
@@ -74,20 +74,29 @@ function AnalyticsContent() {
     Promise.all([
       fetch(`${apiUrl}/api/meta/stats/patches?set_prefix=${currentSet}&strict=1`).then(r => r.json()).catch(() => []),
       fetch(`${apiUrl}/api/meta/stats/patches?set_prefix=all`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/sets`).then(r => r.json()).catch(() => []),
       fetch(`${apiUrl}/api/meta/champions?set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/champions?set_prefix=all`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/items`).then(r => r.json()).catch(() => []),
-    ]).then(([scopedPatches, allPatches, scopedChampMeta, allChampMeta, iMeta]) => {
-      const useAllStats = scopedPatches.length === 0 && allPatches.length > 0
-      const patches = useAllStats ? allPatches : scopedPatches
-      setStatsSetPrefix(useAllStats ? 'all' : currentSet)
+      fetch(`${apiUrl}/api/meta/items?set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+    ]).then(async ([scopedPatches, allPatches, statSets, scopedChampMeta, scopedItemsMeta]) => {
+      const fallbackSet = statSets.includes(currentSet) ? currentSet : (statSets[statSets.length - 1] || currentSet)
+      const statsPrefix = scopedPatches.length === 0 && allPatches.length > 0 ? fallbackSet : currentSet
+      const useFallbackSet = statsPrefix !== currentSet
+      const patches = scopedPatches.length === 0 && allPatches.length > 0 ? allPatches : scopedPatches
+      const [champMeta, itemsMeta] = useFallbackSet
+        ? await Promise.all([
+            fetch(`${apiUrl}/api/meta/champions?set_prefix=${statsPrefix}`).then(r => r.json()).catch(() => []),
+            fetch(`${apiUrl}/api/meta/items?set_prefix=${statsPrefix}`).then(r => r.json()).catch(() => []),
+          ])
+        : [scopedChampMeta, scopedItemsMeta]
+
+      setStatsSetPrefix(statsPrefix)
       setPatchList(patches)
       // Only reset selectedPatch if the current one isn't in the new list
       if (!patches.includes(selectedPatch) && patches.length > 0) {
          setSelectedPatch(patches[0])
       }
-      setChampsMeta(useAllStats ? allChampMeta : scopedChampMeta)
-      setItemsMeta(iMeta)
+      setChampsMeta(champMeta)
+      setItemsMeta(itemsMeta)
     }).finally(() => setLoading(false))
   }, [currentSet, selectedPatch])
 
@@ -252,6 +261,7 @@ function AnalyticsContent() {
   )
 
   const totalMatches = overview?.totals?.matches || 0
+  const displayedSet = statsSetPrefix || currentSet
   const topPickedChamps = [...(champData || [])].sort((a: any, b: any) => (b.pick_rate ?? 0) - (a.pick_rate ?? 0))
 
   return (
@@ -269,8 +279,13 @@ function AnalyticsContent() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ color: PALETTE.subtext, fontSize: '14px', fontWeight: 500 }}>Set</span>
             <span style={{ color: '#fff', fontSize: '14px', fontWeight: 'bold', background: '#2A2A33', padding: '4px 10px', borderRadius: '4px' }}>
-              {currentSet.replace('TFT', 'Set ')}
+              {displayedSet.replace('TFT', 'Set ')}
             </span>
+            {displayedSet !== currentSet && (
+              <span style={{ color: PALETTE.subtext, fontSize: '12px' }}>
+                fallback from {currentSet.replace('TFT', 'Set ')}
+              </span>
+            )}
           </div>
           
           {patchList.length > 0 && (

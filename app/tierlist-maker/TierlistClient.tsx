@@ -249,7 +249,7 @@ export function TierlistClient({
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       // Outer glow
-      ctx.shadowColor = 'rgba(235, 94, 40, 0.4)';
+      ctx.shadowColor = 'rgba(250, 204, 21, 0.35)';
       ctx.shadowBlur = 12;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.fillText(wmText, canvas.width - 20, canvas.height - 14);
@@ -281,11 +281,12 @@ export function TierlistClient({
   };
 
   return (
-    <div className="min-h-screen pt-16 pb-4">
+    <div className="arcane-page min-h-screen pt-16 pb-4">
+      <div className="arcane-glyph-layer opacity-[0.035]" />
       <div className="max-w-[1440px] mx-auto px-3">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between py-4 border-b border-[var(--color-border)] mb-4 flex-wrap gap-4">
+        <div className="arcane-surface flex items-center justify-between px-3 py-4 mb-4 flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <h1 className="gradient-text text-xl lg:text-2xl font-bold flex items-center gap-2" style={{ fontFamily: "'Cinzel', serif" }}>
               ⚔ TIERLIST
@@ -317,7 +318,7 @@ export function TierlistClient({
         <div className="flex gap-4 flex-col lg:flex-row items-start">
 
           {/* LEFT: Tier Rows (SHARE AREA) */}
-          <div ref={tierlistRef} className="flex-1 min-w-0 space-y-2 relative bg-[#0a0a0f] p-4 lg:-ml-4 rounded-xl">
+          <div ref={tierlistRef} className="builder-board-shell flex-1 min-w-0 space-y-2 relative p-4 lg:-ml-4 rounded-lg overflow-hidden">
             
             {/* Header copy just for the image if we want? */}
             {isSharing && (
@@ -343,10 +344,10 @@ export function TierlistClient({
                     border: `1px solid ${isOver ? tierColor : tierBorder}`,
                     background: `linear-gradient(106deg, ${tierBg}, rgba(18,26,43,0.9) 32%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 40%)`,
                     boxShadow: isOver
-                      ? `inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px ${tierColor}26, 0 0 40px ${tierColor}0D`
+                      ? `inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 14px ${tierColor}26, 0 0 46px ${tierColor}0D`
                       : isS
-                        ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
-                        : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+                        ? 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 18px rgba(250,204,21,0.16), 0 0 48px rgba(250,204,21,0.06)'
+                        : 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6)',
                     opacity: presence.opacity,
                     filter: presence.filter,
                   }}

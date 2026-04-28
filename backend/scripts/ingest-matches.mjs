@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Region router mapping (platform → continental routing)
 const REGION_ROUTER = { na1: 'americas', euw1: 'europe', kr: 'asia', vn2: 'sea', sg2: 'sea', jp1: 'asia' };
+let loggedMissingAugments = false;
 
 // ── Rate limiter ─────────────────────────────────────────────────────────────
 const lastRequestTime = {};
@@ -208,14 +210,26 @@ async function collectMatchIds(puuids) {
     console.log(`[pipeline] No previous run — fetching last ${MAX_MATCHES} matches per player`);
   }
 
-  // Fetch existing match IDs from DB so we can skip them
+  // Fetch complete match IDs from DB so we can skip them. A match row without
+  // player_matches is incomplete and must be reprocessed.
   const { data: existingRows } = await supabase
-    .from('matches')
+    .from('player_matches')
     .select('match_id');
   const existingIds = new Set((existingRows || []).map(r => r.match_id));
-  console.log(`[pipeline] ${existingIds.size} matches already in DB`);
+  console.log(`[pipeline] ${existingIds.size} completed matches already in DB`);
 
-  const newMatchIds = new Set();
+  const { data: targetMatches } = await supabase
+    .from('matches')
+    .select('match_id')
+    .eq('tft_set_number', TFT_SET_NUMBER);
+  const incompleteIds = (targetMatches || [])
+    .map(r => r.match_id)
+    .filter(id => !existingIds.has(id));
+  if (incompleteIds.length > 0) {
+    console.log(`[pipeline] Found ${incompleteIds.length} incomplete Set ${TFT_SET_NUMBER} matches to reprocess`);
+  }
+
+  const newMatchIds = new Set(incompleteIds);
   let processed = 0;
 
   for (const player of puuids) {
@@ -317,30 +331,61 @@ async function ingestMatches(matchIds) {
       for (const p of info.participants) {
         const compSig = buildCompSignature(p.units || []);
 
-        const { data: pm, error: pmErr } = await supabase.from('player_matches').upsert({
+        const playerPayload = {
+          id:                 randomUUID(),
           match_id:           matchId,
           puuid:              p.puuid,
           riot_id_name:       p.riotIdGameName || null,
           riot_id_tag:        p.riotIdTagline || null,
-          placement:          p.placement,
-          level:              p.level,
-          gold_left:          p.gold_left,
-          last_round:         p.last_round,
-          total_damage:       p.total_damage_to_players,
-          time_eliminated:    p.time_eliminated,
-          players_eliminated: p.players_eliminated,
-          win:                p.win,
+          placement:          p.placement ?? 0,
+          level:              p.level ?? 0,
+          gold_left:          p.gold_left ?? 0,
+          last_round:         p.last_round ?? 0,
+          total_damage:       p.total_damage_to_players ?? 0,
+          time_eliminated:    p.time_eliminated ?? 0,
+          players_eliminated: p.players_eliminated ?? 0,
+          win:                p.win ?? p.placement === 1,
           patch,
           comp_signature:     compSig,
-        }, { onConflict: 'match_id,puuid', ignoreDuplicates: true }).select('id').single();
+        };
 
-        if (pmErr || !pm) continue;
+        let { data: pm, error: pmErr } = await supabase
+          .from('player_matches')
+          .insert(playerPayload)
+          .select('id')
+          .single();
+
+        if (pmErr?.code === '23505') {
+          const { id, ...playerUpdate } = playerPayload;
+          const updateResult = await supabase
+            .from('player_matches')
+            .update(playerUpdate)
+            .eq('match_id', matchId)
+            .eq('puuid', p.puuid)
+            .select('id')
+            .single();
+          pm = updateResult.data;
+          pmErr = updateResult.error;
+        }
+
+        if (pmErr || !pm) {
+          console.error(`[pipeline] Player insert error for ${matchId}/${p.puuid?.slice(0, 8) || 'unknown'}: ${pmErr?.message || 'no row returned'}`);
+          errors++;
+          continue;
+        }
         const pmId = pm.id;
+
+        await Promise.all([
+          supabase.from('match_units').delete().eq('player_match_id', pmId),
+          supabase.from('match_traits').delete().eq('player_match_id', pmId),
+          supabase.from('match_augments').delete().eq('player_match_id', pmId),
+        ]);
 
         // Units
         if (p.units?.length) {
-          await supabase.from('match_units').insert(
+          const { error: unitsErr } = await supabase.from('match_units').insert(
             p.units.map(u => ({
+              id:              randomUUID(),
               player_match_id: pmId,
               character_id:    u.character_id,
               tier:            u.tier,
@@ -348,13 +393,15 @@ async function ingestMatches(matchIds) {
               item_names:      u.itemNames || [],
             }))
           );
+          if (unitsErr) console.error(`[pipeline] Unit insert error for ${matchId}: ${unitsErr.message}`);
         }
 
         // Active traits (style > 0)
         const activeTraits = (p.traits || []).filter(t => t.style > 0);
         if (activeTraits.length) {
-          await supabase.from('match_traits').insert(
+          const { error: traitsErr } = await supabase.from('match_traits').insert(
             activeTraits.map(t => ({
+              id:              randomUUID(),
               player_match_id: pmId,
               trait_name:      t.name,
               num_units:       t.num_units,
@@ -362,17 +409,20 @@ async function ingestMatches(matchIds) {
               style:           t.style,
             }))
           );
+          if (traitsErr) console.error(`[pipeline] Trait insert error for ${matchId}: ${traitsErr.message}`);
         }
 
-        // Augments (field confirmed present in Set 5+ API — log raw if missing)
+        // Augments are optional in some Riot TFT payloads/sets.
         const augments = p.augments || [];
         if (augments.length) {
-          await supabase.from('match_augments').insert(
-            augments.map(a => ({ player_match_id: pmId, augment_id: a }))
+          const { error: augmentsErr } = await supabase.from('match_augments').insert(
+            augments.map(a => ({ id: randomUUID(), player_match_id: pmId, augment_id: a }))
           );
-        } else if (i === 0) {
-          console.warn('[pipeline] ⚠️  No augments field found on first participant — check field name in API response');
-          console.warn('[pipeline] Participant keys:', Object.keys(p).join(', '));
+          if (augmentsErr) console.error(`[pipeline] Augment insert error for ${matchId}: ${augmentsErr.message}`);
+        } else if (!loggedMissingAugments && !('augments' in p)) {
+          loggedMissingAugments = true;
+          console.log('[pipeline] No augments field found in Riot participant payload — skipping augment ingestion for this run');
+          console.log('[pipeline] Participant keys:', Object.keys(p).join(', '));
         }
       }
 

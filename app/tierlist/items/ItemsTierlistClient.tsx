@@ -37,10 +37,11 @@ function tierRowStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSPropertie
     borderColor: tier === 'S' ? 'rgba(250,204,21,0.28)' : tier === 'A' ? 'rgba(212,175,55,0.14)' : tier === 'B' ? 'rgba(139,111,42,0.12)' : 'rgba(255,255,255,0.05)',
     background: `linear-gradient(104deg, ${cfg.bg}, rgba(18,26,43,0.9) 31%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 42%)`,
     boxShadow: tier === 'S'
-      ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
-      : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+      ? 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 18px rgba(250,204,21,0.16), 0 0 48px rgba(250,204,21,0.06)'
+      : 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6)',
     opacity: presence.opacity,
     filter: presence.filter,
+    transform: tier === 'S' ? 'scale(1.01)' : 'scale(1)',
   };
 }
 
@@ -84,7 +85,8 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
   );
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="arcane-page min-h-screen pt-24 pb-20">
+      <div className="arcane-glyph-layer opacity-[0.04]" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
@@ -102,16 +104,17 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
           <div className="flex items-center gap-3 flex-wrap">
             <input type="text" placeholder="Search items..." value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-[var(--color-grimoire)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-amethyst)] transition-colors w-48" />
+              className="arcane-input px-4 py-2 text-sm placeholder:text-[var(--color-text-muted)] transition-colors w-48" />
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-[var(--color-border)] overflow-x-auto no-scrollbar">
+        <div className="arcane-tab-row flex gap-1 overflow-x-auto no-scrollbar">
           {TABS.map(tab => (
             <Link key={tab.label} href={tab.href}
-              className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                tab.active ? 'border-[var(--color-pumpkin)] text-[var(--color-pumpkin)]'
+              aria-current={tab.active ? 'page' : undefined}
+              className={`arcane-tab px-5 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                tab.active ? 'border-transparent text-[var(--color-pumpkin)]'
                   : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
               {tab.label}
             </Link>
@@ -198,7 +201,7 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
 
       <style>{`
         .itl-tier-row { display: flex; align-items: stretch; border-radius: 8px; border: 1px solid; overflow: hidden; min-height: 110px; backdrop-filter: blur(18px); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
-        .itl-tier-row:hover { border-color: rgba(250,204,21,0.16) !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.08), 0 0 34px rgba(250,204,21,0.03) !important; }
+        .itl-tier-row:hover { border-color: rgba(250,204,21,0.16) !important; box-shadow: inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 16px rgba(250,204,21,0.08) !important; }
         .itl-tier-label { flex-shrink: 0; width: 75px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.75rem 0; border-right: 1px solid; gap: 2px; }
         .itl-tier-letter { font-size: 2.2rem; font-weight: 800; font-family: 'Cinzel', serif; line-height: 1; letter-spacing: 0.08em; }
         .itl-tier-letter[data-tier="S"] { font-size: 2.45rem; }

@@ -2,7 +2,8 @@ import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="border-t border-[var(--color-border)] bg-[var(--color-void-light)]">
+    <footer className="relative overflow-hidden border-t border-[var(--color-border)] bg-[rgba(5,8,18,0.92)]">
+      <div className="arcane-glyph-layer opacity-[0.035]" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}

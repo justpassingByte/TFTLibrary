@@ -7,25 +7,9 @@
 [33m[nodemon] watching path(s): src\**\* data\**\*[39m
 [33m[nodemon] watching extensions: ts,js,json[39m
 [32m[nodemon] starting `ts-node src/index.ts src/index.ts`[39m
-◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
-◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
-Backend server running on http://localhost:3001
-[DEBUG] curated-comps hit! Length: 1
-[DEBUG] curated-comps hit! Length: 1
-[32m[nodemon] restarting due to changes...[39m
-[32m[nodemon] starting `ts-node src/index.ts src/index.ts`[39m
 ◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
-◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
 Backend server running on http://localhost:3001
-[DEBUG] curated-comps hit! Length: 1
 [aggregate] Found 4 patches: 16.8, 16.7, 16.6, 16.5
 [aggregate] Found 4 patches: 16.8, 16.7, 16.6, 16.5
-[aggregate] comp_stats: 865 signatures for patch 16.8
-[aggregate] augment_stats: 0 augments for patch 16.8
 [DEBUG] curated-comps hit! Length: 1
-[aggregate] item_stats: 152 items for patch 16.8
-[32m[nodemon] restarting due to changes...[39m
-[32m[nodemon] starting `ts-node src/index.ts src/index.ts`[39m
-◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
-◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
-Backend server running on http://localhost:3001

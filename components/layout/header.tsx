@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BookOpen, ChevronDown, Lock, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
   {
@@ -43,10 +44,13 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group [&>span.text-2xl]:hidden">
+            <span className="grid h-8 w-8 place-items-center rounded-md border border-[rgba(212,175,55,0.26)] bg-[rgba(250,204,21,0.07)] shadow-[inset_0_0_18px_rgba(0,0,0,0.62)]">
+              <BookOpen size={17} className="text-[var(--color-pumpkin)]" strokeWidth={1.8} />
+            </span>
             <span className="text-2xl">📖</span>
             <span
-              className="text-xl font-bold tracking-wide"
+              className="text-xl font-bold"
               style={{ fontFamily: "'Cinzel', serif" }}
             >
               <span className="gradient-text">TFT</span>
@@ -69,9 +73,7 @@ export function Header() {
                 >
                   {item.label}
                   {item.children && (
-                    <svg className="w-3.5 h-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <ChevronDown size={14} className="opacity-50" strokeWidth={1.8} />
                   )}
                 </Link>
 
@@ -119,10 +121,7 @@ export function Header() {
               className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all duration-200"
               aria-label="Admin login"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" />
-              </svg>
+              <Lock size={16} strokeWidth={1.8} />
             </Link>
           </div>
 
@@ -132,13 +131,7 @@ export function Header() {
             className="md:hidden p-2 text-[var(--color-text-secondary)]"
             aria-label="Toggle menu"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {mobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            {mobileOpen ? <X size={24} strokeWidth={1.8} /> : <Menu size={24} strokeWidth={1.8} />}
           </button>
         </div>
       </div>

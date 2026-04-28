@@ -45,10 +45,11 @@ function tierRowStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSPropertie
     borderColor: tier === 'S' ? 'rgba(250,204,21,0.28)' : tier === 'A' ? 'rgba(212,175,55,0.14)' : tier === 'B' ? 'rgba(139,111,42,0.12)' : 'rgba(255,255,255,0.05)',
     background: `linear-gradient(104deg, ${cfg.bg}, rgba(18,26,43,0.9) 31%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 42%)`,
     boxShadow: tier === 'S'
-      ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
-      : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+      ? 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 18px rgba(250,204,21,0.16), 0 0 48px rgba(250,204,21,0.06)'
+      : 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6)',
     opacity: presence.opacity,
     filter: presence.filter,
+    transform: tier === 'S' ? 'scale(1.01)' : 'scale(1)',
   };
 }
 
@@ -480,7 +481,8 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
   const isLoading = false;
 
   return (
-    <div className="min-h-screen pt-24 pb-20">
+    <div className="arcane-page min-h-screen pt-24 pb-20">
+      <div className="arcane-glyph-layer opacity-[0.04]" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
@@ -496,13 +498,13 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
             </h1>
           </div>
           <input type="text" placeholder="Search comps..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 rounded-xl bg-[var(--color-grimoire)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-amethyst)] transition-colors w-48" />
+            className="arcane-input px-4 py-2 text-sm placeholder:text-[var(--color-text-muted)] transition-colors w-48" />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-8 border-b border-[var(--color-border)]">
+        <div className="arcane-tab-row flex gap-1 mb-8">
           {TABS.map(tab => (
-            <Link key={tab.label} href={tab.href} className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab.active ? 'border-[var(--color-pumpkin)] text-[var(--color-pumpkin)]' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
+            <Link key={tab.label} href={tab.href} aria-current={tab.active ? 'page' : undefined} className={`arcane-tab px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab.active ? 'border-transparent text-[var(--color-pumpkin)]' : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
               {tab.label}
             </Link>
           ))}
@@ -551,7 +553,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
 
       <style>{`
         .tierlist-row { display: flex; align-items: stretch; gap: 0; border-radius: 8px; border: 1px solid; min-height: 110px; overflow: hidden; backdrop-filter: blur(18px); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
-        .tierlist-row:hover { border-color: rgba(250,204,21,0.16) !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.08), 0 0 34px rgba(250,204,21,0.03) !important; }
+        .tierlist-row:hover { border-color: rgba(250,204,21,0.16) !important; box-shadow: inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 16px rgba(250,204,21,0.08) !important; }
         .tier-label-cell { flex-shrink: 0; width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0; border-right: 1px solid; }
         .tier-letter { font-size: 2.5rem; font-weight: 800; font-family: 'Cinzel', serif; line-height: 1; letter-spacing: 0.08em; }
         .tier-letter[data-tier="S"] { font-size: 2.8rem; }
@@ -567,7 +569,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .comp-card-placeholder { width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; border: 2px solid; border-radius: 12px; font-size: 1.5rem; color: #fff; }
 
         /* Detail panel */
-        .comp-detail { display: flex; flex-direction: row; border-radius: 8px; border: 1px solid; overflow: hidden; background: linear-gradient(162deg, rgba(255,255,255,0.024), rgba(255,255,255,0) 34%), #121A2B; margin-top: 4px; }
+        .comp-detail { display: flex; flex-direction: row; border-radius: 8px; border: 1px solid; overflow: hidden; background: linear-gradient(162deg, rgba(255,255,255,0.032), rgba(255,255,255,0) 34%), #0C1222; margin-top: 4px; }
         
         /* Left Panel */
         .cd-left { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; border-right: 1px solid rgba(255,255,255,0.08); padding-bottom: 2rem; position: relative; }
@@ -599,7 +601,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .cd-prio-arrow { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 -2px; }
 
         /* Right panel */
-        .cd-right { flex: 1; display: flex; flex-direction: column; background: #121A2B; position: relative; }
+        .cd-right { flex: 1; display: flex; flex-direction: column; background: #0C1222; position: relative; }
         .cd-close-btn { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; }
         .cd-close-btn:hover { background: rgba(255,255,255,0.15); }
 
@@ -613,7 +615,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .cd-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         .cd-grid-2 { display: grid; grid-template-columns: 1fr 120px; gap: 1.5rem; }
 
-        .cd-box { position: relative; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1.5rem 1rem 1rem; background: rgba(10,15,31,0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.035); }
+        .cd-box { position: relative; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 1.5rem 1rem 1rem; background: linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0)), rgba(7,11,22,0.38); box-shadow: inset 0 0 28px rgba(0,0,0,0.45), 0 8px 22px rgba(0,0,0,0.28); }
         .cd-box-title { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #121A2B; padding: 0 12px; font-size: 0.9rem; font-weight: 700; color: #D4AF37; white-space: nowrap; border-radius: 4px; }
         
         .cd-info-avatars { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; }

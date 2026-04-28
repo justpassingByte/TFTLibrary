@@ -341,7 +341,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
       // Outer glow
-      ctx.shadowColor = 'rgba(235, 94, 40, 0.4)';
+      ctx.shadowColor = 'rgba(250, 204, 21, 0.35)';
       ctx.shadowBlur = 12;
       ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.fillText(wmText, canvas.width - 20, canvas.height - 14);
@@ -419,11 +419,12 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
   };
 
   return (
-    <div className="min-h-screen pt-16 pb-4">
+    <div className="arcane-page min-h-screen pt-16 pb-4">
+      <div className="arcane-glyph-layer opacity-[0.035]" />
       <div className="max-w-[1440px] mx-auto px-3">
 
         {/* TOP TOOLBAR */}
-        <div className="flex items-center justify-between py-3 border-b border-[var(--color-border)] mb-3 flex-wrap gap-2">
+        <div className="builder-toolbar arcane-surface flex items-center justify-between px-3 py-3 mb-3 flex-wrap gap-2">
           <div className="flex items-center gap-3 flex-wrap">
             <button className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-xs font-medium text-[var(--color-text-secondary)] hover:border-[var(--color-border-hover)] transition-colors">
               Set 16 ▾
@@ -459,7 +460,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
         <div className="flex gap-3 flex-col lg:flex-row">
 
           {/* SHARE AREA BOUNDARY */}
-          <div ref={boardRef} className="flex gap-3 flex-col lg:flex-row flex-1 bg-[#0a0a0f] p-1 -m-1 rounded-2xl relative">
+          <div ref={boardRef} className="builder-board-shell flex gap-3 flex-col lg:flex-row flex-1 p-2 -m-1 relative overflow-hidden">
             {isSharing && (
               <div data-html2canvas-ignore="true" className="absolute inset-0 z-50 flex items-center justify-center bg-[#0a0a0f]/80 backdrop-blur-sm rounded-2xl">
                 <span className="text-white font-bold tracking-widest animate-pulse">GENERATING IMAGE...</span>
@@ -541,7 +542,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
 
           {/* CENTER: Hex Board */}
           <div className="flex-1">
-            <div className="grimoire-card p-3 sm:p-4 relative overflow-hidden min-h-[340px] shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]">
+            <div className="builder-board-card grimoire-card p-3 sm:p-4 relative overflow-hidden min-h-[340px]">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none select-none"
                 style={{ fontFamily: "'Cinzel', serif", fontSize: '72px', fontWeight: 900, whiteSpace: 'nowrap', letterSpacing: '8px' }}>
                 <span className="gradient-text">TFT</span>Grimoire
@@ -558,7 +559,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                       return (
                         <div
                           key={`${row}-${col}`}
-                          className="group relative"
+                          className="builder-hex group relative"
                           style={{ width: '84px', height: '92px' }}
                           onDragOver={e => onDragOver(e, hexId)}
                           onDragLeave={() => setDragOverTarget(null)}
@@ -569,12 +570,14 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                           <div className="absolute inset-0 transition-all"
                             style={{
                               clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                              background: cell ? COST_COLORS[cell.champion.cost] + '30' : isOver ? 'rgba(255,215,0,0.3)' : 'rgba(255, 255, 255, 0.05)',
+                              background: cell ? COST_COLORS[cell.champion.cost] + '42' : isOver ? 'rgba(250,204,21,0.32)' : 'rgba(255, 255, 255, 0.06)',
+                              boxShadow: isOver ? '0 0 22px rgba(250,204,21,0.18)' : '0 6px 16px rgba(0,0,0,0.34)',
                             }} />
                           <div className="absolute inset-[2px] flex flex-col items-center justify-center transition-colors shadow-inner"
                             style={{
                               clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-                              background: cell ? `linear-gradient(160deg, ${COST_BG[cell.champion.cost]}, rgba(10,8,20,0.95))` : 'rgba(12, 10, 24, 0.65)',
+                              background: cell ? `linear-gradient(160deg, ${COST_BG[cell.champion.cost]}, rgba(8,12,23,0.96))` : 'linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0)), rgba(8, 12, 23, 0.78)',
+                              boxShadow: 'inset 0 0 22px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.04)',
                             }}>
                             {cell ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-end pb-[6px] cursor-grab group/champ"
@@ -650,7 +653,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                   const aug = selectedAugments[i];
                   return (
                     <div key={i}
-                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-colors cursor-pointer"
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg border transition-colors cursor-pointer hover:border-[rgba(212,175,55,0.28)] hover:bg-white/[0.025]"
                       style={{
                         borderColor: aug ? RARITY_STYLES[dbAugments.find(a => a.name === aug)?.tier || 'Silver'].border + '30' : 'var(--color-border)',
                         backgroundColor: aug ? RARITY_STYLES[dbAugments.find(a => a.name === aug)?.tier || 'Silver'].bg : 'transparent',
@@ -679,15 +682,15 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
         </div>
 
         {/* BOTTOM: Champions & Items Roster */}
-        <div className="mt-3 bg-[#111116] rounded-xl border border-[#2a2a35] overflow-hidden">
+        <div className="builder-roster arcane-surface mt-3 overflow-hidden">
           {/* Header controls */}
-          <div className="flex items-center justify-between p-3 border-b border-[#2a2a35]">
+          <div className="flex items-center justify-between p-3 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-6 text-xs font-bold text-white mb-1 mt-1 flex-1">
               {/* Search */}
               <div className="relative w-[240px]">
                 <input type="text" placeholder="Search All" value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 rounded-full bg-[#1c1c22] border border-[#2a2a35] text-sm text-[var(--color-text-primary)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--color-pumpkin)] transition-colors" />
+                  className="arcane-input w-full px-4 py-2 text-sm placeholder:text-gray-500 transition-colors" />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 bg-[#2a2a35] px-1.5 py-0.5 rounded font-black tracking-wider">Ctrl + F</span>
               </div>
 
@@ -719,7 +722,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
           </div>
 
           {/* Rosters layout */}
-          <div className="flex bg-[#111116] min-h-[400px]">
+          <div className="flex min-h-[400px] bg-[rgba(3,5,10,0.26)]">
             {/* Champions Side */}
             <div className="flex-1 max-h-[550px] overflow-y-auto show-scrollbar p-4 pr-2">
               {(sortMode === 'Cost' || sortMode === 'Name') ? (
@@ -728,7 +731,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                     <div key={champ.id}
                       draggable
                       onDragStart={e => onDragStartChampion(e, champ)}
-                      className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
+                      className="builder-roster-unit relative flex flex-col items-center gap-0.5 cursor-grab group">
                       <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
                         <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
                       </HexagonFrame>
@@ -745,7 +748,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                     if (traitChamps.length === 0) return null;
                     const traitInfo = traitsDb.find((t: any) => t.name === traitName) || traitsDb.find((t: any) => t.id === traitName);
                     return (
-                      <div key={traitName} className="flex gap-3 items-center bg-[#1c1c22]/50 p-2 rounded-xl border border-white/[0.04]">
+                      <div key={traitName} className="flex gap-3 items-center bg-white/[0.025] p-2 rounded-lg border border-white/[0.04]">
                         <div className="w-16 flex-shrink-0 flex flex-col items-center justify-center gap-1.5 border-r border-[#2a2a35] pr-3 py-1">
                           <div className="w-7 h-7 flex items-center justify-center opacity-80 filter drop-shadow-md">
                              <GameIcon type="trait" id={traitName} icon={traitInfo?.icon} alt={traitName} className="w-full h-full" />
@@ -754,7 +757,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                         </div>
                         <div className="flex flex-wrap gap-1.5 flex-1 pl-2">
                           {traitChamps.map((champ: any) => (
-                             <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)} className="relative flex flex-col items-center gap-0.5 cursor-grab group hover:scale-105 transition-transform">
+                             <div key={champ.id} draggable onDragStart={e => onDragStartChampion(e, champ)} className="builder-roster-unit relative flex flex-col items-center gap-0.5 cursor-grab group">
                                 <HexagonFrame color={COST_COLORS[champ.cost]} bg={COST_BG[champ.cost]} size={52} padding={2} className="shadow-lg">
                                   <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-[46px] h-[50px] pointer-events-none" />
                                 </HexagonFrame>
@@ -778,7 +781,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                   <div key={item.id}
                     draggable
                     onDragStart={e => onDragStartItem(e, item)}
-                    className="relative flex flex-col items-center justify-center cursor-grab group hover:scale-105 transition-transform"
+                    className="builder-item-tile relative flex flex-col items-center justify-center cursor-grab group"
                     title={item.name}>
                     <div className="w-[38px] h-[38px] rounded-md border border-[var(--color-border)] bg-[#1c1c22] flex items-center justify-center group-hover:border-[#ffb703] group-hover:shadow-[0_0_8px_rgba(255,183,3,0.3)] transition-all overflow-hidden">
                       <img src={getItemImageUrl(item.icon || item.id)} alt={item.name} className="w-full h-full object-contain pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]" />

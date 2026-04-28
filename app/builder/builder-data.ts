@@ -138,15 +138,19 @@ export function categorizeItem(id: string): ItemCategory | null {
 
 
 export const COST_COLORS: Record<number, string> = {
-  1: '#9ca3af', 2: '#22c55e', 3: '#3b82f6', 4: '#a855f7', 5: '#fbbf24',
+  1: '#9CA3AF',
+  2: '#7FB883',
+  3: '#6FA3D9',
+  4: '#B08AD8',
+  5: '#D4AF37',
 };
 
 export const COST_BG: Record<number, string> = {
-  1: 'rgba(156,163,175,0.15)',
-  2: 'rgba(34,197,94,0.15)',
-  3: 'rgba(59,130,246,0.15)',
-  4: 'rgba(168,85,247,0.15)',
-  5: 'rgba(251,191,36,0.15)',
+  1: 'rgba(156,163,175,0.13)',
+  2: 'rgba(127,184,131,0.14)',
+  3: 'rgba(111,163,217,0.14)',
+  4: 'rgba(176,138,216,0.14)',
+  5: 'rgba(212,175,55,0.16)',
 };
 
 export const TIER_CONFIG = [

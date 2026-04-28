@@ -6,33 +6,84 @@
 - Local:         http://localhost:3002
 - Network:       http://192.168.1.9:3002
 - Environments: .env.local
-✓ Ready in 440ms
+✓ Ready in 526ms
 
- GET /admin/analytics 200 in 1352ms (next.js: 180ms, proxy.ts: 812ms, application-code: 360ms)
- GET /tierlist/comps 200 in 1304ms (next.js: 55ms, proxy.ts: 6ms, application-code: 1243ms)
- GET /tierlist/comps 200 in 1101ms (next.js: 3ms, proxy.ts: 4ms, application-code: 1094ms)
- GET /login 200 in 39ms (next.js: 21ms, proxy.ts: 4ms, application-code: 14ms)
- GET /admin 200 in 317ms (next.js: 21ms, proxy.ts: 278ms, application-code: 19ms)
- GET /admin 200 in 127ms (next.js: 3ms, proxy.ts: 104ms, application-code: 20ms)
- GET / 200 in 483ms (next.js: 22ms, proxy.ts: 411ms, application-code: 50ms)
- GET /tierlist/comps 200 in 1173ms (next.js: 3ms, proxy.ts: 149ms, application-code: 1021ms)
- GET /tierlist/items 200 in 626ms (next.js: 24ms, proxy.ts: 221ms, application-code: 382ms)
- GET /admin/sync 200 in 692ms (next.js: 21ms, proxy.ts: 387ms, application-code: 285ms)
- GET /admin/analytics 200 in 450ms (next.js: 4ms, proxy.ts: 427ms, application-code: 20ms)
- GET /admin/analytics 200 in 262ms (next.js: 3ms, proxy.ts: 209ms, application-code: 50ms)
- GET /admin/sync 200 in 516ms (next.js: 3ms, proxy.ts: 231ms, application-code: 282ms)
- GET /admin/analytics 200 in 312ms (next.js: 3ms, proxy.ts: 293ms, application-code: 17ms)
- GET /admin/analytics 200 in 201ms (next.js: 3ms, proxy.ts: 148ms, application-code: 51ms)
-✓ Compiled in 147ms
-✓ Compiled in 68ms
- GET /admin/analytics 200 in 343ms (next.js: 92ms, proxy.ts: 213ms, application-code: 38ms)
+ GET / 200 in 1203ms (next.js: 146ms, proxy.ts: 862ms, application-code: 195ms)
+ GET /admin 200 in 137ms (next.js: 20ms, proxy.ts: 83ms, application-code: 33ms)
+ GET /admin/analytics 200 in 112ms (next.js: 17ms, proxy.ts: 78ms, application-code: 17ms)
+ GET /admin/analytics 200 in 557ms (next.js: 3ms, proxy.ts: 404ms, application-code: 149ms)
+ GET /admin/sync 200 in 993ms (next.js: 24ms, proxy.ts: 381ms, application-code: 588ms)
+ GET /admin 200 in 450ms (next.js: 2ms, proxy.ts: 434ms, application-code: 13ms)
+ GET /admin/comps 200 in 598ms (next.js: 32ms, proxy.ts: 180ms, application-code: 386ms)
+ GET /admin/sync 200 in 330ms (next.js: 3ms, proxy.ts: 95ms, application-code: 233ms)
+ GET /admin/patch-notes 200 in 134ms (next.js: 23ms, proxy.ts: 96ms, application-code: 15ms)
+ GET /admin/sync 200 in 449ms (next.js: 3ms, proxy.ts: 185ms, application-code: 262ms)
+✓ Compiled in 199ms
+ GET /admin/sync 200 in 636ms (next.js: 60ms, proxy.ts: 527ms, application-code: 49ms)
+ GET /admin/sync 200 in 131ms (next.js: 3ms, proxy.ts: 99ms, application-code: 28ms)
+ GET /admin/sync 200 in 128ms (next.js: 3ms, proxy.ts: 95ms, application-code: 30ms)
+ GET /admin/sync 200 in 133ms (next.js: 3ms, proxy.ts: 99ms, application-code: 31ms)
+ GET /admin/sync 200 in 129ms (next.js: 3ms, proxy.ts: 97ms, application-code: 29ms)
+ GET /admin/sync 200 in 123ms (next.js: 3ms, proxy.ts: 100ms, application-code: 21ms)
+✓ Compiled in 205ms
+✓ Compiled in 113ms
+✓ Compiled in 60ms
+✓ Compiled in 73ms
+✓ Compiled in 1126ms
+ GET /admin/sync 200 in 597ms (next.js: 64ms, proxy.ts: 301ms, application-code: 231ms)
+ GET /admin/sync 200 in 192ms (next.js: 2ms, proxy.ts: 146ms, application-code: 44ms)
+ GET /admin/sync 200 in 212ms (next.js: 2ms, proxy.ts: 97ms, application-code: 113ms)
+ GET /admin/sync 200 in 433ms (next.js: 26ms, proxy.ts: 120ms, application-code: 287ms)
+ GET /admin/sync 200 in 413ms (next.js: 45ms, proxy.ts: 100ms, application-code: 268ms)
+ GET /admin/sync 200 in 434ms (next.js: 4ms, proxy.ts: 119ms, application-code: 311ms)
+ GET /admin/sync 200 in 424ms (next.js: 65ms, proxy.ts: 105ms, application-code: 253ms)
+ GET /admin/sync 200 in 999ms (next.js: 12ms, proxy.ts: 335ms, application-code: 652ms)
+✓ Compiled in 371ms
+ GET /admin/sync 200 in 490ms (next.js: 55ms, proxy.ts: 213ms, application-code: 221ms)
+ GET /admin/sync 200 in 199ms (next.js: 2ms, proxy.ts: 140ms, application-code: 57ms)
+ GET /admin/sync 200 in 120ms (next.js: 3ms, proxy.ts: 92ms, application-code: 24ms)
+ GET /admin/sync 200 in 297ms (next.js: 3ms, proxy.ts: 166ms, application-code: 128ms)
+ GET /admin/sync 200 in 297ms (next.js: 2ms, proxy.ts: 191ms, application-code: 104ms)
+ GET /admin/sync 200 in 269ms (next.js: 31ms, proxy.ts: 212ms, application-code: 25ms)
+ GET /admin/sync 200 in 261ms (next.js: 19ms, proxy.ts: 192ms, application-code: 50ms)
+ GET /admin/sync 200 in 742ms (next.js: 6ms, proxy.ts: 263ms, application-code: 473ms)
+✓ Compiled in 355ms
+ GET /admin/sync 200 in 466ms (next.js: 49ms, proxy.ts: 207ms, application-code: 210ms)
+ GET /admin/sync 200 in 184ms (next.js: 2ms, proxy.ts: 142ms, application-code: 40ms)
+ GET /admin/sync 200 in 208ms (next.js: 18ms, proxy.ts: 167ms, application-code: 24ms)
+ GET /admin/sync 200 in 217ms (next.js: 42ms, proxy.ts: 106ms, application-code: 70ms)
+ GET /admin/sync 200 in 231ms (next.js: 4ms, proxy.ts: 119ms, application-code: 109ms)
+ GET /admin/sync 200 in 230ms (next.js: 23ms, proxy.ts: 117ms, application-code: 90ms)
+ GET /admin/sync 200 in 244ms (next.js: 2ms, proxy.ts: 93ms, application-code: 149ms)
+ GET /admin/sync 200 in 689ms (next.js: 3ms, proxy.ts: 263ms, application-code: 422ms)
+✓ Compiled in 369ms
+ GET /admin/analytics 200 in 540ms (next.js: 168ms, proxy.ts: 324ms, application-code: 48ms)
+ GET /admin/sync 200 in 559ms (next.js: 48ms, proxy.ts: 236ms, application-code: 274ms)
+ GET /admin/sync 200 in 243ms (next.js: 3ms, proxy.ts: 192ms, application-code: 48ms)
+ GET /admin/sync 200 in 227ms (next.js: 3ms, proxy.ts: 78ms, application-code: 146ms)
+ GET /admin/analytics 200 in 252ms (next.js: 44ms, proxy.ts: 126ms, application-code: 83ms)
+ GET /admin/sync 200 in 252ms (next.js: 24ms, proxy.ts: 124ms, application-code: 104ms)
+ GET /admin/sync 200 in 235ms (next.js: 72ms, proxy.ts: 100ms, application-code: 64ms)
+ GET /admin/sync 200 in 246ms (next.js: 5ms, proxy.ts: 107ms, application-code: 134ms)
+ GET /admin/sync 200 in 834ms (next.js: 5ms, proxy.ts: 319ms, application-code: 510ms)
+ GET /admin/analytics 200 in 102ms (next.js: 2ms, proxy.ts: 84ms, application-code: 16ms)
+ GET /admin/sync 200 in 432ms (next.js: 3ms, proxy.ts: 157ms, application-code: 273ms)
+✓ Compiled in 235ms
+ GET /admin/sync 200 in 363ms (next.js: 34ms, proxy.ts: 282ms, application-code: 47ms)
+ GET /admin/sync 200 in 156ms (next.js: 3ms, proxy.ts: 131ms, application-code: 22ms)
+✓ Compiled in 91ms
+ GET /admin/sync 200 in 758ms (next.js: 2ms, proxy.ts: 303ms, application-code: 453ms)
 ✓ Compiled in 100ms
- GET / 200 in 232ms (next.js: 4ms, proxy.ts: 165ms, application-code: 63ms)
- GET /tierlist/comps 200 in 1365ms (next.js: 4ms, proxy.ts: 95ms, application-code: 1266ms)
-✓ Compiled in 63ms
- GET /tierlist/items 200 in 1390ms (next.js: 56ms, proxy.ts: 220ms, application-code: 1114ms)
-✓ Compiled in 255ms
-✓ Compiled in 49ms
-✓ Compiled in 43ms
-✓ Compiled in 53ms
- GET /admin/analytics 200 in 1026ms (next.js: 61ms, proxy.ts: 693ms, application-code: 272ms)
+✓ Compiled in 101ms
+✓ Compiled in 108ms
+ GET /admin/sync 200 in 373ms (next.js: 55ms, proxy.ts: 275ms, application-code: 44ms)
+ GET /admin/sync 200 in 132ms (next.js: 3ms, proxy.ts: 100ms, application-code: 29ms)
+ GET /admin/sync 200 in 127ms (next.js: 3ms, proxy.ts: 94ms, application-code: 29ms)
+ GET /admin/sync 200 in 128ms (next.js: 3ms, proxy.ts: 99ms, application-code: 26ms)
+ GET /admin/sync 200 in 132ms (next.js: 2ms, proxy.ts: 101ms, application-code: 29ms)
+ GET /admin/sync 200 in 117ms (next.js: 3ms, proxy.ts: 94ms, application-code: 21ms)
+✓ Compiled in 151ms
+✓ Compiled in 115ms
+ GET / 200 in 289ms (next.js: 53ms, proxy.ts: 3ms, application-code: 233ms)
+ GET /builder 200 in 1009ms (next.js: 30ms, proxy.ts: 62ms, application-code: 917ms)
+ GET /tierlist/comps 200 in 1821ms (next.js: 239ms, proxy.ts: 1878µs, application-code: 1581ms)

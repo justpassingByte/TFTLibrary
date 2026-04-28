@@ -13,7 +13,7 @@ interface Props {
 export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: Props) {
   const [logState, setLogState] = useState<{ jobId: string, lines: string[] }>({ jobId: '', lines: [] })
   const lines = logState.jobId === jobId ? logState.lines : []
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const consoleBodyRef = useRef<HTMLDivElement>(null)
   const esRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
@@ -24,6 +24,10 @@ export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: 
         jobId,
         lines: prev.jobId === jobId ? [...prev.lines, line] : [line],
       }))
+      requestAnimationFrame(() => {
+        const body = consoleBodyRef.current
+        if (body) body.scrollTop = body.scrollHeight
+      })
     }
 
     const baseUrl = streamUrl ??
@@ -41,7 +45,6 @@ export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: 
       // Backend raw streams send multiple lines correctly if formatted, or just raw data strings
       if (!e.data) return;
       e.data.split(/\r?\n/).filter(Boolean).forEach(appendLine)
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
 
     es.addEventListener('done', (e) => {
@@ -79,7 +82,7 @@ export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: 
         <span className="console-dot green" />
         <span className="console-title">Sync Output</span>
       </div>
-      <div className="console-body">
+      <div className="console-body" ref={consoleBodyRef}>
         {lines.length === 0 && (
           <span className="console-waiting">Connecting to sync process...</span>
         )}
@@ -89,7 +92,6 @@ export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: 
             {line}
           </div>
         ))}
-        <div ref={bottomRef} />
       </div>
 
       <style>{`

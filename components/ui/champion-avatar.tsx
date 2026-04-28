@@ -16,7 +16,7 @@ export function ChampionAvatar({ id, name, icon, className = "", shape = 'circle
   const clipPath = shape === 'hexagon' ? 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' : undefined;
   const roundedClass = shape === 'circle' ? 'rounded-full' : '';
 
-  const containerClasses = `overflow-hidden flex-shrink-0 flex items-center justify-center bg-[#1e1e24] ${roundedClass} ${className} relative`;
+  const containerClasses = `overflow-hidden flex-shrink-0 flex items-center justify-center bg-[#101827] ${roundedClass} ${className} relative`;
   const defaultSize = className.includes('w-') ? {} : { width: '48px', height: '48px' };
 
   // Icon from DB is always a full HTTPS URL (CDragon or Supabase)
@@ -34,7 +34,7 @@ export function ChampionAvatar({ id, name, icon, className = "", shape = 'circle
           crossOrigin="anonymous"
         />
       ) : (
-        <div className="w-full h-full bg-[#1e1e24] text-white/50 flex items-center justify-center font-bold text-xs">
+        <div className="w-full h-full bg-[#101827] text-white/50 flex items-center justify-center font-bold text-xs">
           {name.slice(0, 2)}
         </div>
       )}
@@ -48,9 +48,21 @@ export function HexagonFrame({ children, color, bg = '#000', size = 52, padding 
   const w = size * 0.92;
   return (
     <div className={`flex items-center justify-center ${className}`} 
-         style={{ width: `${w}px`, height: `${size}px`, backgroundColor: color, clipPath: clip }}>
+         style={{
+           width: `${w}px`,
+           height: `${size}px`,
+           background: `linear-gradient(180deg, ${color}, rgba(5,8,18,0.95))`,
+           clipPath: clip,
+           filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.45))',
+         }}>
       <div className="flex items-center justify-center"
-           style={{ width: `${w - padding * 2}px`, height: `${size - padding * 2}px`, backgroundColor: bg, clipPath: clip }}>
+           style={{
+             width: `${w - padding * 2}px`,
+             height: `${size - padding * 2}px`,
+             background: `linear-gradient(160deg, ${bg}, rgba(5,8,18,0.94))`,
+             clipPath: clip,
+             boxShadow: 'inset 0 0 18px rgba(0,0,0,0.55)',
+           }}>
         {children}
       </div>
     </div>

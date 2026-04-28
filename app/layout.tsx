@@ -32,11 +32,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased min-h-screen" style={{ fontFamily: "'Outfit', system-ui, sans-serif" }} suppressHydrationWarning>
+      <body className="antialiased min-h-screen" style={{ fontFamily: "'Inter', system-ui, sans-serif" }} suppressHydrationWarning>
         <Header />
         <main className="min-h-screen">
           {children}

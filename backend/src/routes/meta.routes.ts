@@ -246,6 +246,27 @@ router.get('/stats/patches', async (req, res) => {
   }
 });
 
+// GET /api/meta/stats/sets — set prefixes that have aggregated champion stats
+router.get('/stats/sets', async (_req, res) => {
+  try {
+    const rows = await prisma.championStat.findMany({
+      select: { champion_id: true },
+      distinct: ['champion_id'],
+    });
+
+    const sets = new Set<string>();
+    for (const row of rows) {
+      const match = row.champion_id.match(/^(TFT\d+)/);
+      if (match) sets.add(match[1]);
+    }
+
+    res.json([...sets].sort((a, b) => Number(a.replace(/\D/g, '')) - Number(b.replace(/\D/g, ''))));
+  } catch (error) {
+    console.error('GET /api/meta/stats/sets error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // GET /api/meta/stats/champions — per-champion performance
 router.get('/stats/champions', async (req, res) => {
   try {
