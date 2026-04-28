@@ -342,7 +342,7 @@ export function TierlistClient({
                   className="flex rounded-lg overflow-hidden transition-all"
                   style={{
                     border: `1px solid ${isOver ? tierColor : tierBorder}`,
-                    background: `linear-gradient(106deg, ${tierBg}, rgba(18,26,43,0.9) 32%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 40%)`,
+                    background: `linear-gradient(106deg, ${tierBg}, rgba(10,15,28,0.72) 32%, rgba(4,7,14,0.64)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 40%)`,
                     boxShadow: isOver
                       ? `inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 14px ${tierColor}26, 0 0 46px ${tierColor}0D`
                       : isS
@@ -371,7 +371,7 @@ export function TierlistClient({
                   {/* Drop Zone Box */}
                   <div
                     className="flex-1 min-h-[80px] flex items-center gap-1.5 px-3 py-2 flex-wrap transition-colors"
-                    style={{ background: isOver ? `linear-gradient(90deg, ${tierColor}0D, rgba(18,26,43,0.88))` : 'rgba(18,26,43,0.58)' }}
+                    style={{ background: isOver ? `linear-gradient(90deg, ${tierColor}0D, rgba(10,15,28,0.7))` : 'rgba(10,15,28,0.48)' }}
                     onDragOver={e => !isViewMode && onDragOver(e, `tier-${tier.label}`)}
                     onDragLeave={() => setDragOverTarget(null)}
                     onDrop={e => !isViewMode && onDropTier(e, tier.label)}

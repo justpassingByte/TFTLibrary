@@ -96,7 +96,7 @@ export default function HomePage() {
     <div className="arcane-page min-h-screen">
       <section className="relative min-h-[calc(100vh-1rem)] overflow-hidden pt-28 pb-16 sm:pt-32 lg:pt-36">
         <motion.img
-          src="/arcane/hero-battlefield.png"
+          src="/arcane/cinematic-background.png"
           alt=""
           aria-hidden="true"
           className="hero-atmosphere absolute inset-[-4rem] h-[calc(100%+8rem)] w-[calc(100%+8rem)] object-cover"

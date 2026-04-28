@@ -48,9 +48,11 @@
 body {
   background: var(--color-void);
   background-image:
-    radial-gradient(circle at 50% 38%, rgba(250, 204, 21, 0.035), transparent 68%),
-    radial-gradient(circle at 47% 118%, rgba(139, 111, 42, 0.045), transparent 54rem),
-    linear-gradient(180deg, #070B16 0%, #050812 44%, #03050A 100%);
+    linear-gradient(180deg, rgba(3, 5, 10, 0.16) 0%, rgba(3, 5, 10, 0.38) 44%, rgba(3, 5, 10, 0.86) 100%),
+    radial-gradient(ellipse at 50% 34%, rgba(3,5,10,0.18), rgba(3,5,10,0.56) 62%, rgba(3,5,10,0.9) 100%),
+    url('/arcane/cinematic-background.png');
+  background-position: center top;
+  background-size: cover;
   background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
@@ -75,15 +77,15 @@ body::before {
 body::after {
   content: '';
   position: fixed;
-  inset: -12vh -12vw;
+  inset: -3vh -3vw;
   z-index: -2;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(3,5,10,0.48), rgba(3,5,10,0.88)),
-    url('/arcane/hero-battlefield.png') center / cover no-repeat;
-  filter: blur(54px) saturate(0.78);
-  opacity: 0.13;
-  transform: scale(1.1);
+    linear-gradient(180deg, rgba(3,5,10,0.04), rgba(3,5,10,0.62)),
+    url('/arcane/cinematic-background.png') center top / cover no-repeat;
+  filter: saturate(0.95);
+  opacity: 0.74;
+  transform: scale(1.02);
 }
 
 /* ===============================================
@@ -122,6 +124,97 @@ header.glass-strong {
     0 10px 32px rgba(0, 0, 0, 0.38);
 }
 
+.game-header {
+  background:
+    linear-gradient(180deg, rgba(5,8,16,0.96), rgba(3,5,11,0.9));
+  border-bottom: 1px solid rgba(212,175,55,0.16);
+  box-shadow:
+    0 12px 42px rgba(0,0,0,0.62);
+  backdrop-filter: blur(20px);
+}
+
+.game-logo-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--color-pumpkin);
+  background:
+    linear-gradient(180deg, rgba(250,204,21,0.08), rgba(250,204,21,0.015)),
+    rgba(3,5,10,0.42);
+  border: 1px solid rgba(212,175,55,0.36);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 18px rgba(0,0,0,0.68);
+}
+
+.game-logo-text {
+  font-family: 'Cinzel', serif;
+  font-weight: 800;
+  font-size: 1.08rem;
+  line-height: 1;
+  color: var(--color-text-primary);
+}
+
+.game-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.65rem 0.85rem;
+  color: var(--color-text-secondary);
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  transition: color 0.22s ease, background 0.22s ease;
+}
+
+.game-nav-link:hover {
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.035);
+}
+
+.game-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.38rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.62), transparent);
+  opacity: 0;
+  transform: scaleX(0.5);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.game-nav-link:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.game-patch-pill {
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(11,17,31,0.72);
+  color: var(--color-text-secondary);
+  box-shadow: inset 0 0 16px rgba(0,0,0,0.42);
+}
+
+.game-user-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: rgba(212,175,55,0.8);
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.game-user-button:hover {
+  color: var(--color-pumpkin);
+  background: rgba(255,255,255,0.035);
+}
+
 /* ===============================================
    TIER GLOW EFFECTS
    =============================================== */
@@ -130,9 +223,7 @@ header.glass-strong {
   border-color: rgba(250, 204, 21, 0.28);
   box-shadow:
     inset 0 0 20px rgba(0, 0, 0, 0.7),
-    0 10px 30px rgba(0, 0, 0, 0.5),
-    0 0 12px rgba(250, 204, 21, 0.15),
-    0 0 40px rgba(250, 204, 21, 0.05);
+    0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .tier-a {
@@ -254,14 +345,17 @@ header.glass-strong {
 .hover-float:hover {
   transform: translateY(-4px);
   box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.44),
-    0 0 12px rgba(250, 204, 21, 0.1),
-    0 0 38px rgba(250, 204, 21, 0.035);
+    0 18px 44px rgba(0, 0, 0, 0.56);
 }
 
 .arcane-page {
   position: relative;
   overflow-x: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(2,4,9,0.08) 0%, rgba(2,4,9,0.32) 44%, rgba(2,4,9,0.78) 100%),
+    radial-gradient(ellipse at 50% 34%, rgba(3,5,10,0.14), rgba(3,5,10,0.08) 40%, rgba(3,5,10,0.62) 100%),
+    url('/arcane/cinematic-background.png') center top / cover fixed no-repeat;
 }
 
 .arcane-page::before {
@@ -269,11 +363,23 @@ header.glass-strong {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
   background:
-    radial-gradient(circle at 50% 10%, rgba(250,204,21,0.06), transparent 34rem),
-    radial-gradient(circle at 82% 24%, rgba(90,122,156,0.06), transparent 28rem),
-    radial-gradient(circle at 18% 64%, rgba(212,175,55,0.035), transparent 32rem);
+    linear-gradient(180deg, rgba(2,4,9,0.02) 0%, rgba(2,4,9,0.2) 48%, rgba(2,4,9,0.64) 100%),
+    radial-gradient(ellipse at 50% 36%, rgba(2,4,9,0.2) 0%, rgba(2,4,9,0.02) 42%, rgba(2,4,9,0.52) 100%),
+    url('/arcane/cinematic-background.png') center top / cover no-repeat;
+  opacity: 1;
+}
+
+.arcane-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at center, transparent 0%, rgba(2,4,9,0.02) 42%, rgba(2,4,9,0.64) 100%),
+    linear-gradient(90deg, rgba(2,4,9,0.08), transparent 20%, transparent 80%, rgba(2,4,9,0.12));
 }
 
 .arcane-page > :not(.arcane-glyph-layer) {
@@ -282,9 +388,9 @@ header.glass-strong {
 }
 
 .hero-atmosphere {
-  animation: ambient-drift 18s ease-in-out infinite;
-  filter: blur(46px) saturate(0.8);
-  opacity: 0.2;
+  animation: ambient-drift 20s ease-in-out infinite;
+  filter: saturate(0.95);
+  opacity: 0.5;
 }
 
 .arcane-glyph-layer {
@@ -312,10 +418,9 @@ header.glass-strong {
 
 .arcane-surface {
   background:
-    linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0) 36%),
-    linear-gradient(180deg, rgba(250,204,21,0.025), rgba(4,7,14,0) 48%),
-    rgba(9, 14, 28, 0.86);
-  border: 1px solid rgba(255,255,255,0.055);
+    linear-gradient(160deg, rgba(255,255,255,0.024), rgba(255,255,255,0) 36%),
+    rgba(3, 7, 15, 0.78);
+  border: 1px solid rgba(212,175,55,0.14);
   border-radius: 8px;
   backdrop-filter: blur(20px);
   box-shadow:
@@ -336,10 +441,9 @@ header.glass-strong {
 
 .arcane-input:focus {
   outline: none;
-  border-color: rgba(212,175,55,0.42);
+  border-color: rgba(212,175,55,0.32);
   box-shadow:
-    inset 0 0 18px rgba(0,0,0,0.42),
-    0 0 0 1px rgba(212,175,55,0.1);
+    inset 0 0 18px rgba(0,0,0,0.42);
 }
 
 .arcane-tab-row {
@@ -363,8 +467,7 @@ header.glass-strong {
   right: 0.75rem;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(250,204,21,0.9), transparent);
-  box-shadow: 0 0 14px rgba(250,204,21,0.16);
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.76), transparent);
 }
 
 .builder-toolbar,
@@ -375,8 +478,7 @@ header.glass-strong {
 
 .builder-board-shell {
   background:
-    radial-gradient(circle at 50% 42%, rgba(250,204,21,0.09), transparent 28rem),
-    linear-gradient(180deg, rgba(6,10,20,0.84), rgba(3,5,10,0.94));
+    linear-gradient(180deg, rgba(4,8,17,0.74), rgba(2,4,9,0.88));
   box-shadow:
     inset 0 0 80px rgba(0,0,0,0.72),
     0 18px 56px rgba(0,0,0,0.55);
@@ -388,8 +490,7 @@ header.glass-strong {
   inset: 8%;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 50%, rgba(250,204,21,0.11), transparent 38%),
-    radial-gradient(circle at 50% 50%, rgba(143,167,194,0.07), transparent 62%);
+    radial-gradient(circle at 50% 50%, rgba(143,167,194,0.055), transparent 62%);
   filter: blur(24px);
   opacity: 0.9;
 }
@@ -411,7 +512,7 @@ header.glass-strong {
 .builder-roster-unit:hover,
 .builder-item-tile:hover {
   transform: translateY(-2px) scale(1.06);
-  filter: drop-shadow(0 0 12px rgba(250,204,21,0.12));
+  filter: drop-shadow(0 8px 14px rgba(0,0,0,0.48));
   z-index: 5;
 }
 
@@ -457,10 +558,9 @@ header.glass-strong {
 
 .grimoire-card {
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 36%),
-    linear-gradient(180deg, rgba(250, 204, 21, 0.026), rgba(5, 8, 18, 0) 42%),
-    rgba(12, 18, 34, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+    linear-gradient(160deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0) 36%),
+    rgba(3, 7, 15, 0.76);
+  border: 1px solid rgba(212, 175, 55, 0.12);
   border-radius: 8px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -472,16 +572,14 @@ header.glass-strong {
 }
 
 .grimoire-card:hover {
-  border-color: rgba(250, 204, 21, 0.14);
+  border-color: rgba(212, 175, 55, 0.18);
   background:
-    linear-gradient(160deg, rgba(255, 255, 255, 0.048), rgba(255, 255, 255, 0) 36%),
-    linear-gradient(180deg, rgba(250, 204, 21, 0.036), rgba(5, 8, 18, 0) 42%),
-    rgba(14, 21, 39, 0.92);
+    linear-gradient(160deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0) 36%),
+    rgba(3, 7, 15, 0.82);
   box-shadow:
     inset 0 0 40px rgba(0, 0, 0, 0.68),
     inset 0 1px 0 rgba(255,255,255,0.055),
-    0 18px 48px rgba(0, 0, 0, 0.62),
-    0 0 18px rgba(250, 204, 21, 0.08);
+    0 18px 48px rgba(0, 0, 0, 0.62);
 }
 
 .arcane-primary {
@@ -491,8 +589,6 @@ header.glass-strong {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.38),
     inset 0 -10px 18px rgba(139, 111, 42, 0.28),
-    0 0 12px rgba(250, 204, 21, 0.15),
-    0 0 40px rgba(250, 204, 21, 0.05),
     0 8px 22px rgba(0, 0, 0, 0.34);
 }
 

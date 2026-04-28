@@ -10,8 +10,8 @@ import { getItemImageUrl } from '@/lib/riot-cdn';
 
 const DDRAGON_CDN = 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img';
 
-const COST_COLORS: Record<number, string> = { 1:'#9CA3AF', 2:'#8DAE8F', 3:'#8FA7C2', 4:'#BCA4D8', 5:'#D4AF37' };
-const COST_BG: Record<number, string> = { 1:'#151B2A', 2:'#121F23', 3:'#111D31', 4:'#1C1930', 5:'#282111' };
+const COST_COLORS: Record<number, string> = { 1: '#9CA3AF', 2: '#8DAE8F', 3: '#8FA7C2', 4: '#BCA4D8', 5: '#D4AF37' };
+const COST_BG: Record<number, string> = { 1: '#151B2A', 2: '#121F23', 3: '#111D31', 4: '#1C1930', 5: '#282111' };
 
 export interface ChampionData { id: string; name: string; cost: number; icon: string | null; traits: string[] }
 export interface ItemData { id: string; name: string; icon: string | null }
@@ -43,7 +43,7 @@ function tierRowStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSPropertie
   const presence = tierPresence(tier);
   return {
     borderColor: tier === 'S' ? 'rgba(250,204,21,0.28)' : tier === 'A' ? 'rgba(212,175,55,0.14)' : tier === 'B' ? 'rgba(139,111,42,0.12)' : 'rgba(255,255,255,0.05)',
-    background: `linear-gradient(104deg, ${cfg.bg}, rgba(18,26,43,0.9) 31%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 42%)`,
+    background: `linear-gradient(104deg, ${cfg.bg}, rgba(10,15,28,0.72) 31%, rgba(4,7,14,0.64)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 42%)`,
     boxShadow: tier === 'S'
       ? 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6), 0 0 18px rgba(250,204,21,0.16), 0 0 48px rgba(250,204,21,0.06)'
       : 'inset 0 0 40px rgba(0,0,0,0.7), 0 10px 40px rgba(0,0,0,0.6)',
@@ -111,7 +111,7 @@ function TraitBadge({ t, traitsDb = [] }: { t: { name: string, count: number }, 
   const isPrismatic = t.count >= 6;
   const isGold = t.count >= 4 && t.count < 6;
   const isSilver = t.count >= 2 && t.count < 4;
-  
+
   let tier = 'bronze';
   if (isPrismatic) tier = 'prismatic';
   else if (isGold) tier = 'gold';
@@ -142,29 +142,29 @@ function TraitBadge({ t, traitsDb = [] }: { t: { name: string, count: number }, 
   return (
     <div className="flex items-center drop-shadow-sm group hover:drop-shadow-md transition-all shrink-0">
       {/* Pointy-topped Hexagon */}
-      <div 
+      <div
         className="relative z-10 w-[28px] h-[32px] flex items-center justify-center shrink-0"
         style={{
           background: s.hex,
-          clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' 
+          clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
         }}
       >
-      <div 
-        className="w-[18px] h-[18px]" 
-        style={{ filter: 'brightness(0) invert(1) drop-shadow(0px 1px 1px rgba(0,0,0,0.5))' }}
-      >
-        <GameIcon 
-          type="trait" 
-          id={t.name} 
-          icon={traitsDb.find(tr => tr.name === t.name)?.icon}
-          alt={t.name} 
-          className="w-full h-full" 
-        />
-      </div>
+        <div
+          className="w-[18px] h-[18px]"
+          style={{ filter: 'brightness(0) invert(1) drop-shadow(0px 1px 1px rgba(0,0,0,0.5))' }}
+        >
+          <GameIcon
+            type="trait"
+            id={t.name}
+            icon={traitsDb.find(tr => tr.name === t.name)?.icon}
+            alt={t.name}
+            className="w-full h-full"
+          />
+        </div>
       </div>
 
       {/* Right chevron tail */}
-      <div 
+      <div
         className="relative -ml-[6px] pl-[10px] pr-[10px] h-[22px] flex items-center justify-center text-white text-[13px] font-bold"
         style={{
           background: s.tail,
@@ -186,7 +186,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
 
   const carry = champMap[active.carry_id];
   const champList = (active.champions as CompChamp[]) || [];
-  const dbTraits = Object.values((active as any).active_traits as {name: string, count: number}[] || []).sort((a,b) => b.count - a.count);
+  const dbTraits = Object.values((active as any).active_traits as { name: string, count: number }[] || []).sort((a, b) => b.count - a.count);
 
   const stagePlans = (active.stage_plans as StagePlan[]) || [];
 
@@ -200,7 +200,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
       {/* ── Left Panel ── */}
       <div className="cd-left" style={{ background: `linear-gradient(to bottom, ${cfg.color}12, rgba(18,26,43,0.98) 62%)` }}>
         <div className="cd-left-top-bg" style={{ background: `radial-gradient(ellipse at 50% 0%, ${cfg.color}${active.tier === 'S' ? '22' : '12'} 0%, transparent 76%)` }} />
-        
+
         <div className="cd-tier-badge" style={{
           borderColor: cfg.color,
           boxShadow: active.tier === 'S'
@@ -307,7 +307,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
                 })}
               </div>
             </div>
-            
+
             <div className="cd-box">
               <div className="cd-box-title">Item Priority</div>
               <div className="cd-info-items">
@@ -351,8 +351,8 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
                       const champ = pos ? champMap[pos.champion_id] : null;
                       const cc = pos ? (active.champions as CompChamp[])?.find(c => c.id === pos.champion_id) : null;
                       return (
-                        <div 
-                          key={col} 
+                        <div
+                          key={col}
                           className={`cd-hex ${champ ? 'has-unit' : ''}`}
                         >
                           {champ ? (
@@ -442,7 +442,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
               <div className="cd-toggle"></div>
             </label>
             <Link href={`/builder?comp=${encodeURIComponent(JSON.stringify({ champions: active.champions, board_positions: active.board_positions, augments: active.augments, name: active.name }))}`} className="cd-builder-link">
-              Open in builder <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+              Open in builder <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" /></svg>
             </Link>
           </div>
         </div>
@@ -488,7 +488,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-xs text-[var(--color-text-muted)] px-2 py-0.5 rounded bg-[var(--color-grimoire)] border border-[var(--color-border)]">Patch 16.8</span>
+              <span className="text-xs text-[var(--color-text-muted)] px-2 py-0.5 rounded bg-[var(--color-grimoire)] border border-[var(--color-border)]">Patch 17.2</span>
               <span className="text-xs text-[var(--color-necrotic)]">Admin Curated</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold flex items-center gap-3" style={{ fontFamily: "'Cinzel', serif" }}>
@@ -569,7 +569,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .comp-card-placeholder { width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; border: 2px solid; border-radius: 12px; font-size: 1.5rem; color: #fff; }
 
         /* Detail panel */
-        .comp-detail { display: flex; flex-direction: row; border-radius: 8px; border: 1px solid; overflow: hidden; background: linear-gradient(162deg, rgba(255,255,255,0.032), rgba(255,255,255,0) 34%), #0C1222; margin-top: 4px; }
+        .comp-detail { display: flex; flex-direction: row; border-radius: 8px; border: 1px solid; overflow: hidden; background: linear-gradient(162deg, rgba(255,255,255,0.032), rgba(255,255,255,0) 34%), rgba(8,12,23,0.84); backdrop-filter: blur(16px); margin-top: 4px; }
         
         /* Left Panel */
         .cd-left { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; border-right: 1px solid rgba(255,255,255,0.08); padding-bottom: 2rem; position: relative; }
@@ -601,7 +601,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .cd-prio-arrow { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 -2px; }
 
         /* Right panel */
-        .cd-right { flex: 1; display: flex; flex-direction: column; background: #0C1222; position: relative; }
+        .cd-right { flex: 1; display: flex; flex-direction: column; background: rgba(8,12,23,0.82); position: relative; }
         .cd-close-btn { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; }
         .cd-close-btn:hover { background: rgba(255,255,255,0.15); }
 
@@ -615,7 +615,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .cd-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         .cd-grid-2 { display: grid; grid-template-columns: 1fr 120px; gap: 1.5rem; }
 
-        .cd-box { position: relative; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 1.5rem 1rem 1rem; background: linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0)), rgba(7,11,22,0.38); box-shadow: inset 0 0 28px rgba(0,0,0,0.45), 0 8px 22px rgba(0,0,0,0.28); }
+        .cd-box { position: relative; border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 1.5rem 1rem 1rem; background: linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0)), rgba(7,11,22,0.46); box-shadow: inset 0 0 28px rgba(0,0,0,0.45), 0 8px 22px rgba(0,0,0,0.28); }
         .cd-box-title { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #121A2B; padding: 0 12px; font-size: 0.9rem; font-weight: 700; color: #D4AF37; white-space: nowrap; border-radius: 4px; }
         
         .cd-info-avatars { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; }

@@ -13,3 +13,55 @@ Backend server running on http://localhost:3001
 [aggregate] Found 4 patches: 16.8, 16.7, 16.6, 16.5
 [aggregate] Found 4 patches: 16.8, 16.7, 16.6, 16.5
 [DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[aggregate] comp_stats: 1633 signatures for patch 16.8
+[aggregate] augment_stats: 0 augments for patch 16.8
+[aggregate] comp_stats: 1633 signatures for patch 16.8
+[aggregate] augment_stats: 0 augments for patch 16.8
+[aggregate] item_stats: 206 items for patch 16.8
+[aggregate] item_stats: 206 items for patch 16.8
+[aggregate] trait_stats: 192 trait-tier combos for patch 16.8
+[aggregate] trait_stats: 192 trait-tier combos for patch 16.8
+[aggregate] champion_stats: 169 champions for patch 16.8
+[aggregate] champion_stats: 169 champions for patch 16.8
+[aggregate] Found 4 patches: 16.8, 16.7, 16.6, 16.5
+[aggregate] comp_stats: 1633 signatures for patch 16.8
+[aggregate] augment_stats: 0 augments for patch 16.8
+[aggregate] item_champion_stats: 5320 item-champ pairs for patch 16.8
+[aggregate] Patch 16.8 done.
+[aggregate] item_champion_stats: 5320 item-champ pairs for patch 16.8
+[aggregate] Patch 16.8 done.
+[aggregate] item_stats: 206 items for patch 16.8
+[aggregate] trait_stats: 192 trait-tier combos for patch 16.8
+[aggregate] champion_stats: 169 champions for patch 16.8
+[aggregate] comp_stats: 1686 signatures for patch 16.7
+[aggregate] augment_stats: 0 augments for patch 16.7
+[aggregate] comp_stats: 1686 signatures for patch 16.7
+[aggregate] augment_stats: 0 augments for patch 16.7
+[aggregate] item_stats: 153 items for patch 16.7
+[aggregate] item_stats: 153 items for patch 16.7
+[aggregate] trait_stats: 105 trait-tier combos for patch 16.7
+[aggregate] trait_stats: 105 trait-tier combos for patch 16.7
+[aggregate] champion_stats: 103 champions for patch 16.7
+[aggregate] champion_stats: 103 champions for patch 16.7
+[aggregate] item_champion_stats: 5320 item-champ pairs for patch 16.8
+[aggregate] Patch 16.8 done.
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[aggregate] item_champion_stats: 3835 item-champ pairs for patch 16.7
+[aggregate] Patch 16.7 done.
+[aggregate] item_champion_stats: 3835 item-champ pairs for patch 16.7
+[aggregate] Patch 16.7 done.
+[DEBUG] curated-comps hit! Length: 1
+[aggregate] comp_stats: 1686 signatures for patch 16.7
+[aggregate] augment_stats: 0 augments for patch 16.7
+[DEBUG] curated-comps hit! Length: 1
+[aggregate] item_stats: 153 items for patch 16.7
+[aggregate] trait_stats: 105 trait-tier combos for patch 16.7
+[aggregate] champion_stats: 103 champions for patch 16.7

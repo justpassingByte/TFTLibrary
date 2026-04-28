@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { BookOpen, ChevronDown, Lock, Menu, X } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -40,58 +40,46 @@ export function Header() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-strong">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group [&>span.text-2xl]:hidden">
-            <span className="grid h-8 w-8 place-items-center rounded-md border border-[rgba(212,175,55,0.26)] bg-[rgba(250,204,21,0.07)] shadow-[inset_0_0_18px_rgba(0,0,0,0.62)]">
-              <BookOpen size={17} className="text-[var(--color-pumpkin)]" strokeWidth={1.8} />
+    <header className="game-header fixed left-0 right-0 top-0 z-50">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-[68px] items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <span className="game-logo-mark">
+              <BookOpen size={19} strokeWidth={1.9} />
             </span>
-            <span className="text-2xl">📖</span>
-            <span
-              className="text-xl font-bold"
-              style={{ fontFamily: "'Cinzel', serif" }}
-            >
+            <span className="game-logo-text">
               <span className="gradient-text">TFT</span>
-              <span className="text-[var(--color-text-primary)]">Grimoire</span>
+              <span>Grimoire</span>
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map(item => (
+          <nav className="hidden items-center gap-1 md:flex">
+            {NAV_ITEMS.map((item) => (
               <div
                 key={item.label}
                 className="relative"
                 onMouseEnter={() => item.children && setOpenDropdown(item.label)}
                 onMouseLeave={() => setOpenDropdown(null)}
               >
-                <Link
-                  href={item.href}
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all duration-200 flex items-center gap-1"
-                >
+                <Link href={item.href} className="game-nav-link">
                   {item.label}
-                  {item.children && (
-                    <ChevronDown size={14} className="opacity-50" strokeWidth={1.8} />
-                  )}
+                  {item.children && <ChevronDown size={13} strokeWidth={1.8} className="text-[var(--color-pumpkin)]/80" />}
                 </Link>
 
-                {/* Dropdown */}
                 <AnimatePresence>
                   {item.children && openDropdown === item.label && (
                     <motion.div
-                      initial={{ opacity: 0, y: -8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 mt-1 w-48 glass-strong rounded-lg overflow-hidden shadow-xl shadow-black/40"
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                      transition={{ duration: 0.16 }}
+                      className="arcane-surface absolute left-0 top-full mt-2 w-48 overflow-hidden"
                     >
-                      {item.children.map(child => (
+                      {item.children.map((child) => (
                         <Link
                           key={child.label}
                           href={child.href}
-                          className="block px-4 py-2.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-pumpkin)] hover:bg-white/5 transition-colors"
+                          className="block px-4 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[rgba(250,204,21,0.055)] hover:text-[var(--color-pumpkin)]"
                         >
                           {child.label}
                         </Link>
@@ -103,32 +91,24 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <span className="text-xs text-[var(--color-text-muted)] font-medium px-2 py-1 rounded-md bg-[var(--color-grimoire)] border border-[var(--color-border)]">
+          <div className="hidden items-center gap-3 md:flex">
+            <span className="game-patch-pill rounded-md px-3 py-1.5 text-xs font-semibold">
               Patch 16.8
             </span>
             <Link
               href="/pricing"
-              className="px-4 py-2 rounded-lg text-sm font-semibold arcane-primary hover:brightness-105 transition-all"
+              className="arcane-primary rounded-md px-6 py-2.5 text-xs font-black uppercase tracking-[0.08em] transition hover:-translate-y-0.5 hover:brightness-105"
             >
               Join Coven
             </Link>
-            <Link
-              href="/login"
-              id="header-admin-login"
-              title="Admin login"
-              className="p-2 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-white/5 transition-all duration-200"
-              aria-label="Admin login"
-            >
-              <Lock size={16} strokeWidth={1.8} />
+            <Link href="/login" id="header-admin-login" className="game-user-button" aria-label="Admin login">
+              <Lock size={17} strokeWidth={1.8} />
             </Link>
           </div>
 
-          {/* Mobile toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-[var(--color-text-secondary)]"
+            className="grid h-10 w-10 place-items-center rounded-md text-[var(--color-text-secondary)] transition hover:bg-white/5 hover:text-white md:hidden"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={24} strokeWidth={1.8} /> : <Menu size={24} strokeWidth={1.8} />}
@@ -136,31 +116,30 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden glass-strong border-t border-[var(--color-border)] overflow-hidden"
+            className="md:hidden overflow-hidden border-t border-[rgba(212,175,55,0.16)] bg-[rgba(3,5,11,0.96)]"
           >
-            <div className="px-4 py-4 space-y-2">
-              {NAV_ITEMS.map(item => (
+            <div className="space-y-2 px-4 py-4">
+              {NAV_ITEMS.map((item) => (
                 <div key={item.label}>
                   <Link
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="block px-3 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5"
+                    className="block rounded-md px-3 py-2 text-sm font-semibold text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white"
                   >
                     {item.label}
                   </Link>
-                  {item.children?.map(child => (
+                  {item.children?.map((child) => (
                     <Link
                       key={child.label}
                       href={child.href}
                       onClick={() => setMobileOpen(false)}
-                      className="block pl-8 py-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-pumpkin)]"
+                      className="block px-7 py-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-pumpkin)]"
                     >
                       {child.label}
                     </Link>
@@ -170,7 +149,7 @@ export function Header() {
               <Link
                 href="/pricing"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 rounded-lg text-sm font-semibold text-center arcane-primary"
+                className="arcane-primary block rounded-md px-3 py-2 text-center text-sm font-bold uppercase tracking-[0.08em]"
               >
                 Join Coven
               </Link>
@@ -178,9 +157,9 @@ export function Header() {
                 href="/login"
                 id="mobile-admin-login"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 rounded-lg text-sm font-medium text-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)] hover:bg-white/5 transition-colors"
+                className="block rounded-md border border-[var(--color-border)] px-3 py-2 text-center text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-white/5 hover:text-white"
               >
-                🔒 Admin Login
+                Admin Login
               </Link>
             </div>
           </motion.div>
