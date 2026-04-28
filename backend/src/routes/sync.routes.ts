@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import type { Response } from 'express';
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import prisma from '../lib/prisma';
@@ -6,8 +7,105 @@ import { runAggregation } from '../services/aggregation.service';
 
 const router = Router();
 
-// Active child processes by job ID
-const activeProcesses = new Map<string, ChildProcess>();
+type RunningJob = {
+  child: ChildProcess;
+  logOutput: string;
+  clients: Set<Response>;
+};
+
+// Active child processes by job ID, with an in-memory log buffer for SSE replay.
+const activeProcesses = new Map<string, RunningJob>();
+
+function writeSse(res: Response, data: string, event?: string) {
+  if (event) res.write(`event: ${event}\n`);
+  const lines = String(data).replace(/\r\n/g, '\n').split('\n');
+  for (const line of lines) {
+    res.write(`data: ${line}\n`);
+  }
+  res.write('\n');
+  if (typeof (res as any).flush === 'function') (res as any).flush();
+}
+
+function appendJobLog(jobId: string, chunk: string) {
+  const running = activeProcesses.get(jobId);
+  if (!running) return;
+
+  running.logOutput += chunk;
+  for (const client of running.clients) {
+    writeSse(client, chunk);
+  }
+}
+
+function trackProcess(jobId: string, child: ChildProcess) {
+  const running: RunningJob = { child, logOutput: '', clients: new Set() };
+  activeProcesses.set(jobId, running);
+
+  child.stdout?.on('data', (d) => appendJobLog(jobId, d.toString()));
+  child.stderr?.on('data', (d) => appendJobLog(jobId, `[err] ${d.toString()}`));
+
+  return running;
+}
+
+function endJobStream(jobId: string, status: 'completed' | 'error') {
+  const running = activeProcesses.get(jobId);
+  if (!running) return;
+
+  for (const client of running.clients) {
+    writeSse(client, status, 'done');
+    client.end();
+  }
+  running.clients.clear();
+  activeProcesses.delete(jobId);
+}
+
+async function streamStoredOrMissingLog(res: Response, jobId: string) {
+  const job = await prisma.syncJob.findUnique({ where: { id: jobId } });
+  if (job?.log_output) {
+    writeSse(res, job.log_output);
+  } else {
+    writeSse(res, '[No active process for this job]');
+  }
+  writeSse(res, job?.status === 'completed' ? 'completed' : 'error', 'done');
+  res.end();
+}
+
+function openJobStream(req: any, res: Response) {
+  const jobId = req.query.job_id as string;
+  if (!jobId) return res.status(400).json({ error: 'job_id required' });
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  res.flushHeaders();
+
+  const running = activeProcesses.get(jobId);
+  if (!running) {
+    streamStoredOrMissingLog(res, jobId).catch(() => {
+      writeSse(res, '[stream] Failed to read stored log');
+      writeSse(res, 'error', 'done');
+      res.end();
+    });
+    return;
+  }
+
+  if (running.logOutput) {
+    writeSse(res, running.logOutput);
+  }
+  running.clients.add(res);
+
+  const heartbeat = setInterval(() => {
+    res.write(':\n\n');
+    if (typeof (res as any).flush === 'function') (res as any).flush();
+  }, 10000);
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    running.clients.delete(res);
+  });
+}
 
 // ── DDragon Sync ─────────────────────────────────────────────────────
 
@@ -35,22 +133,22 @@ router.post('/sync/trigger', async (req, res) => {
       cwd: path.resolve(__dirname, '../..'),
     });
 
-    activeProcesses.set(job.id, child);
-
-    let logOutput = '';
-    child.stdout?.on('data', (data) => { logOutput += data.toString(); });
-    child.stderr?.on('data', (data) => { logOutput += data.toString(); });
+    const running = trackProcess(job.id, child);
 
     child.on('close', async (code) => {
-      activeProcesses.delete(job.id);
-      await prisma.syncJob.update({
-        where: { id: job.id },
-        data: {
-          status: code === 0 ? 'completed' : 'error',
-          log_output: logOutput,
-          finished_at: new Date(),
-        },
-      });
+      const status = code === 0 ? 'completed' : 'error';
+      try {
+        await prisma.syncJob.update({
+          where: { id: job.id },
+          data: {
+            status,
+            log_output: running.logOutput,
+            finished_at: new Date(),
+          },
+        });
+      } finally {
+        endJobStream(job.id, status);
+      }
     });
 
     res.json({ job_id: job.id });
@@ -87,22 +185,22 @@ router.post('/cdragon/trigger', async (req, res) => {
       cwd: path.resolve(__dirname, '../..'),
     });
 
-    activeProcesses.set(job.id, child);
-
-    let logOutput = '';
-    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
-    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+    const running = trackProcess(job.id, child);
 
     child.on('close', async (code) => {
-      activeProcesses.delete(job.id);
-      await prisma.syncJob.update({
-        where: { id: job.id },
-        data: {
-          status: code === 0 ? 'completed' : 'error',
-          log_output: logOutput,
-          finished_at: new Date(),
-        },
-      });
+      const status = code === 0 ? 'completed' : 'error';
+      try {
+        await prisma.syncJob.update({
+          where: { id: job.id },
+          data: {
+            status,
+            log_output: running.logOutput,
+            finished_at: new Date(),
+          },
+        });
+      } finally {
+        endJobStream(job.id, status);
+      }
     });
 
     res.json({ job_id: job.id });
@@ -147,22 +245,22 @@ router.post('/sync/unified/trigger', async (req, res) => {
       cwd: path.resolve(__dirname, '../..'),
     });
 
-    activeProcesses.set(job.id, child);
-
-    let logOutput = '';
-    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
-    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+    const running = trackProcess(job.id, child);
 
     child.on('close', async (code) => {
-      activeProcesses.delete(job.id);
-      await prisma.syncJob.update({
-        where: { id: job.id },
-        data: {
-          status: code === 0 ? 'completed' : 'error',
-          log_output: logOutput,
-          finished_at: new Date(),
-        },
-      });
+      const status = code === 0 ? 'completed' : 'error';
+      try {
+        await prisma.syncJob.update({
+          where: { id: job.id },
+          data: {
+            status,
+            log_output: running.logOutput,
+            finished_at: new Date(),
+          },
+        });
+      } finally {
+        endJobStream(job.id, status);
+      }
     });
 
     res.json({ job_id: job.id });
@@ -173,47 +271,7 @@ router.post('/sync/unified/trigger', async (req, res) => {
 });
 
 router.get('/sync/stream', (req, res) => {
-  const jobId = req.query.job_id as string;
-  if (!jobId) return res.status(400).json({ error: 'job_id required' });
-
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no',
-  });
-  res.flushHeaders();
-
-  const child = activeProcesses.get(jobId);
-  if (!child) {
-    // Process might have already finished before SSE connected. Check DB for logs.
-    prisma.syncJob.findUnique({ where: { id: jobId } }).then(job => {
-      if (job && job.log_output) {
-        res.write(`data: ${job.log_output.replace(/\n/g, '\ndata: ')}\n\n`);
-      } else {
-        res.write(`data: [No active process for this job]\n\n`);
-      }
-      res.write(`event: done\ndata: ${job?.status === 'completed' ? 'completed' : 'error'}\n\n`);
-      res.end();
-    });
-    return;
-  }
-
-  const onStdout = (data: Buffer) => res.write(`data: ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
-  const onStderr = (data: Buffer) => res.write(`data: [err] ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
-
-  child.stdout?.on('data', onStdout);
-  child.stderr?.on('data', onStderr);
-
-  child.on('close', (code) => {
-    res.write(`event: done\ndata: ${code === 0 ? 'completed' : 'error'}\n\n`);
-    res.end();
-  });
-
-  req.on('close', () => {
-    child.stdout?.off('data', onStdout);
-    child.stderr?.off('data', onStderr);
-  });
+  openJobStream(req, res);
 });
 
 router.get('/sync/logs/:id', async (req, res) => {
@@ -267,25 +325,42 @@ router.post('/pipeline/trigger', async (req, res) => {
       cwd: path.resolve(__dirname, '../..'),
     });
 
-    activeProcesses.set(job.id, child);
-
-    let logOutput = '';
-    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
-    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+    const running = trackProcess(job.id, child);
 
     child.on('close', async (code) => {
-      activeProcesses.delete(job.id);
+      let status: 'completed' | 'error' = code === 0 ? 'completed' : 'error';
       try {
+        if (code === 0) {
+          appendJobLog(job.id, '[pipeline] Running full analytics aggregation...\n');
+          const patches = await runAggregation();
+          appendJobLog(job.id, `[pipeline] Full analytics aggregation complete: ${patches.join(', ') || 'no patches'}\n`);
+        }
+
         await prisma.syncJob.update({
           where: { id: job.id },
           data: {
-            status: code === 0 ? 'completed' : 'error',
-            log_output: logOutput,
+            status,
+            log_output: running.logOutput,
             finished_at: new Date(),
           },
         });
       } catch (err) {
+        status = 'error';
+        const message = err instanceof Error ? err.message : String(err);
+        appendJobLog(job.id, `[pipeline] Full analytics aggregation failed: ${message}\n`);
         console.warn(`[pipeline] Could not update job ${job.id} (maybe it was deleted manually)`);
+        try {
+          await prisma.syncJob.update({
+            where: { id: job.id },
+            data: {
+              status,
+              log_output: running.logOutput,
+              finished_at: new Date(),
+            },
+          });
+        } catch {}
+      } finally {
+        endJobStream(job.id, status);
       }
     });
 
@@ -298,61 +373,7 @@ router.post('/pipeline/trigger', async (req, res) => {
 
 // Pipeline SSE stream (reuses same activeProcesses map)
 router.get('/pipeline/stream', (req, res) => {
-  const jobId = req.query.job_id as string;
-  if (!jobId) return res.status(400).json({ error: 'job_id required' });
-
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no',
-  });
-  res.flushHeaders();
-
-  const child = activeProcesses.get(jobId);
-  if (!child) {
-    // Process might have already finished before SSE connected. Check DB for logs.
-    prisma.syncJob.findUnique({ where: { id: jobId } }).then(job => {
-      if (job && job.log_output) {
-        res.write(`data: ${job.log_output.replace(/\n/g, '\ndata: ')}\n\n`);
-      } else {
-        res.write(`data: [No active process for this job]\n\n`);
-      }
-      res.write(`event: done\ndata: ${job?.status === 'completed' ? 'completed' : 'error'}\n\n`);
-      res.end();
-    });
-    return;
-  }
-
-  const onStdout = (data: Buffer) => {
-    res.write(`data: ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
-    if (typeof (res as any).flush === 'function') (res as any).flush();
-  };
-  const onStderr = (data: Buffer) => {
-    res.write(`data: [err] ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
-    if (typeof (res as any).flush === 'function') (res as any).flush();
-  };
-
-  child.stdout?.on('data', onStdout);
-  child.stderr?.on('data', onStderr);
-
-  // Heartbeat to prevent browser/proxy idle timeout
-  const heartbeat = setInterval(() => {
-    res.write(':\n\n');
-    if (typeof (res as any).flush === 'function') (res as any).flush();
-  }, 15000);
-
-  child.on('close', (code) => {
-    clearInterval(heartbeat);
-    res.write(`event: done\ndata: ${code === 0 ? 'completed' : 'error'}\n\n`);
-    res.end();
-  });
-
-  req.on('close', () => {
-    clearInterval(heartbeat);
-    child.stdout?.off('data', onStdout);
-    child.stderr?.off('data', onStderr);
-  });
+  openJobStream(req, res);
 });
 
 // ── Aggregation ──────────────────────────────────────────────────────
@@ -391,25 +412,23 @@ router.post('/patch-notes/crawl', async (req, res) => {
       cwd: path.resolve(__dirname, '../..'),
     });
 
-    activeProcesses.set(job.id, child);
-
-    let logOutput = '';
-    child.stdout?.on('data', (d) => { logOutput += d.toString(); });
-    child.stderr?.on('data', (d) => { logOutput += d.toString(); });
+    const running = trackProcess(job.id, child);
 
     child.on('close', async (code) => {
-      activeProcesses.delete(job.id);
+      const status = code === 0 ? 'completed' : 'error';
       try {
         await prisma.syncJob.update({
           where: { id: job.id },
           data: {
-            status: code === 0 ? 'completed' : 'error',
-            log_output: logOutput,
+            status,
+            log_output: running.logOutput,
             finished_at: new Date(),
           },
         });
       } catch (err) {
         console.warn(`[patch-crawl] Could not update job ${job.id}`);
+      } finally {
+        endJobStream(job.id, status);
       }
     });
 
@@ -421,59 +440,7 @@ router.post('/patch-notes/crawl', async (req, res) => {
 });
 
 router.get('/patch-notes/stream', (req, res) => {
-  const jobId = req.query.job_id as string;
-  if (!jobId) return res.status(400).json({ error: 'job_id required' });
-
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-    'X-Accel-Buffering': 'no',
-  });
-  res.flushHeaders();
-
-  const child = activeProcesses.get(jobId);
-  if (!child) {
-    prisma.syncJob.findUnique({ where: { id: jobId } }).then(job => {
-      if (job && job.log_output) {
-        res.write(`data: ${job.log_output.replace(/\n/g, '\ndata: ')}\n\n`);
-      } else {
-        res.write(`data: [No active process for this job]\n\n`);
-      }
-      res.write(`event: done\ndata: ${job?.status === 'completed' ? 'completed' : 'error'}\n\n`);
-      res.end();
-    });
-    return;
-  }
-
-  const onStdout = (data: Buffer) => {
-    res.write(`data: ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
-    if (typeof (res as any).flush === 'function') (res as any).flush();
-  };
-  const onStderr = (data: Buffer) => {
-    res.write(`data: [err] ${data.toString().replace(/\n/g, '\ndata: ')}\n\n`);
-    if (typeof (res as any).flush === 'function') (res as any).flush();
-  };
-
-  child.stdout?.on('data', onStdout);
-  child.stderr?.on('data', onStderr);
-
-  const heartbeat = setInterval(() => {
-    res.write(':\n\n');
-    if (typeof (res as any).flush === 'function') (res as any).flush();
-  }, 15000);
-
-  child.on('close', (code) => {
-    clearInterval(heartbeat);
-    res.write(`event: done\ndata: ${code === 0 ? 'completed' : 'error'}\n\n`);
-    res.end();
-  });
-
-  req.on('close', () => {
-    clearInterval(heartbeat);
-    child.stdout?.off('data', onStdout);
-    child.stderr?.off('data', onStderr);
-  });
+  openJobStream(req, res);
 });
 
 export default router;

@@ -83,7 +83,7 @@ export function Header() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 mt-1 w-48 glass-strong rounded-xl overflow-hidden shadow-xl shadow-black/40"
+                      className="absolute top-full left-0 mt-1 w-48 glass-strong rounded-lg overflow-hidden shadow-xl shadow-black/40"
                     >
                       {item.children.map(child => (
                         <Link
@@ -108,7 +108,7 @@ export function Header() {
             </span>
             <Link
               href="/pricing"
-              className="px-4 py-2 rounded-lg text-sm font-semibold bg-[var(--color-pumpkin)] text-black hover:opacity-90 transition-opacity"
+              className="px-4 py-2 rounded-lg text-sm font-semibold arcane-primary hover:brightness-105 transition-all"
             >
               Join Coven
             </Link>
@@ -177,7 +177,7 @@ export function Header() {
               <Link
                 href="/pricing"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 rounded-lg text-sm font-semibold text-center bg-[var(--color-pumpkin)] text-black"
+                className="block px-3 py-2 rounded-lg text-sm font-semibold text-center arcane-primary"
               >
                 Join Coven
               </Link>

@@ -62,6 +62,7 @@ function AnalyticsContent() {
 
   const [patchList, setPatchList] = useState<string[]>([])
   const [selectedPatch, setSelectedPatch] = useState<string>('')
+  const [statsSetPrefix, setStatsSetPrefix] = useState<string>('all')
   const [patchSelectorLoading, setPatchSelectorLoading] = useState(false)
 
   // 1. Fetch Master Metadata & Available Patches based on Current Set
@@ -71,33 +72,39 @@ function AnalyticsContent() {
     setLoading(true)
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     Promise.all([
-      fetch(`${apiUrl}/api/meta/stats/patches?set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/patches?set_prefix=${currentSet}&strict=1`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/patches?set_prefix=all`).then(r => r.json()).catch(() => []),
       fetch(`${apiUrl}/api/meta/champions?set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/champions?set_prefix=all`).then(r => r.json()).catch(() => []),
       fetch(`${apiUrl}/api/meta/items`).then(r => r.json()).catch(() => []),
-    ]).then(([patches, cMeta, iMeta]) => {
+    ]).then(([scopedPatches, allPatches, scopedChampMeta, allChampMeta, iMeta]) => {
+      const useAllStats = scopedPatches.length === 0 && allPatches.length > 0
+      const patches = useAllStats ? allPatches : scopedPatches
+      setStatsSetPrefix(useAllStats ? 'all' : currentSet)
       setPatchList(patches)
       // Only reset selectedPatch if the current one isn't in the new list
       if (!patches.includes(selectedPatch) && patches.length > 0) {
          setSelectedPatch(patches[0])
       }
-      setChampsMeta(cMeta)
+      setChampsMeta(useAllStats ? allChampMeta : scopedChampMeta)
       setItemsMeta(iMeta)
     }).finally(() => setLoading(false))
-  }, [currentSet])
+  }, [currentSet, selectedPatch])
 
   // 2. Fetch Aggregated Stats when Selected Patch changes
   useEffect(() => {
     if (!selectedPatch || !currentSet) return
     setPatchSelectorLoading(true)
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+    const statSet = statsSetPrefix || currentSet
     
     Promise.all([
-      fetch(`${apiUrl}/api/meta/stats/overview?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => null),
-      fetch(`${apiUrl}/api/meta/stats/champions?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/items?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/augments?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/traits?patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
-      fetch(`${apiUrl}/api/meta/stats/item-champions?limit=200&patch=${selectedPatch}&set_prefix=${currentSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/overview?patch=${selectedPatch}&set_prefix=${statSet}`).then(r => r.json()).catch(() => null),
+      fetch(`${apiUrl}/api/meta/stats/champions?patch=${selectedPatch}&set_prefix=${statSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/items?patch=${selectedPatch}&set_prefix=${statSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/augments?patch=${selectedPatch}&set_prefix=${statSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/traits?patch=${selectedPatch}&set_prefix=${statSet}`).then(r => r.json()).catch(() => []),
+      fetch(`${apiUrl}/api/meta/stats/item-champions?limit=200&patch=${selectedPatch}&set_prefix=${statSet}`).then(r => r.json()).catch(() => []),
     ]).then(([ov, champs, items, augs, traits, ic]) => {
       setOverview(ov)
       setChampStats(champs)
@@ -106,7 +113,7 @@ function AnalyticsContent() {
       setTraitStats(traits)
       setItemChampStats(ic)
     }).finally(() => setPatchSelectorLoading(false))
-  }, [selectedPatch, currentSet])
+  }, [selectedPatch, currentSet, statsSetPrefix])
 
   const toggleChampSort = (key: SortKey) => {
     if (champSort === key) setChampSortDir(d => d === 'desc' ? 'asc' : 'desc')

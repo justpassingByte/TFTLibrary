@@ -150,13 +150,12 @@ export const COST_BG: Record<number, string> = {
 };
 
 export const TIER_CONFIG = [
-  { label: 'S', color: '#ff2244', bg: 'rgba(255,34,68,0.08)', border: 'rgba(255,34,68,0.4)' },
-  { label: 'A', color: '#FF7A00', bg: 'rgba(255,122,0,0.08)', border: 'rgba(255,122,0,0.4)' },
-  { label: 'B', color: '#fbbf24', bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.4)' },
-  { label: 'C', color: '#39FF14', bg: 'rgba(57,255,20,0.08)', border: 'rgba(57,255,20,0.4)' },
-  { label: 'X', color: '#00f0ff', bg: 'rgba(0,240,255,0.08)', border: 'rgba(0,240,255,0.4)' },
+  { label: 'S', color: '#FACC15', bg: 'rgba(250,204,21,0.055)', border: 'rgba(250,204,21,0.28)' },
+  { label: 'A', color: '#D4AF37', bg: 'rgba(212,175,55,0.044)', border: 'rgba(212,175,55,0.14)' },
+  { label: 'B', color: '#8B6F2A', bg: 'rgba(139,111,42,0.038)', border: 'rgba(139,111,42,0.12)' },
+  { label: 'C', color: '#8FA7C2', bg: 'rgba(143,167,194,0.03)', border: 'rgba(255,255,255,0.06)' },
+  { label: 'X', color: '#8290A7', bg: 'rgba(130,144,167,0.026)', border: 'rgba(255,255,255,0.05)' },
 ];
 
 export const BOARD_ROWS = 4;
 export const BOARD_COLS = 7;
-

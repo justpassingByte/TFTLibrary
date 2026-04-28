@@ -1,0 +1,38 @@
+
+> grimoire@0.1.0 dev
+> next dev -p 3002
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.1.9:3002
+- Environments: .env.local
+✓ Ready in 440ms
+
+ GET /admin/analytics 200 in 1352ms (next.js: 180ms, proxy.ts: 812ms, application-code: 360ms)
+ GET /tierlist/comps 200 in 1304ms (next.js: 55ms, proxy.ts: 6ms, application-code: 1243ms)
+ GET /tierlist/comps 200 in 1101ms (next.js: 3ms, proxy.ts: 4ms, application-code: 1094ms)
+ GET /login 200 in 39ms (next.js: 21ms, proxy.ts: 4ms, application-code: 14ms)
+ GET /admin 200 in 317ms (next.js: 21ms, proxy.ts: 278ms, application-code: 19ms)
+ GET /admin 200 in 127ms (next.js: 3ms, proxy.ts: 104ms, application-code: 20ms)
+ GET / 200 in 483ms (next.js: 22ms, proxy.ts: 411ms, application-code: 50ms)
+ GET /tierlist/comps 200 in 1173ms (next.js: 3ms, proxy.ts: 149ms, application-code: 1021ms)
+ GET /tierlist/items 200 in 626ms (next.js: 24ms, proxy.ts: 221ms, application-code: 382ms)
+ GET /admin/sync 200 in 692ms (next.js: 21ms, proxy.ts: 387ms, application-code: 285ms)
+ GET /admin/analytics 200 in 450ms (next.js: 4ms, proxy.ts: 427ms, application-code: 20ms)
+ GET /admin/analytics 200 in 262ms (next.js: 3ms, proxy.ts: 209ms, application-code: 50ms)
+ GET /admin/sync 200 in 516ms (next.js: 3ms, proxy.ts: 231ms, application-code: 282ms)
+ GET /admin/analytics 200 in 312ms (next.js: 3ms, proxy.ts: 293ms, application-code: 17ms)
+ GET /admin/analytics 200 in 201ms (next.js: 3ms, proxy.ts: 148ms, application-code: 51ms)
+✓ Compiled in 147ms
+✓ Compiled in 68ms
+ GET /admin/analytics 200 in 343ms (next.js: 92ms, proxy.ts: 213ms, application-code: 38ms)
+✓ Compiled in 100ms
+ GET / 200 in 232ms (next.js: 4ms, proxy.ts: 165ms, application-code: 63ms)
+ GET /tierlist/comps 200 in 1365ms (next.js: 4ms, proxy.ts: 95ms, application-code: 1266ms)
+✓ Compiled in 63ms
+ GET /tierlist/items 200 in 1390ms (next.js: 56ms, proxy.ts: 220ms, application-code: 1114ms)
+✓ Compiled in 255ms
+✓ Compiled in 49ms
+✓ Compiled in 43ms
+✓ Compiled in 53ms
+ GET /admin/analytics 200 in 1026ms (next.js: 61ms, proxy.ts: 693ms, application-code: 272ms)

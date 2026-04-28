@@ -11,28 +11,36 @@ interface Props {
 }
 
 export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: Props) {
-  const [lines, setLines] = useState<string[]>([])
+  const [logState, setLogState] = useState<{ jobId: string, lines: string[] }>({ jobId: '', lines: [] })
+  const lines = logState.jobId === jobId ? logState.lines : []
   const bottomRef = useRef<HTMLDivElement>(null)
   const esRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
     if (!jobId) return
 
-    setLines([])
+    const appendLine = (line: string) => {
+      setLogState(prev => ({
+        jobId,
+        lines: prev.jobId === jobId ? [...prev.lines, line] : [line],
+      }))
+    }
+
     const baseUrl = streamUrl ??
       `/api/admin/sync/stream?${new URLSearchParams({ job_id: jobId, set_prefix: setPrefix, ddragon_version: ddVersion })}`
     
     // Bypass Next.js proxy cache for Server-Sent Events by hitting the backend directly
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
     const finalUrl = baseUrl.startsWith('http') ? baseUrl : `${BACKEND_URL}${baseUrl}`
     
     const es = new EventSource(finalUrl)
     esRef.current = es
+    let reportedReconnect = false
 
     es.onmessage = (e) => {
       // Backend raw streams send multiple lines correctly if formatted, or just raw data strings
       if (!e.data) return;
-      setLines(prev => [...prev, e.data])
+      e.data.split(/\r?\n/).filter(Boolean).forEach(appendLine)
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
 
@@ -40,7 +48,7 @@ export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: 
       let status = 'error';
       try {
         status = JSON.parse(e.data);
-      } catch (err) {
+      } catch {
         status = e.data;
       }
       onDone(status === 'completed' ? 'completed' : 'error')
@@ -48,12 +56,18 @@ export function SyncConsole({ jobId, setPrefix, ddVersion, streamUrl, onDone }: 
     })
 
     es.onerror = () => {
-      setLines(prev => [...prev, '[stream] Connection lost.'])
-      es.close()
+      if (es.readyState === EventSource.CLOSED) {
+        appendLine('[stream] Connection closed.')
+        return
+      }
+      if (!reportedReconnect) {
+        reportedReconnect = true
+        appendLine('[stream] Connection interrupted, reconnecting...')
+      }
     }
 
     return () => { es.close() }
-  }, [jobId, setPrefix, ddVersion, onDone])
+  }, [jobId, setPrefix, ddVersion, streamUrl, onDone])
 
   if (!jobId) return null
 

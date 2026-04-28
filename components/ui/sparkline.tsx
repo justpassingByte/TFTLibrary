@@ -9,9 +9,9 @@ interface SparklineProps {
 }
 
 const TREND_COLORS = {
-  RISING: '#39FF14',
-  FALLING: '#ff2244',
-  STABLE: '#6b5e80',
+  RISING: '#C7D7BE',
+  FALLING: '#FCA5A5',
+  STABLE: '#8290A7',
 };
 
 export function Sparkline({ data, trend, height = 50 }: SparklineProps) {

@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChampionAvatar } from '@/components/ui/champion-avatar';
 
 const TIER_BADGE: Record<string, { color: string; bg: string; glow: string }> = {
-  S: { color: '#ff2244', bg: 'rgba(255,34,68,0.12)', glow: 'rgba(255,34,68,0.25)' },
-  A: { color: '#FF7A00', bg: 'rgba(255,122,0,0.12)', glow: 'rgba(255,122,0,0.2)' },
-  B: { color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', glow: 'rgba(251,191,36,0.15)' },
-  NERFED: { color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', glow: 'rgba(156,163,175,0.1)' },
+  S: { color: '#FACC15', bg: 'rgba(250,204,21,0.08)', glow: 'rgba(250,204,21,0.2)' },
+  A: { color: '#D4AF37', bg: 'rgba(212,175,55,0.07)', glow: 'rgba(212,175,55,0.15)' },
+  B: { color: '#8B6F2A', bg: 'rgba(139,111,42,0.06)', glow: 'rgba(139,111,42,0.12)' },
+  NERFED: { color: '#8290A7', bg: 'rgba(130,144,167,0.06)', glow: 'rgba(130,144,167,0.09)' },
 };
 
 interface PatchChange {
@@ -52,7 +52,7 @@ type GroupedChange = {
 function GenericIcon({ name, type, iconUrl }: { name: string, type: string, iconUrl?: string }) {
   if (iconUrl) {
     return (
-      <div className={`w-12 h-12 rounded-lg flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0 ${type === 'trait' ? 'bg-[#1e1e24]' : 'bg-[#111116] border border-white/10'}`}>
+      <div className={`w-12 h-12 rounded-lg flex items-center justify-center shadow-inner overflow-hidden flex-shrink-0 ${type === 'trait' ? 'bg-[var(--color-grimoire-light)]' : 'bg-[var(--color-grimoire)] border border-white/10'}`}>
         <img 
           src={iconUrl} 
           alt={name}
@@ -67,7 +67,7 @@ function GenericIcon({ name, type, iconUrl }: { name: string, type: string, icon
   }
 
   // Fallback if no iconUrl provided
-  const colors = type === 'augment' ? 'border-[#38bdf8]/30 text-[#38bdf8]/60 bg-[#38bdf8]/5' : type === 'trait' ? 'border-[#a855f7]/30 text-[#a855f7]/60 bg-[#a855f7]/5' : 'border-[#fbbf24]/30 text-[#fbbf24]/60 bg-[#fbbf24]/5';
+  const colors = type === 'augment' ? 'border-[#8FA7C2]/30 text-[#8FA7C2]/70 bg-[#8FA7C2]/5' : type === 'trait' ? 'border-[#BCA4D8]/30 text-[#BCA4D8]/70 bg-[#BCA4D8]/5' : 'border-[#D4AF37]/30 text-[#D4AF37]/70 bg-[#D4AF37]/5';
   
   return (
     <div className={`w-12 h-12 rounded-lg ${colors} flex items-center justify-center font-bold shadow-inner overflow-hidden flex-shrink-0 border`}>
@@ -135,7 +135,7 @@ export default function PatchNotesPage() {
   if (loading) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-[#FF7A00] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[var(--color-pumpkin)]/70 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-[var(--color-text-muted)] tracking-widest font-bold uppercase text-sm">Decoding Patch...</p>
       </div>
     );
@@ -158,18 +158,18 @@ export default function PatchNotesPage() {
         
         {/* -- Hero Section -- */}
         <div className="text-center mb-20 relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FF7A00]/10 blur-[100px] pointer-events-none rounded-full" />
+          <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-[rgba(250,204,21,0.18)] to-transparent pointer-events-none" />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-6">
-              <span className="w-2 h-2 rounded-full bg-[#39FF14] animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-widest text-[#39FF14]">Patch {data.version} Live</span>
+              <span className="w-2 h-2 rounded-full bg-[#C7D7BE] animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#C7D7BE]">Patch {data.version} Live</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold mb-6" style={{ fontFamily: "'Cinzel', serif", textShadow: '0 4px 24px rgba(0,0,0,0.5)' }}>
-              Metagame <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7A00] to-[#ff2244]">Shift</span>
+              Metagame <span className="gradient-text">Shift</span>
             </h1>
             <p className="text-lg md:text-xl text-[var(--color-text-secondary)] max-w-2xl mx-auto">
               A comprehensive breakdown of all adjustments and our algorithmic predictions for the upcoming Tier List.
@@ -202,7 +202,7 @@ export default function PatchNotesPage() {
                       <span className="px-3 py-1 rounded bg-[#000] text-xs font-black border uppercase tracking-wider" style={{ color: b.color, borderColor: b.color + '40' }}>
                         {p.tier === 'NERFED' ? 'Nerfed' : p.tier + ' Tier'}
                       </span>
-                      <span className="font-bold text-lg" style={{ color: p.score > 0 ? '#39FF14' : p.score < 0 ? '#ff2244' : '#fbbf24' }}>
+                      <span className="font-bold text-lg" style={{ color: p.score > 0 ? '#C7D7BE' : p.score < 0 ? '#FCA5A5' : '#D4AF37' }}>
                         {p.score > 0 ? '+' : ''}{p.score}
                       </span>
                     </div>
@@ -237,14 +237,14 @@ export default function PatchNotesPage() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-10">
             
             {/* Left Column: Champions */}
-            <div className="grimoire-card bg-[#0A0A0C] border border-white/5 p-6 relative flex flex-col">
+            <div className="grimoire-card p-6 relative flex flex-col">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
                 <h3 className="text-xl font-bold flex items-center gap-3">
                   <span className="text-2xl">⚔️</span> Champions
                 </h3>
                 
                 {/* Tier Filter */}
-                <div className="flex bg-[#1e1e24] rounded-lg p-1">
+                <div className="flex bg-[var(--color-grimoire-light)] rounded-lg p-1 border border-[var(--color-border)]">
                   <FilterBtn active={championFilter === 1} onClick={() => setChampionFilter(1)}>Tier 1</FilterBtn>
                   <FilterBtn active={championFilter === 2} onClick={() => setChampionFilter(2)}>Tier 2</FilterBtn>
                   <FilterBtn active={championFilter === 3} onClick={() => setChampionFilter(3)}>Tier 3</FilterBtn>
@@ -288,7 +288,7 @@ function FilterBtn({ active, onClick, children }: { active: boolean, onClick: ()
     <button
       onClick={onClick}
       className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
-        active ? 'bg-[#FF7A00] text-white shadow font-black' : 'text-white/40 hover:text-white hover:bg-white/5'
+        active ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border border-[rgba(212,175,55,0.36)] shadow font-black' : 'text-white/40 border border-transparent hover:text-white hover:bg-white/5'
       }`}
     >
       {children}
@@ -301,7 +301,7 @@ function ChangeGroup({ title, icon, groups }: { title: string, icon: string, gro
   if (groups.length === 0) return null;
 
   return (
-    <div className="grimoire-card bg-[#0A0A0C] border border-white/5 p-6 relative">
+    <div className="grimoire-card p-6 relative">
       <h3 className="text-xl font-bold mb-6 flex items-center gap-3 border-b border-white/5 pb-4">
         <span className="text-2xl">{icon}</span>
         {title}
@@ -327,7 +327,7 @@ function ChangeCard({ group }: { group: GroupedChange }) {
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className="flex gap-4 items-start p-4 bg-[#111116] rounded-xl border border-white/5 hover:border-white/10 transition-colors"
+      className="flex gap-4 items-start p-4 bg-[rgba(10,15,31,0.28)] rounded-lg border border-white/5 hover:border-[rgba(250,204,21,0.16)] transition-colors"
     >
       {group.type === 'unit' ? (
         <ChampionAvatar id={group.entity_id} name={group.entity} icon={group.iconUrl} className="w-12 h-12 shadow-lg" />
@@ -350,7 +350,7 @@ function ChangeCard({ group }: { group: GroupedChange }) {
               <p className="leading-relaxed break-words">{formatStat(c.stat)}</p>
               {/* Optional smaller indicator if individual stat was nerfed/buffed */}
               {Math.abs(c.score) >= 1 && (
-                <span className={`text-[10px] font-bold ${c.score > 0 ? 'text-[#39FF14]' : 'text-[#ff2244]'}`}>
+                <span className={`text-[10px] font-bold ${c.score > 0 ? 'text-[#C7D7BE]' : 'text-[#FCA5A5]'}`}>
                   {c.score > 0 ? '+' : ''}{c.score}
                 </span>
               )}
@@ -365,12 +365,12 @@ function ChangeCard({ group }: { group: GroupedChange }) {
 // Badge for Buff/Nerf/Adjust
 function ChangeBadge({ type }: { type: string }) {
   if (type === 'buff') {
-    return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#39FF14]/10 text-[#39FF14] border border-[#39FF14]/20 tracking-wider">▲ Buff</span>;
+    return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#C7D7BE]/10 text-[#C7D7BE] border border-[#C7D7BE]/20 tracking-wider">▲ Buff</span>;
   }
   if (type === 'nerf') {
-    return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#ff2244]/10 text-[#ff2244] border border-[#ff2244]/20 tracking-wider">▼ Nerf</span>;
+    return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#B45309]/10 text-[#FCA5A5] border border-[#B45309]/20 tracking-wider">▼ Nerf</span>;
   }
-  return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#fbbf24]/10 text-[#fbbf24] border border-[#fbbf24]/20 tracking-wider">~ Adjust</span>;
+  return <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 tracking-wider">~ Adjust</span>;
 }
 
 // Function to slightly format raw stat strings, making the "→" arrow pop and keys distinct
@@ -397,7 +397,7 @@ function formatStat(stat: string) {
     <>
       {hasPropName && <span className="text-white/80 font-medium mr-2 inline-flex items-center relative top-[-1px]">{propName}:</span>}
       <span className="opacity-60">{arrowParts[0]}</span>
-      <span className="mx-2 text-[#FF7A00] opacity-80 text-lg leading-none align-middle font-black">→</span>
+      <span className="mx-2 text-[#D4AF37] opacity-80 text-lg leading-none align-middle font-black">→</span>
       <span className="text-white font-bold">{arrowParts[1]}</span>
     </>
   );

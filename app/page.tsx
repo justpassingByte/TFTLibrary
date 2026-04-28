@@ -9,42 +9,42 @@ const FEATURES = [
     desc: 'Curated S-X tier comps updated every patch. Know the meta before your opponents.',
     icon: '📜',
     href: '/tierlist/comps',
-    gradient: 'from-[#ff2244] to-[#FF7A00]',
+    accent: '#FACC15',
   },
   {
     title: 'Meta Oracle',
     desc: 'Real-time meta shift tracking with sparklines. See what\'s rising and falling.',
     icon: '🔮',
     href: '/meta',
-    gradient: 'from-[#a855f7] to-[#00f0ff]',
+    accent: '#C7B58A',
   },
   {
     title: 'Smart Recommendations',
     desc: 'Select your items & augments. Get instant comp recommendations backed by data.',
     icon: '🧠',
     href: '/meta',
-    gradient: 'from-[#39FF14] to-[#00f0ff]',
+    accent: '#9FB7A1',
   },
   {
     title: 'Item Tierlists',
     desc: 'Every component and completed item ranked by win rate and avg placement.',
     icon: '⚗️',
     href: '/tierlist/items',
-    gradient: 'from-[#FF7A00] to-[#fbbf24]',
+    accent: '#8B6F2A',
   },
   {
     title: 'Augment Tierlists',
     desc: 'Silver, Gold, and Prismatic augments sorted by real performance data.',
     icon: '🃏',
     href: '/tierlist/augments',
-    gradient: 'from-[#fbbf24] to-[#a855f7]',
+    accent: '#B99A66',
   },
   {
     title: 'Study Hall',
     desc: 'Deep-dive strategy guides written by high-elo players. Learn the dark arts.',
     icon: '📚',
     href: '/studyhall',
-    gradient: 'from-[#00f0ff] to-[#39FF14]',
+    accent: '#8FA7C2',
   },
 ];
 
@@ -55,14 +55,13 @@ export default function HomePage() {
       <section className="relative pt-32 pb-20 overflow-hidden">
         {/* Background effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Radial glow */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-[var(--color-amethyst)] opacity-[0.04] blur-[120px]" />
-          <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-[var(--color-pumpkin)] opacity-[0.03] blur-[80px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(250,204,21,0.07),transparent_62%)]" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(250,204,21,0.18)] to-transparent" />
           {/* Floating runes */}
           {['✦', '⚝', '✧', '◇', '⬡', '☽'].map((rune, i) => (
             <motion.div
               key={i}
-              className="absolute text-[var(--color-amethyst)] opacity-10"
+              className="absolute text-[var(--color-pumpkin)] opacity-[0.08]"
               style={{
                 top: `${15 + i * 12}%`,
                 left: `${5 + i * 16}%`,
@@ -132,13 +131,13 @@ export default function HomePage() {
           >
             <Link
               href="/tierlist/comps"
-              className="px-8 py-3.5 rounded-xl text-base font-bold bg-[var(--color-pumpkin)] text-black hover:opacity-90 transition-all duration-200 shadow-lg shadow-[var(--color-pumpkin)]/20"
+              className="px-8 py-3.5 rounded-lg text-base font-semibold arcane-primary hover:brightness-105 transition-all duration-200"
             >
               View Tier Lists
             </Link>
             <Link
               href="/meta"
-              className="px-8 py-3.5 rounded-xl text-base font-semibold glass text-[var(--color-text-primary)] hover:bg-white/10 transition-all duration-200"
+              className="px-8 py-3.5 rounded-lg text-base font-semibold arcane-secondary transition-all duration-200"
             >
               🔮 Meta Oracle
             </Link>
@@ -180,7 +179,15 @@ export default function HomePage() {
                   className="grimoire-card p-6 block group hover-float h-full"
                 >
                   {/* Icon */}
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4 bg-gradient-to-br ${feat.gradient} opacity-80 group-hover:opacity-100 transition-opacity`}>
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl mb-4 border transition-all"
+                    style={{
+                      color: feat.accent,
+                      borderColor: `${feat.accent}44`,
+                      background: `linear-gradient(180deg, ${feat.accent}18, rgba(18,26,43,0.72))`,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 18px ${feat.accent}14`,
+                    }}
+                  >
                     {feat.icon}
                   </div>
                   <h3
@@ -221,13 +228,13 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/pricing"
-                  className="px-8 py-3.5 rounded-xl text-base font-bold bg-[var(--color-pumpkin)] text-black hover:opacity-90 transition-opacity shadow-lg shadow-[var(--color-pumpkin)]/20"
+                  className="px-8 py-3.5 rounded-lg text-base font-semibold arcane-primary hover:brightness-105 transition-all"
               >
                 View Plans
               </Link>
               <Link
                 href="/pricing"
-                className="px-8 py-3.5 rounded-xl text-base font-semibold glass text-[var(--color-text-primary)] hover:bg-white/10 transition-all"
+                className="px-8 py-3.5 rounded-lg text-base font-semibold arcane-secondary transition-all"
               >
                 Compare Features
               </Link>

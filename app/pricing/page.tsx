@@ -35,9 +35,9 @@ export default function PricingPage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.12 }}
-              className={`relative rounded-2xl p-6 flex flex-col ${
+              className={`relative rounded-lg p-6 flex flex-col ${
                 plan.highlighted
-                  ? 'bg-gradient-to-b from-[var(--color-grimoire)] to-[var(--color-grimoire-light)] border-2 border-[var(--color-pumpkin)] shadow-[0_0_40px_rgba(255,122,0,0.15)]'
+                  ? 'bg-[rgba(18,26,43,0.9)] border border-[var(--color-gold)] shadow-[inset_0_0_20px_rgba(0,0,0,0.58),0_8px_30px_rgba(0,0,0,0.42),0_0_28px_rgba(250,204,21,0.08)]'
                   : 'grimoire-card'
               }`}
             >
@@ -45,8 +45,8 @@ export default function PricingPage() {
               {plan.badge && (
                 <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold ${
                   plan.highlighted
-                    ? 'bg-[var(--color-pumpkin)] text-black'
-                    : 'bg-[var(--color-pumpkin)] text-black'
+                    ? 'arcane-primary'
+                    : 'arcane-primary'
                 }`}>
                   {plan.badge}
                 </div>
@@ -96,9 +96,9 @@ export default function PricingPage() {
 
               {/* CTA */}
               <button
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 ${
+                className={`w-full py-3 rounded-lg text-sm font-bold transition-all duration-200 ${
                   plan.highlighted
-                    ? 'bg-[var(--color-pumpkin)] text-black hover:opacity-90 shadow-lg shadow-[var(--color-pumpkin)]/20'
+                    ? 'arcane-primary hover:brightness-105'
                     : 'bg-[var(--color-grimoire-light)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:border-[var(--color-border-hover)] hover:bg-[var(--color-grimoire-lighter)]'
                 }`}
                 style={{ fontFamily: "'Cinzel', serif" }}

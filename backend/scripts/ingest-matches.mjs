@@ -82,18 +82,39 @@ const PATCH_SCHEDULE = [
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+function parseApiPatch(game_version) {
+  const m = game_version?.match(/Version\s+(\d+\.\d+)/);
+  return m ? m[1] : null;
+}
+
+function comparePatchVersions(a, b) {
+  const [aMajor = 0, aMinor = 0] = String(a).split('.').map(Number);
+  const [bMajor = 0, bMinor = 0] = String(b).split('.').map(Number);
+  if (aMajor !== bMajor) return aMajor - bMajor;
+  return aMinor - bMinor;
+}
+
 function extractPatch(game_version, game_datetime_ms) {
-  // Priority 1: Use date-based detection (most accurate)
+  const apiPatch = parseApiPatch(game_version);
+  let schedulePatch = null;
+
+  // Date schedule helps when Riot's game_version lags, but never downgrade
+  // below the API patch when our local schedule is stale.
   if (game_datetime_ms) {
     const gameDate = new Date(game_datetime_ms);
     for (const entry of PATCH_SCHEDULE) {
-      if (gameDate >= entry.date) return entry.patch;
+      if (gameDate >= entry.date) {
+        schedulePatch = entry.patch;
+        break;
+      }
     }
   }
 
-  // Fallback: parse from game_version string
-  const m = game_version?.match(/Version (\d+\.\d+)/);
-  return m ? m[1] : 'unknown';
+  if (apiPatch && schedulePatch) {
+    return comparePatchVersions(schedulePatch, apiPatch) > 0 ? schedulePatch : apiPatch;
+  }
+
+  return apiPatch || schedulePatch || 'unknown';
 }
 
 function buildCompSignature(units) {
@@ -268,7 +289,7 @@ async function ingestMatches(matchIds) {
         skipped++; continue; 
       }
 
-      const apiPatch = info.game_version?.match(/Version (\d+\.\d+)/)?.[1] || '?';
+      const apiPatch = parseApiPatch(info.game_version) || '?';
       const patch = extractPatch(info.game_version, info.game_datetime);
       if (patch !== apiPatch && !seenPatches.has(`override-${patch}`)) {
         seenPatches.add(`override-${patch}`);

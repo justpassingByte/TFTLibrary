@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, type DragEvent } from 'react';
+import { useState, useMemo, useRef, type CSSProperties, type DragEvent } from 'react';
 import { toPng } from 'html-to-image';
 import {
   COST_COLORS, COST_BG, TIER_CONFIG,
@@ -17,6 +17,35 @@ type ToolboxTab = 'Champions' | 'Augments' | 'Items';
 const RARITY_COLORS: Record<string, string> = {
   Silver: '#9ca3af', Gold: '#fbbf24', Prismatic: '#c084fc',
 };
+
+const GOLD_TEXT_GRADIENT = 'linear-gradient(135deg, #FACC15 0%, #D4AF37 48%, #8B6F2A 100%)';
+
+function tierPresence(label: string) {
+  const tier = label.toUpperCase();
+  if (tier === 'S') return { opacity: 1, filter: 'none' };
+  if (tier === 'C') return { opacity: 0.85, filter: 'saturate(0.82)' };
+  if (tier === 'D' || tier === 'X') return { opacity: 0.7, filter: 'saturate(0.72)' };
+  return { opacity: 0.94, filter: 'none' };
+}
+
+function tierLetterStyle(label: string, color: string): CSSProperties {
+  const tier = label.toUpperCase();
+  if (tier === 'S') {
+    return {
+      background: GOLD_TEXT_GRADIENT,
+      WebkitBackgroundClip: 'text',
+      backgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      fontFamily: "'Cinzel', serif",
+      textShadow: '0 0 12px rgba(250,204,21,0.24)',
+    };
+  }
+  return {
+    color,
+    fontFamily: "'Cinzel', serif",
+    textShadow: '0 1px 10px rgba(0,0,0,0.5)',
+  };
+}
 
 // Drag payload
 interface DragPayload {
@@ -303,22 +332,37 @@ export function TierlistClient({
               const tierBorder = cfg?.border || tier.color + '60';
               const tierBg = cfg?.bg || tier.color + '10';
               const isOver = dragOverTarget === `tier-${tier.label}`;
+              const isS = tier.label.toUpperCase() === 'S';
+              const presence = tierPresence(tier.label);
 
               return (
                 <div
                   key={tier.label}
-                  className="flex rounded-xl overflow-hidden transition-all"
+                  className="flex rounded-lg overflow-hidden transition-all"
                   style={{
-                    border: `2px solid ${isOver ? tierColor : tierBorder}`,
-                    boxShadow: isOver ? `0 0 24px ${tierColor}40, inset 0 0 24px ${tierColor}08` : `0 0 12px ${tierColor}15, inset 0 0 12px ${tierColor}05`,
+                    border: `1px solid ${isOver ? tierColor : tierBorder}`,
+                    background: `linear-gradient(106deg, ${tierBg}, rgba(18,26,43,0.9) 32%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 40%)`,
+                    boxShadow: isOver
+                      ? `inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px ${tierColor}26, 0 0 40px ${tierColor}0D`
+                      : isS
+                        ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
+                        : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+                    opacity: presence.opacity,
+                    filter: presence.filter,
                   }}
                 >
                   {/* Tier Label Box */}
                   <div
                     className="w-16 md:w-20 flex-shrink-0 flex items-center justify-center relative"
-                    style={{ backgroundColor: tierBg, borderRight: `2px solid ${tierBorder}` }}
+                    style={{
+                      background: `linear-gradient(175deg, ${tierBg}, rgba(10,15,31,0.42) 72%)`,
+                      borderRight: `1px solid ${isS ? 'rgba(250,204,21,0.16)' : 'rgba(255,255,255,0.05)'}`,
+                    }}
                   >
-                    <span className="text-3xl font-black" style={{ color: tierColor, fontFamily: "'Cinzel', serif", textShadow: `0 0 20px ${tierColor}50` }}>
+                    <span
+                      className={`${isS ? 'text-[2.35rem]' : 'text-3xl'} font-black tracking-[0.08em]`}
+                      style={tierLetterStyle(tier.label, tierColor)}
+                    >
                       {tier.label}
                     </span>
                   </div>
@@ -326,7 +370,7 @@ export function TierlistClient({
                   {/* Drop Zone Box */}
                   <div
                     className="flex-1 min-h-[80px] flex items-center gap-1.5 px-3 py-2 flex-wrap transition-colors"
-                    style={{ backgroundColor: isOver ? `${tierColor}08` : 'var(--color-grimoire)' }}
+                    style={{ background: isOver ? `linear-gradient(90deg, ${tierColor}0D, rgba(18,26,43,0.88))` : 'rgba(18,26,43,0.58)' }}
                     onDragOver={e => !isViewMode && onDragOver(e, `tier-${tier.label}`)}
                     onDragLeave={() => setDragOverTarget(null)}
                     onDrop={e => !isViewMode && onDropTier(e, tier.label)}
@@ -389,7 +433,7 @@ export function TierlistClient({
                   <div className="flex gap-2">
                     <button onClick={addRow} className="px-2 py-1 rounded-md bg-[var(--color-pumpkin)]/10 border border-[var(--color-pumpkin)]/30 text-[10px] font-medium text-[var(--color-pumpkin)] hover:bg-[var(--color-pumpkin)]/20 transition-colors">Add Row</button>
                     <button onClick={clearAll} className="px-2 py-1 rounded-md border border-[var(--color-border)] text-[10px] text-[var(--color-text-muted)] hover:text-[var(--color-blood)] hover:border-[var(--color-blood)]/30 transition-colors">Clear All</button>
-                    <button onClick={shareAsImage} disabled={isSharing} className="px-2 py-1 rounded-md bg-[var(--color-pumpkin)] text-[#1a1a1a] text-[10px] font-bold hover:brightness-110 transition-colors">{isSharing ? '...' : 'Share'}</button>
+                    <button onClick={shareAsImage} disabled={isSharing} className="px-2 py-1 rounded-md arcane-primary text-[10px] font-bold hover:brightness-110 transition-colors">{isSharing ? '...' : 'Share'}</button>
                   </div>
                 </div>
 
@@ -397,7 +441,7 @@ export function TierlistClient({
                 <div className="flex gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-1">
                   {(['Champions', 'Augments', 'Items'] as const).map(tab => (
                     <button key={tab} onClick={() => setToolboxTab(tab)}
-                      className={`flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-colors ${toolboxTab === tab ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-white/[0.05]'}`}>
+                      className={`flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-colors border ${toolboxTab === tab ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border-[rgba(212,175,55,0.32)]' : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)] hover:bg-white/[0.05]'}`}>
                       {tab}
                     </button>
                   ))}
@@ -414,7 +458,7 @@ export function TierlistClient({
                     <div className="flex gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
                       {(['Cost', 'Name', 'Trait'] as const).map(m => (
                         <button key={m} onClick={() => setSortMode(m)}
-                          className={`flex-1 px-1 py-1 text-[9px] font-bold uppercase rounded-md transition-colors ${sortMode === m ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
+                          className={`flex-1 px-1 py-1 text-[9px] font-bold uppercase rounded-md transition-colors border ${sortMode === m ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border-[rgba(212,175,55,0.32)]' : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-primary)]'}`}>
                           {m}
                         </button>
                       ))}
@@ -483,7 +527,7 @@ export function TierlistClient({
                           onClick={() => setAugmentTab(tab)}
                           className={`flex-1 py-1 px-2 rounded-md text-[9px] font-bold uppercase transition-colors whitespace-nowrap ${
                             augmentTab === tab
-                              ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]'
+                              ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border border-[rgba(212,175,55,0.32)]'
                               : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-white/[0.05]'
                           }`}
                         >
@@ -517,7 +561,7 @@ export function TierlistClient({
                     <div className="flex flex-wrap gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-0.5">
                       {(['Components', 'Completed', 'Radiants', 'Artifacts', 'Emblems'] as const).map(tab => (
                         <button key={tab} onClick={() => setItemTab(tab as ItemCategory)}
-                          className={`flex-1 px-1 py-1.5 text-[9px] font-bold uppercase rounded-md transition-colors truncate ${itemTab === tab ? 'bg-[var(--color-pumpkin)] text-[#1a1a1a]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}>
+                          className={`flex-1 px-1 py-1.5 text-[9px] font-bold uppercase rounded-md transition-colors truncate border ${itemTab === tab ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border-[rgba(212,175,55,0.32)]' : 'text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-secondary)]'}`}>
                           {tab === 'Completed' ? 'Craftables' : tab}
                         </button>
                       ))}

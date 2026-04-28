@@ -801,7 +801,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
             className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setAugModalOpen(false)}>
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()} className="relative bg-[#1c1c22] rounded-xl w-full max-w-4xl h-[85vh] flex flex-col p-4 border border-[var(--color-border)] shadow-2xl">
+              onClick={e => e.stopPropagation()} className="relative bg-[var(--color-grimoire)] rounded-lg w-full max-w-4xl h-[85vh] flex flex-col p-4 border border-[var(--color-border)] shadow-2xl">
               
               <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-4">
@@ -816,7 +816,7 @@ export function BuilderClient({ champions = [], dbAugments = [], items = [], tra
                         onClick={() => setAugRarity(rarity)}
                         className={`px-3 py-1 text-xs font-bold rounded-full transition-colors ${
                           augRarity === rarity 
-                            ? 'bg-[var(--color-pumpkin)] text-black' 
+                            ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border border-[rgba(212,175,55,0.32)]' 
                             : 'text-gray-400 hover:text-white'
                         }`}
                       >

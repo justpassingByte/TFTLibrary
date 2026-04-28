@@ -187,20 +187,59 @@ router.get('/sets', async (req, res) => {
 // GET /api/meta/stats/patches — available patches, optionally filtered by set_prefix
 router.get('/stats/patches', async (req, res) => {
   try {
-    const { set_prefix } = req.query;
-    let where: any = {};
+    const { set_prefix, strict } = req.query;
+    const prefix = set_prefix && set_prefix !== 'all' ? String(set_prefix) : null;
+    const strictSetFilter = strict === '1' || strict === 'true';
 
-    // If set_prefix is provided, only return patches that have champion IDs starting with that prefix
-    if (set_prefix && set_prefix !== 'all') {
-      where.champion_id = { startsWith: String(set_prefix) };
+    const patchSet = new Set<string>();
+
+    if (prefix) {
+      const [championRows, augmentRows, traitRows, itemChampionRows] = await Promise.all([
+        prisma.championStat.findMany({
+          where: { champion_id: { startsWith: prefix } },
+          select: { patch: true },
+          distinct: ['patch'],
+        }),
+        prisma.augmentStat.findMany({
+          where: { augment_id: { startsWith: prefix } },
+          select: { patch: true },
+          distinct: ['patch'],
+        }),
+        prisma.traitStat.findMany({
+          where: { trait_name: { startsWith: prefix } },
+          select: { patch: true },
+          distinct: ['patch'],
+        }),
+        prisma.itemChampionStat.findMany({
+          where: { champion_id: { startsWith: prefix } },
+          select: { patch: true },
+          distinct: ['patch'],
+        }),
+      ]);
+
+      for (const row of [...championRows, ...augmentRows, ...traitRows, ...itemChampionRows]) {
+        patchSet.add(row.patch);
+      }
     }
 
-    const data = await prisma.championStat.findMany({
-      where,
-      select: { patch: true },
-      distinct: ['patch'],
-    });
-    res.json(data.map(d => d.patch).sort((a,b) => b.localeCompare(a)));
+    // Fallback: item stats and raw matches do not carry set-prefixed IDs, and
+    // older aggregation runs may not have filled champion_stats yet.
+    if (!prefix || (!strictSetFilter && patchSet.size === 0)) {
+      const [championRows, itemRows, augmentRows, traitRows, itemChampionRows, matchRows] = await Promise.all([
+        prisma.championStat.findMany({ select: { patch: true }, distinct: ['patch'] }),
+        prisma.itemStat.findMany({ select: { patch: true }, distinct: ['patch'] }),
+        prisma.augmentStat.findMany({ select: { patch: true }, distinct: ['patch'] }),
+        prisma.traitStat.findMany({ select: { patch: true }, distinct: ['patch'] }),
+        prisma.itemChampionStat.findMany({ select: { patch: true }, distinct: ['patch'] }),
+        prisma.playerMatch.findMany({ select: { patch: true }, distinct: ['patch'] }),
+      ]);
+
+      for (const row of [...championRows, ...itemRows, ...augmentRows, ...traitRows, ...itemChampionRows, ...matchRows]) {
+        patchSet.add(row.patch);
+      }
+    }
+
+    res.json([...patchSet].filter(Boolean).sort((a, b) => b.localeCompare(a)));
   } catch (error) {
     console.error('GET /api/meta/stats/patches error:', error);
     res.status(500).json({ error: 'Internal Server Error' });

@@ -41,7 +41,7 @@ interface ChampMeta {
 // ── Helpers ────────────────────────────────────────────────────
 
 const COST_COLORS: Record<number, string> = {
-  1: '#9CA3AF', 2: '#22C55E', 3: '#3B82F6', 4: '#A855F7', 5: '#EAB308',
+  1: '#9CA3AF', 2: '#8DAE8F', 3: '#8FA7C2', 4: '#BCA4D8', 5: '#D4AF37',
 };
 
 function buildTrendsFromComps(
@@ -294,14 +294,14 @@ export default function MetaOraclePage() {
             </h2>
 
             {/* Interval Toggle */}
-            <div className="flex rounded-xl overflow-hidden border border-[var(--color-border)]">
+            <div className="flex rounded-lg overflow-hidden border border-[var(--color-border)]">
               {(['24h', '7d'] as const).map(opt => (
                 <button
                   key={opt}
                   onClick={() => setInterval(opt)}
                   className={`px-4 py-1.5 text-xs font-medium transition-colors ${
                     interval === opt
-                      ? 'bg-[var(--color-amethyst)] text-white'
+                      ? 'bg-[rgba(250,204,21,0.10)] text-[var(--color-gold)]'
                       : 'bg-[var(--color-grimoire)] text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'
                   }`}
                 >
@@ -360,7 +360,7 @@ export default function MetaOraclePage() {
                 <div className="flex flex-wrap gap-1 mb-3 bg-[var(--color-grimoire-light)] rounded-lg p-1 border border-[var(--color-border)]">
                   {(['Components', 'Completed', 'Radiants', 'Emblems'] as const).map(tab => (
                     <button key={tab} onClick={() => setItemTab(tab)}
-                      className={`flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-colors uppercase ${itemTab === tab ? 'bg-[var(--color-pumpkin)] text-black' : 'text-[var(--color-text-muted)] hover:text-white'}`}>
+                      className={`flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-colors uppercase ${itemTab === tab ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border border-[rgba(212,175,55,0.32)]' : 'text-[var(--color-text-muted)] hover:text-white border border-transparent'}`}>
                       {tab === 'Completed' ? 'Craftables' : tab}
                     </button>
                   ))}
@@ -377,7 +377,7 @@ export default function MetaOraclePage() {
                           onClick={() => toggleItem(item.name)}
                           className={`w-[34px] h-[34px] flex items-center justify-center rounded-lg border transition-all duration-200 overflow-hidden ${
                             isSelected
-                              ? 'border-[var(--color-pumpkin)] bg-[var(--color-pumpkin)]/20 shadow-[0_0_8px_rgba(255,122,0,0.4)]'
+                              ? 'border-[var(--color-gold)] bg-[var(--color-gold)]/10 shadow-[0_0_8px_rgba(250,204,21,0.16)]'
                               : 'border-[var(--color-border)] bg-[var(--color-grimoire-light)] hover:border-[var(--color-pumpkin)]/40 hover:bg-[var(--color-pumpkin)]/5'
                           }`}
                         >
@@ -406,9 +406,9 @@ export default function MetaOraclePage() {
               <button
                 onClick={handleRecommend}
                 disabled={selectedItems.length === 0 || isRecommending}
-                className={`w-full py-3.5 rounded-xl text-base font-bold transition-all duration-300 ${
+                className={`w-full py-3.5 rounded-lg text-base font-bold transition-all duration-300 ${
                   selectedItems.length > 0
-                    ? 'bg-[var(--color-pumpkin)] text-black hover:opacity-90 shadow-lg shadow-[var(--color-pumpkin)]/20 cursor-pointer'
+                    ? 'arcane-primary hover:brightness-105 cursor-pointer'
                     : 'bg-[var(--color-grimoire-light)] text-[var(--color-text-muted)] cursor-not-allowed'
                 }`}
                 style={{ fontFamily: "'Cinzel', serif" }}
@@ -492,9 +492,9 @@ export default function MetaOraclePage() {
                                   <td className="p-3 pl-4 text-[var(--color-text-muted)]">
                                     {isTop3 ? (
                                       <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-                                        i === 0 ? 'bg-yellow-500/20 text-yellow-400' :
+                                        i === 0 ? 'bg-[rgba(250,204,21,0.14)] text-[var(--color-gold)]' :
                                         i === 1 ? 'bg-gray-400/20 text-gray-300' :
-                                        'bg-orange-600/20 text-orange-400'
+                                        'bg-[rgba(180,83,9,0.14)] text-[#D8A86A]'
                                       }`}>
                                         {i + 1}
                                       </span>
@@ -531,20 +531,20 @@ export default function MetaOraclePage() {
                                   </td>
                                   <td className="p-3 text-right">
                                     <span className={`font-semibold ${
-                                      row.avg_placement <= 4.0 ? 'text-emerald-400' :
-                                      row.avg_placement >= 4.8 ? 'text-red-400' :
+                                      row.avg_placement <= 4.0 ? 'text-[#C7D7BE]' :
+                                      row.avg_placement >= 4.8 ? 'text-[#FCA5A5]' :
                                       'text-[var(--color-text-secondary)]'
                                     }`}>
                                       {row.avg_placement}
                                     </span>
                                   </td>
                                   <td className="p-3 text-right">
-                                    <span className={`font-semibold ${top4Display >= 55 ? 'text-emerald-400' : 'text-[var(--color-text-secondary)]'}`}>
+                                    <span className={`font-semibold ${top4Display >= 55 ? 'text-[#C7D7BE]' : 'text-[var(--color-text-secondary)]'}`}>
                                       {top4Display.toFixed(1)}%
                                     </span>
                                   </td>
                                   <td className="p-3 pr-4 text-right">
-                                    <span className={`font-semibold ${winDisplay >= 14 ? 'text-emerald-400' : 'text-[var(--color-text-secondary)]'}`}>
+                                    <span className={`font-semibold ${winDisplay >= 14 ? 'text-[#C7D7BE]' : 'text-[var(--color-text-secondary)]'}`}>
                                       {winDisplay.toFixed(1)}%
                                     </span>
                                   </td>

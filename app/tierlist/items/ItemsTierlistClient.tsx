@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -13,15 +13,52 @@ const TABS = [
 ];
 
 const TIER_CONFIG = {
-  S: { color: '#ff2244', bg: 'rgba(255,34,68,0.08)', glow: 'rgba(255,34,68,0.25)' },
-  A: { color: '#FF7A00', bg: 'rgba(255,122,0,0.08)', glow: 'rgba(255,122,0,0.25)' },
-  B: { color: '#fbbf24', bg: 'rgba(251,191,36,0.08)', glow: 'rgba(251,191,36,0.2)' },
-  C: { color: '#39FF14', bg: 'rgba(57,255,20,0.08)', glow: 'rgba(57,255,20,0.2)' },
-  D: { color: '#9A9A9A', bg: 'rgba(154,154,154,0.08)', glow: 'rgba(154,154,154,0.15)' },
+  S: { color: '#FACC15', bg: 'rgba(250,204,21,0.055)', glow: 'rgba(250,204,21,0.15)' },
+  A: { color: '#D4AF37', bg: 'rgba(212,175,55,0.044)', glow: 'rgba(212,175,55,0.08)' },
+  B: { color: '#8B6F2A', bg: 'rgba(139,111,42,0.038)', glow: 'rgba(139,111,42,0.06)' },
+  C: { color: '#8FA7C2', bg: 'rgba(143,167,194,0.03)', glow: 'rgba(143,167,194,0.05)' },
+  D: { color: '#8290A7', bg: 'rgba(130,144,167,0.026)', glow: 'rgba(130,144,167,0.04)' },
 };
 
 type Tier = keyof typeof TIER_CONFIG;
 const tiers: Tier[] = ['S', 'A', 'B', 'C', 'D'];
+const GOLD_TEXT_GRADIENT = 'linear-gradient(135deg, #FACC15 0%, #D4AF37 48%, #8B6F2A 100%)';
+
+function tierPresence(tier: Tier) {
+  if (tier === 'S') return { opacity: 1, filter: 'none' };
+  if (tier === 'C') return { opacity: 0.85, filter: 'saturate(0.82)' };
+  if (tier === 'D') return { opacity: 0.7, filter: 'saturate(0.72)' };
+  return { opacity: 0.94, filter: 'none' };
+}
+
+function tierRowStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSProperties {
+  const presence = tierPresence(tier);
+  return {
+    borderColor: tier === 'S' ? 'rgba(250,204,21,0.28)' : tier === 'A' ? 'rgba(212,175,55,0.14)' : tier === 'B' ? 'rgba(139,111,42,0.12)' : 'rgba(255,255,255,0.05)',
+    background: `linear-gradient(104deg, ${cfg.bg}, rgba(18,26,43,0.9) 31%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 42%)`,
+    boxShadow: tier === 'S'
+      ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
+      : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+    opacity: presence.opacity,
+    filter: presence.filter,
+  };
+}
+
+function tierLetterStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSProperties {
+  if (tier === 'S') {
+    return {
+      background: GOLD_TEXT_GRADIENT,
+      WebkitBackgroundClip: 'text',
+      backgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      textShadow: '0 0 12px rgba(250,204,21,0.24)',
+    };
+  }
+  return {
+    color: cfg.color,
+    textShadow: '0 1px 10px rgba(0,0,0,0.52)',
+  };
+}
 
 interface ItemMeta {
   id: string;
@@ -87,8 +124,8 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
             <button key={cat} onClick={() => setCategoryFilter(cat)}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors border ${
                 categoryFilter === cat 
-                  ? 'bg-[var(--color-pumpkin)] text-black border-[var(--color-pumpkin)]' 
-                  : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border)] hover:text-white hover:border-gray-500'
+                  ? 'bg-[rgba(250,204,21,0.09)] text-[var(--color-gold)] border-[rgba(212,175,55,0.38)]' 
+                  : 'bg-transparent text-[var(--color-text-muted)] border-[var(--color-border)] hover:text-white hover:border-[rgba(250,204,21,0.18)]'
               }`}>
               {cat}
             </button>
@@ -102,12 +139,12 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
             const cfg = TIER_CONFIG[tier];
 
             return (
-              <motion.div key={tier} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: tierIdx * 0.08 }} className="itl-tier-row" style={{ borderColor: `${cfg.color}40`, background: cfg.bg }}>
+              <motion.div key={tier} initial={{ opacity: 0, x: -20 }} animate={{ opacity: tierPresence(tier).opacity, x: 0 }}
+                transition={{ delay: tierIdx * 0.08 }} className="itl-tier-row" style={tierRowStyle(tier, cfg)}>
 
                 {/* Tier label */}
-                <div className="itl-tier-label" style={{ borderColor: `${cfg.color}30`, background: `${cfg.color}12` }}>
-                  <span className="itl-tier-letter" style={{ color: cfg.color }}>{tier}</span>
+                <div className="itl-tier-label" style={{ borderColor: tier === 'S' ? 'rgba(250,204,21,0.16)' : 'rgba(255,255,255,0.05)', background: `linear-gradient(175deg, ${cfg.bg}, rgba(10,15,31,0.42) 72%)` }}>
+                  <span className="itl-tier-letter" data-tier={tier} style={tierLetterStyle(tier, cfg)}>{tier}</span>
                   <span className="itl-tier-sub" style={{ color: cfg.color }}>TIER</span>
                   <span className="itl-tier-count">{tierItems.length}</span>
                 </div>
@@ -120,7 +157,7 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
                     tierItems.map(item => (
                       <div key={item.id} className="itl-item" onMouseEnter={() => setHoveredItem(item.id)}
                         onMouseLeave={() => setHoveredItem(null)}>
-                        <div className="itl-item-img" style={{ borderColor: `${cfg.color}60`, boxShadow: hoveredItem === item.id ? `0 0 16px ${cfg.glow}` : 'none' }}>
+                        <div className="itl-item-img" style={{ borderColor: `${cfg.color}${tier === 'S' ? '60' : '38'}`, boxShadow: hoveredItem === item.id ? `0 0 12px ${cfg.glow}, 0 0 34px rgba(250,204,21,0.03)` : 'none' }}>
                           {item.icon ? (
                             <img src={getItemImageUrl(item.icon || item.id)} alt={item.name} className="w-full h-full object-contain pointer-events-none" loading="lazy" crossOrigin="anonymous" />
                           ) : (
@@ -160,10 +197,12 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
       </div>
 
       <style>{`
-        .itl-tier-row { display: flex; align-items: stretch; border-radius: 14px; border: 1px solid; overflow: hidden; min-height: 110px; }
+        .itl-tier-row { display: flex; align-items: stretch; border-radius: 8px; border: 1px solid; overflow: hidden; min-height: 110px; backdrop-filter: blur(18px); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+        .itl-tier-row:hover { border-color: rgba(250,204,21,0.16) !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.08), 0 0 34px rgba(250,204,21,0.03) !important; }
         .itl-tier-label { flex-shrink: 0; width: 75px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.75rem 0; border-right: 1px solid; gap: 2px; }
-        .itl-tier-letter { font-size: 2.2rem; font-weight: 900; font-family: 'Cinzel', serif; line-height: 1; }
-        .itl-tier-sub { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.15em; opacity: 0.7; }
+        .itl-tier-letter { font-size: 2.2rem; font-weight: 800; font-family: 'Cinzel', serif; line-height: 1; letter-spacing: 0.08em; }
+        .itl-tier-letter[data-tier="S"] { font-size: 2.45rem; }
+        .itl-tier-sub { font-size: 0.55rem; font-weight: 500; letter-spacing: 0.2em; opacity: 0.56; }
         .itl-tier-count { font-size: 0.6rem; color: var(--color-text-muted); background: rgba(255,255,255,0.05); padding: 0.1rem 0.45rem; border-radius: 20px; margin-top: 2px; }
 
         .itl-item-grid { flex: 1; display: flex; flex-wrap: wrap; gap: 0.65rem; padding: 0.75rem; align-content: center; }
@@ -172,7 +211,7 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
         .itl-item { display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; cursor: pointer; transition: transform 0.15s; flex-shrink: 0; }
         .itl-item:hover { transform: scale(1.12); z-index: 10; }
 
-        .itl-item-img { width: 44px; height: 44px; border-radius: 8px; border: 1.5px solid; overflow: hidden; padding: 2px; background: var(--color-grimoire-light); position: relative; transition: box-shadow 0.2s; }
+        .itl-item-img { width: 44px; height: 44px; border-radius: 8px; border: 1.5px solid; overflow: hidden; padding: 2px; background: linear-gradient(180deg, rgba(24,34,56,0.9), rgba(10,15,31,0.92)); position: relative; transition: box-shadow 0.2s, border-color 0.2s; }
 
         .itl-item-name { font-size: 0.58rem; color: var(--color-text-muted); text-align: center; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.15s; }
         .itl-item:hover .itl-item-name { color: var(--color-text-primary); }
@@ -182,13 +221,13 @@ export function ItemsTierlistClient({ items }: { items: ItemMeta[] }) {
         .itl-item-stat.bad { color: var(--color-blood); }
 
         /* Tooltip */
-        .itl-tooltip { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; width: 200px; background: rgba(16,13,28,0.97); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 0.75rem; z-index: 100; pointer-events: none; box-shadow: 0 12px 40px rgba(0,0,0,0.6); }
+        .itl-tooltip { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; width: 200px; background: rgba(18,26,43,0.98); border: 1px solid rgba(250,204,21,0.16); border-radius: 8px; padding: 0.75rem; z-index: 100; pointer-events: none; box-shadow: inset 0 0 18px rgba(0,0,0,0.5), 0 18px 44px rgba(0,0,0,0.62), 0 0 18px rgba(250,204,21,0.06); }
         .itl-tt-header { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
-        .itl-tt-name { font-size: 0.8rem; font-weight: 700; color: #f1effe; }
+        .itl-tt-name { font-size: 0.8rem; font-weight: 700; color: #F8FAFC; }
         .itl-tt-stats { display: flex; flex-direction: column; gap: 0.25rem; }
         .itl-tt-row { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--color-text-secondary); }
-        .itl-tt-row .good { color: var(--color-necrotic); font-weight: 700; }
-        .itl-tt-badge { margin-top: 0.4rem; font-size: 0.62rem; font-weight: 700; color: var(--color-necrotic); background: rgba(0,255,136,0.08); padding: 0.15rem 0.5rem; border-radius: 20px; text-align: center; }
+        .itl-tt-row .good { color: #C7D7BE; font-weight: 700; }
+        .itl-tt-badge { margin-top: 0.4rem; font-size: 0.62rem; font-weight: 700; color: #D4AF37; background: rgba(250,204,21,0.08); padding: 0.15rem 0.5rem; border-radius: 999px; text-align: center; }
 
         @media (max-width: 640px) {
           .itl-tier-label { width: 55px; }

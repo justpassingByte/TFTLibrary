@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChampionAvatar, HexagonFrame } from '@/components/ui/champion-avatar';
@@ -10,8 +10,8 @@ import { getItemImageUrl } from '@/lib/riot-cdn';
 
 const DDRAGON_CDN = 'https://ddragon.leagueoflegends.com/cdn/16.7.1/img';
 
-const COST_COLORS: Record<number, string> = { 1:'#9ca3af', 2:'#16a34a', 3:'#2563eb', 4:'#9333ea', 5:'#eab308' };
-const COST_BG: Record<number, string> = { 1:'#1a1a2e', 2:'#0a2e1a', 3:'#0a1a3e', 4:'#2a0a3e', 5:'#3e2a0a' };
+const COST_COLORS: Record<number, string> = { 1:'#9CA3AF', 2:'#8DAE8F', 3:'#8FA7C2', 4:'#BCA4D8', 5:'#D4AF37' };
+const COST_BG: Record<number, string> = { 1:'#151B2A', 2:'#121F23', 3:'#111D31', 4:'#1C1930', 5:'#282111' };
 
 export interface ChampionData { id: string; name: string; cost: number; icon: string | null; traits: string[] }
 export interface ItemData { id: string; name: string; icon: string | null }
@@ -23,14 +23,50 @@ const TABS = [
 ];
 
 const TIER_CONFIG = {
-  S: { label: 'S', color: '#ff2244', bg: 'rgba(255,34,68,0.08)' },
-  A: { label: 'A', color: '#FF7A00', bg: 'rgba(255,122,0,0.08)' },
-  B: { label: 'B', color: '#fbbf24', bg: 'rgba(251,191,36,0.08)' },
-  C: { label: 'C', color: '#39FF14', bg: 'rgba(57,255,20,0.08)' },
+  S: { label: 'S', color: '#FACC15', bg: 'rgba(250,204,21,0.055)', glow: 'rgba(250,204,21,0.15)' },
+  A: { label: 'A', color: '#D4AF37', bg: 'rgba(212,175,55,0.044)', glow: 'rgba(212,175,55,0.08)' },
+  B: { label: 'B', color: '#8B6F2A', bg: 'rgba(139,111,42,0.038)', glow: 'rgba(139,111,42,0.06)' },
+  C: { label: 'C', color: '#8FA7C2', bg: 'rgba(143,167,194,0.03)', glow: 'rgba(143,167,194,0.05)' },
 };
 
 type Tier = keyof typeof TIER_CONFIG;
 const TIERS: Tier[] = ['S', 'A', 'B', 'C'];
+const GOLD_TEXT_GRADIENT = 'linear-gradient(135deg, #FACC15 0%, #D4AF37 48%, #8B6F2A 100%)';
+
+function tierPresence(tier: Tier) {
+  if (tier === 'S') return { opacity: 1, filter: 'none' };
+  if (tier === 'C') return { opacity: 0.85, filter: 'saturate(0.82)' };
+  return { opacity: 0.94, filter: 'none' };
+}
+
+function tierRowStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSProperties {
+  const presence = tierPresence(tier);
+  return {
+    borderColor: tier === 'S' ? 'rgba(250,204,21,0.28)' : tier === 'A' ? 'rgba(212,175,55,0.14)' : tier === 'B' ? 'rgba(139,111,42,0.12)' : 'rgba(255,255,255,0.05)',
+    background: `linear-gradient(104deg, ${cfg.bg}, rgba(18,26,43,0.9) 31%, rgba(7,11,22,0.84)), linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0) 42%)`,
+    boxShadow: tier === 'S'
+      ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
+      : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+    opacity: presence.opacity,
+    filter: presence.filter,
+  };
+}
+
+function tierLetterStyle(tier: Tier, cfg: (typeof TIER_CONFIG)[Tier]): CSSProperties {
+  if (tier === 'S') {
+    return {
+      background: GOLD_TEXT_GRADIENT,
+      WebkitBackgroundClip: 'text',
+      backgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      textShadow: '0 0 12px rgba(250,204,21,0.24)',
+    };
+  }
+  return {
+    color: cfg.color,
+    textShadow: '0 1px 10px rgba(0,0,0,0.52)',
+  };
+}
 
 interface CompChamp { id: string; star: number; is_carry: boolean; items?: string[] }
 interface BoardPos { champion_id: string; row: number; col: number }
@@ -154,12 +190,22 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
   const stagePlans = (active.stage_plans as StagePlan[]) || [];
 
   return (
-    <div className="comp-detail" style={{ borderColor: cfg.color }}>
+    <div className="comp-detail" style={{
+      borderColor: active.tier === 'S' ? 'rgba(250,204,21,0.28)' : 'rgba(255,255,255,0.05)',
+      boxShadow: active.tier === 'S'
+        ? 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
+        : 'inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5)',
+    }}>
       {/* ── Left Panel ── */}
-      <div className="cd-left" style={{ background: `linear-gradient(to bottom, ${cfg.color}15, #141419 60%)` }}>
-        <div className="cd-left-top-bg" style={{ background: `radial-gradient(ellipse at top, ${cfg.color}60 0%, transparent 70%)` }} />
+      <div className="cd-left" style={{ background: `linear-gradient(to bottom, ${cfg.color}12, rgba(18,26,43,0.98) 62%)` }}>
+        <div className="cd-left-top-bg" style={{ background: `radial-gradient(ellipse at 50% 0%, ${cfg.color}${active.tier === 'S' ? '22' : '12'} 0%, transparent 76%)` }} />
         
-        <div className="cd-tier-badge" style={{ borderColor: cfg.color }}>{active.tier}</div>
+        <div className="cd-tier-badge" style={{
+          borderColor: cfg.color,
+          boxShadow: active.tier === 'S'
+            ? 'inset 0 0 16px rgba(0,0,0,0.62), 0 0 12px rgba(250,204,21,0.15), 0 0 40px rgba(250,204,21,0.05)'
+            : 'inset 0 0 16px rgba(0,0,0,0.62)',
+        }}>{active.tier}</div>
 
         {carry && (
           <div className="cd-carry-big">
@@ -176,7 +222,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
           <div className="cd-variant-tabs">
             {allVariants.map((v, idx) => (
               <button key={idx} className={`cd-variant-btn ${activeVariantIdx === idx ? 'active' : ''}`}
-                style={activeVariantIdx === idx ? { backgroundColor: '#fff' } : {}}
+                style={activeVariantIdx === idx ? { color: cfg.color, borderColor: `${cfg.color}66` } : {}}
                 onClick={() => setActiveVariantIdx(idx)}>
                 {v.variant_label || v.name.split(' ').slice(-1)[0]} {idx > 0 && idx === activeVariantIdx ? '' : idx === 0 ? '(Main)' : ''}
               </button>
@@ -310,7 +356,7 @@ function CompDetails({ comp, traitsMap, onClose, champMap, itemMap, augments = [
                         >
                           {champ ? (
                             <>
-                              <HexagonFrame color={COST_COLORS[champ.cost] || '#fff'} bg="#141419" size={72} padding={3}>
+                              <HexagonFrame color={COST_COLORS[champ.cost] || '#fff'} bg="#121A2B" size={72} padding={3}>
                                 <div style={{ width: '100%', height: '100%', display: 'flex' }}>
                                   <ChampionAvatar id={champ.id} name={champ.name} icon={champ.icon || undefined} shape="hexagon" className="w-full h-full" />
                                 </div>
@@ -471,9 +517,9 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
 
             return (
               <div key={tier} className="flex flex-col gap-2">
-                <motion.div className="tierlist-row" style={{ borderColor: `${cfg.color}40`, background: cfg.bg }}>
-                  <div className="tier-label-cell" style={{ borderColor: `${cfg.color}40` }}>
-                    <span className="tier-letter" style={{ color: cfg.color }}>{tier}</span>
+                <motion.div className="tierlist-row" style={tierRowStyle(tier, cfg)}>
+                  <div className="tier-label-cell" style={{ borderColor: tier === 'S' ? 'rgba(250,204,21,0.16)' : 'rgba(255,255,255,0.05)', background: `linear-gradient(175deg, ${cfg.bg}, rgba(10,15,31,0.42) 72%)` }}>
+                    <span className="tier-letter" data-tier={tier} style={tierLetterStyle(tier, cfg)}>{tier}</span>
                     <span className="tier-sub" style={{ color: cfg.color }}>TIER</span>
                   </div>
                   <div className="tier-comps-cell">
@@ -504,42 +550,44 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
       </div>
 
       <style>{`
-        .tierlist-row { display: flex; align-items: stretch; gap: 0; border-radius: 12px; border: 1px solid; min-height: 110px; overflow: hidden; }
+        .tierlist-row { display: flex; align-items: stretch; gap: 0; border-radius: 8px; border: 1px solid; min-height: 110px; overflow: hidden; backdrop-filter: blur(18px); transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+        .tierlist-row:hover { border-color: rgba(250,204,21,0.16) !important; box-shadow: inset 0 0 20px rgba(0,0,0,0.7), 0 10px 30px rgba(0,0,0,0.5), 0 0 12px rgba(250,204,21,0.08), 0 0 34px rgba(250,204,21,0.03) !important; }
         .tier-label-cell { flex-shrink: 0; width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0; border-right: 1px solid; }
-        .tier-letter { font-size: 2.5rem; font-weight: 900; font-family: 'Cinzel', serif; line-height: 1; }
-        .tier-sub { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.15em; opacity: 0.7; }
+        .tier-letter { font-size: 2.5rem; font-weight: 800; font-family: 'Cinzel', serif; line-height: 1; letter-spacing: 0.08em; }
+        .tier-letter[data-tier="S"] { font-size: 2.8rem; }
+        .tier-sub { font-size: 0.6rem; font-weight: 500; letter-spacing: 0.2em; opacity: 0.56; }
         .tier-comps-cell { flex: 1; display: flex; align-items: center; gap: 0.75rem; padding: 1rem; overflow-x: auto; }
 
         .comp-card-btn { position: relative; cursor: pointer; background: none; border: none; transition: transform 0.2s; flex-shrink: 0; }
         .comp-card-btn:hover, .comp-card-btn.selected { transform: scale(1.12); }
-        .comp-card-btn.selected { filter: drop-shadow(0 0 12px rgba(255,255,255,0.3)); }
+        .comp-card-btn.selected { filter: drop-shadow(0 0 10px rgba(250,204,21,0.12)); }
         .comp-card-hex { position: relative; }
-        .comp-card-carry-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; background: #000; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; font-size: 8px; z-index: 10; }
-        .comp-card-arrow { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 8px solid white; }
+        .comp-card-carry-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; background: #0A0F1F; border-radius: 50%; border: 2px solid; display: flex; align-items: center; justify-content: center; font-size: 8px; z-index: 10; }
+        .comp-card-arrow { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 8px solid #D4AF37; }
         .comp-card-placeholder { width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; border: 2px solid; border-radius: 12px; font-size: 1.5rem; color: #fff; }
 
         /* Detail panel */
-        .comp-detail { display: flex; flex-direction: row; border-radius: 12px; border: 1px solid; overflow: hidden; background: #141419; margin-top: 4px; }
+        .comp-detail { display: flex; flex-direction: row; border-radius: 8px; border: 1px solid; overflow: hidden; background: linear-gradient(162deg, rgba(255,255,255,0.024), rgba(255,255,255,0) 34%), #121A2B; margin-top: 4px; }
         
         /* Left Panel */
         .cd-left { width: 280px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; border-right: 1px solid rgba(255,255,255,0.08); padding-bottom: 2rem; position: relative; }
         .cd-left-top-bg { position: absolute; top: 0; left: 0; right: 0; height: 140px; z-index: 0; border-bottom-left-radius: 50%; border-bottom-right-radius: 50%; }
-        .cd-tier-badge { position: relative; z-index: 1; width: 44px; height: 44px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fff; border-radius: 8px; font-family: 'Cinzel', serif; background: rgba(0,0,0,0.4); border: 2px solid; }
+        .cd-tier-badge { position: relative; z-index: 1; width: 44px; height: 44px; margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; color: #FACC15; border-radius: 8px; font-family: 'Cinzel', serif; background: rgba(10,15,31,0.62); border: 1px solid; }
         
         .cd-carry-big { position: relative; z-index: 1; margin-top: 1rem; margin-bottom: 1rem; }
-        .cd-comp-name { position: relative; z-index: 1; font-size: 1.25rem; font-weight: 900; color: #fff; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; margin: 0.25rem 0; font-family: 'Cinzel', serif; }
-        .cd-playstyle { position: relative; z-index: 1; font-size: 0.65rem; color: #ffebcc; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 1.25rem; text-align: center; }
+        .cd-comp-name { position: relative; z-index: 1; font-size: 1.25rem; font-weight: 800; color: #F8FAFC; text-align: center; text-transform: uppercase; letter-spacing: 0.06em; margin: 0.25rem 0; font-family: 'Cinzel', serif; }
+        .cd-playstyle { position: relative; z-index: 1; font-size: 0.65rem; color: #D8C8A4; text-transform: uppercase; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 1.25rem; text-align: center; }
 
         /* Variants */
         .cd-variant-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: center; margin-bottom: 0.5rem; position: relative; z-index: 1; }
-        .cd-variant-btn { padding: 0.3rem 0.6rem; border-radius: 20px; font-size: 0.65rem; font-weight: 700; color: #fff; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); cursor: pointer; }
-        .cd-variant-btn.active { border: none; color: #000; }
+        .cd-variant-btn { padding: 0.3rem 0.6rem; border-radius: 999px; font-size: 0.65rem; font-weight: 700; color: #C9D3E3; border: 1px solid rgba(255,255,255,0.08); background: rgba(10,15,31,0.34); cursor: pointer; }
+        .cd-variant-btn.active { background: rgba(250,204,21,0.08); }
 
         .cd-traits { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; margin-bottom: 1.5rem; padding: 0 1rem; position: relative; z-index: 1; }
         .cd-trait-chip { display: flex; align-items: center; gap: 4px; padding: 0.2rem 0.5rem; border-radius: 4px; background: #dd9933; color: #000; font-weight: 800; font-size: 0.75rem; }
         .cd-trait-icon { width: 14px; height: 14px; filter: brightness(0); }
 
-        .cd-section-title { font-size: 0.85rem; font-weight: 800; color: #ffffff; margin-bottom: 0.5rem; text-align: center; }
+        .cd-section-title { font-size: 0.85rem; font-weight: 700; color: #D4AF37; margin-bottom: 0.5rem; text-align: center; letter-spacing: 0.04em; }
         
         .cd-augments-section { margin-bottom: 1.5rem; display: flex; flex-direction: column; align-items: center; }
         .cd-augment-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; padding: 0 1rem; max-width: 220px; }
@@ -547,16 +595,16 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
 
         .cd-aug-prio { display: flex; flex-direction: column; align-items: center; }
         .cd-prio-tags { display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
-        .cd-prio-tag { font-size: 0.75rem; font-weight: 800; color: #fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .cd-prio-tag { font-size: 0.75rem; font-weight: 700; color: #F8FAFC; background: rgba(255,255,255,0.055); border: 1px solid rgba(250,204,21,0.14); padding: 0.25rem 0.75rem; border-radius: 999px; display: inline-flex; align-items: center; gap: 0.3rem; }
         .cd-prio-arrow { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 -2px; }
 
         /* Right panel */
-        .cd-right { flex: 1; display: flex; flex-direction: column; background: #141419; position: relative; }
+        .cd-right { flex: 1; display: flex; flex-direction: column; background: #121A2B; position: relative; }
         .cd-close-btn { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 4px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; z-index: 10; }
         .cd-close-btn:hover { background: rgba(255,255,255,0.15); }
 
         /* Champs Header Row */
-        .cd-champ-row { display: flex; gap: 0.3rem; padding: 1.25rem 1rem 1rem 1.5rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15); min-height: 80px; align-items: center; }
+        .cd-champ-row { display: flex; gap: 0.3rem; padding: 1.25rem 1rem 1rem 1.5rem; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(10,15,31,0.24); min-height: 80px; align-items: center; }
         .cd-champ-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 
         .cd-content-scroll { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; overflow-y: auto; }
@@ -565,8 +613,8 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
         .cd-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         .cd-grid-2 { display: grid; grid-template-columns: 1fr 120px; gap: 1.5rem; }
 
-        .cd-box { position: relative; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 1.5rem 1rem 1rem; }
-        .cd-box-title { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #141419; padding: 0 12px; font-size: 0.9rem; font-weight: 700; color: #fff; white-space: nowrap; border-radius: 4px; }
+        .cd-box { position: relative; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1.5rem 1rem 1rem; background: rgba(10,15,31,0.18); box-shadow: inset 0 1px 0 rgba(255,255,255,0.035); }
+        .cd-box-title { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #121A2B; padding: 0 12px; font-size: 0.9rem; font-weight: 700; color: #D4AF37; white-space: nowrap; border-radius: 4px; }
         
         .cd-info-avatars { display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; }
         .cd-info-items { display: flex; gap: 0.4rem; justify-content: center; }
@@ -596,7 +644,7 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
           content: "";
           position: absolute;
           inset: 1px;
-          background: #141419;
+          background: #121A2B;
           clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
           z-index: 0;
         }
@@ -608,15 +656,15 @@ export function CompsTierlistClient({ comps, traitsMap, champions, items, augmen
 
         .cd-tips-text { font-size: 0.95rem; color: rgba(255,255,255,0.9); line-height: 1.6; margin: 0; padding: 1.5rem 0 0.5rem; text-align: center; }
 
-        .cd-stage-label { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #141419; padding: 0 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; font-size: 0.8rem; font-weight: 800; color: #fff; }
+        .cd-stage-label { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: #121A2B; padding: 0 12px; border: 1px solid rgba(250,204,21,0.18); border-radius: 999px; font-size: 0.8rem; font-weight: 800; color: #D4AF37; }
         .cd-stage-text { font-size: 0.9rem; color: rgba(255,255,255,0.8); line-height: 1.6; margin: 0; padding: 1.5rem 0 0.5rem; text-align: center; }
 
         .cd-footer { margin-top: 1rem; display: flex; justify-content: flex-end; gap: 1rem; align-items: center; }
         .cd-show-names { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #fff; font-weight: 600; cursor: pointer; }
-        .cd-toggle { width: 36px; height: 20px; background: #ffb300; border-radius: 10px; position: relative; }
+        .cd-toggle { width: 36px; height: 20px; background: #D4AF37; border-radius: 10px; position: relative; }
         .cd-toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 2px; right: 2px; }
-        .cd-builder-link { font-size: 0.85rem; font-weight: 700; color: #fff; text-decoration: none; padding: 0.5rem 1.25rem; border: 1px solid #ffb300; border-radius: 20px; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
-        .cd-builder-link:hover { background: rgba(255,179,0,0.15); }
+        .cd-builder-link { font-size: 0.85rem; font-weight: 700; color: #F8FAFC; text-decoration: none; padding: 0.5rem 1.25rem; border: 1px solid rgba(212,175,55,0.42); border-radius: 999px; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; }
+        .cd-builder-link:hover { background: rgba(250,204,21,0.08); }
 
         @media (max-width: 900px) {
            .cd-grid-3 { grid-template-columns: 1fr; gap: 2rem; }
