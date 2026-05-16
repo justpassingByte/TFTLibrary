@@ -65,3 +65,51 @@ Backend server running on http://localhost:3001
 [aggregate] item_stats: 153 items for patch 16.7
 [aggregate] trait_stats: 105 trait-tier combos for patch 16.7
 [aggregate] champion_stats: 103 champions for patch 16.7
+[DEBUG] curated-comps hit! Length: 1
+[aggregate] comp_stats: 1095 signatures for patch 16.6
+[aggregate] augment_stats: 0 augments for patch 16.6
+[aggregate] comp_stats: 1095 signatures for patch 16.6
+[aggregate] augment_stats: 0 augments for patch 16.6
+[aggregate] item_stats: 152 items for patch 16.6
+[aggregate] item_stats: 152 items for patch 16.6
+[aggregate] trait_stats: 104 trait-tier combos for patch 16.6
+[aggregate] trait_stats: 104 trait-tier combos for patch 16.6
+[aggregate] champion_stats: 103 champions for patch 16.6
+[aggregate] champion_stats: 103 champions for patch 16.6
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[DEBUG] curated-comps hit! Length: 1
+[aggregate] item_champion_stats: 3835 item-champ pairs for patch 16.7
+[aggregate] Patch 16.7 done.
+[aggregate] item_champion_stats: 3053 item-champ pairs for patch 16.6
+[aggregate] Patch 16.6 done.
+[aggregate] item_champion_stats: 3053 item-champ pairs for patch 16.6
+[aggregate] Patch 16.6 done.
+[aggregate] comp_stats: 87 signatures for patch 16.5
+[aggregate] augment_stats: 0 augments for patch 16.5
+[aggregate] comp_stats: 87 signatures for patch 16.5
+[aggregate] augment_stats: 0 augments for patch 16.5
+[aggregate] item_stats: 99 items for patch 16.5
+[aggregate] item_stats: 99 items for patch 16.5
+[aggregate] trait_stats: 84 trait-tier combos for patch 16.5
+[aggregate] champion_stats: 95 champions for patch 16.5
+[aggregate] trait_stats: 84 trait-tier combos for patch 16.5
+[aggregate] champion_stats: 95 champions for patch 16.5
+[aggregate] item_champion_stats: 712 item-champ pairs for patch 16.5
+[aggregate] Patch 16.5 done.
+[aggregate] item_champion_stats: 712 item-champ pairs for patch 16.5
+[aggregate] Patch 16.5 done.
+[aggregate] comp_stats: 1095 signatures for patch 16.6
+[aggregate] augment_stats: 0 augments for patch 16.6
+[aggregate] item_stats: 152 items for patch 16.6
+[aggregate] trait_stats: 104 trait-tier combos for patch 16.6
+[aggregate] champion_stats: 103 champions for patch 16.6
+[aggregate] item_champion_stats: 3053 item-champ pairs for patch 16.6
+[aggregate] Patch 16.6 done.
+[aggregate] comp_stats: 87 signatures for patch 16.5
+[aggregate] augment_stats: 0 augments for patch 16.5
+[aggregate] item_stats: 99 items for patch 16.5
+[aggregate] trait_stats: 84 trait-tier combos for patch 16.5
+[aggregate] champion_stats: 95 champions for patch 16.5
+[aggregate] item_champion_stats: 712 item-champ pairs for patch 16.5
+[aggregate] Patch 16.5 done.

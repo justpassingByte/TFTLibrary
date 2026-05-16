@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - /data/projects/TFTLibrary:/app/TFTLibrary
     container_name: grimoire-frontend
     restart: unless-stopped
     ports:
